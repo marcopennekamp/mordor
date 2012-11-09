@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\mordor">
+      <UniqueIdentifier>{48b0046a-6015-44e0-b713-d079958f12f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\mordor\interpreter">
+      <UniqueIdentifier>{afdcdd5a-e0b1-4a9f-9b3b-059381b92a44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\mordor\runtime">
+      <UniqueIdentifier>{a849566b-5ece-4336-bdf7-bcf8c5ce4d44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\internal">
+      <UniqueIdentifier>{ee0bf756-e975-4bca-a657-0e4e0c58a141}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\internal\bytecode">
+      <UniqueIdentifier>{34c3f93a-fa19-4f29-b3b5-65a3a4b85adb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\internal\runtime">
+      <UniqueIdentifier>{7f879972-e0ad-4446-a60a-692724b0bf3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\runtime">
+      <UniqueIdentifier>{41179e60-bf5b-4283-b597-a1481defaf95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\bytecode">
+      <UniqueIdentifier>{eeb1d284-687d-4c18-8ab5-d15bca304254}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\interpreter">
+      <UniqueIdentifier>{c4a40922-59d7-46e2-a995-57a685e904dd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\internal\runtime\Function.h">
+      <Filter>Header Files\internal\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\runtime\Program.h">
+      <Filter>Header Files\internal\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\bytecode\BytecodeFunction.h">
+      <Filter>Header Files\internal\bytecode</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\bytecode\compile.h">
+      <Filter>Header Files\internal\bytecode</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\bytecode\load.h">
+      <Filter>Header Files\internal\bytecode</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\runtime\FunctionInterface.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\runtime\loader.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\runtime\Operation.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\runtime\ProgramInterface.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\interpreter\core.h">
+      <Filter>Header Files\mordor\interpreter</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\def.h">
+      <Filter>Header Files\mordor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\mordor_begin.h">
+      <Filter>Header Files\mordor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\mordor_end.h">
+      <Filter>Header Files\mordor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\runtime\Environment.h">
+      <Filter>Header Files\internal\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\runtime\EnvironmentInterface.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\runtime\Context.h">
+      <Filter>Header Files\internal\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\runtime\ContextInterface.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\runtime\LibraryManager.h">
+      <Filter>Header Files\internal\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\runtime\Library.h">
+      <Filter>Header Files\internal\runtime</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\mordor\interpreter\core.cc">
+      <Filter>Source Files\interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\bytecode\compile.cc">
+      <Filter>Source Files\bytecode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\bytecode\load.cc">
+      <Filter>Source Files\bytecode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\runtime\loader.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\runtime\Program.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\test.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\runtime\Library.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\runtime\LibraryManager_windows.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\runtime\LibraryManager.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
