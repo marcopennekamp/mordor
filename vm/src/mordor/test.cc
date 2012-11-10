@@ -2,8 +2,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <windows.h>
-
 #include <coin/utils/time.h>
 #include <coin/utils/Stream.h>
 
@@ -13,37 +11,23 @@
 #include <internal/runtime/Context.h>
 #include <internal/runtime/Function.h>
 #include <internal/runtime/Program.h>
+#include <internal/runtime/LibraryManager.h>
+#include <internal/runtime/Library.h>
+#include <internal/runtime/Environment.h>
 
 using namespace coin;
 using namespace mordor;
+using namespace std;
 
 
 int main () {
     coin::TimeInit ();
 
-    /* Load TestDLL. */
-    HMODULE test_library = LoadLibrary("testdll.dll");
-    if (test_library == NULL) {
-        printf ("Error while loading \"test.dll\"!\n");
-    } else {
-        FARPROC initializer = GetProcAddress (test_library, "test");
-        if(initializer == NULL) {
-            printf ("Function could not be loaded!");
-        } else {
-            typedef void* (*func_type) (void);
-            func_type function = (func_type) initializer;
-            printf ("Function returned: %llX\n", (u64) function ());
-        }
-        FreeLibrary (test_library);
-    }
+    /* Load Program 'test'. */
+    Environment env;
+    env.LoadProgram ("test.mordor");
 
-    /* Linux:
-    cpu_set_t cpu_set;
-    CPU_ZERO(&cpu_set);
-    CPU_SET_S (0, sizeof (cpu_set_t), &cpu_set); /* run on ONE CPU. */
-    /* sched_setaffinity (0, sizeof (cpu_set_t), &cpu_set);
-    */
-
+    /* Interpreter tests. */
     Operation* operations;
     
     int length = 1e3 + 4;
@@ -69,20 +53,22 @@ int main () {
 
     /* Load main.func. */
     {
-        Stream stream ("test/return.func", StreamMode::read);
+        FileStream stream ("test/return.func", StreamMode::read);
         Function* function = (Function*) LoadFunction (&stream);
-        program->AddFunction (function);
+        string name = "return";
+        program->AddFunction (name, function);
     }
 
     /* Load test.func. */
     {
-        Stream stream ("test/test.func", StreamMode::read);
-        program->AddFunction ((Function*) LoadFunction (&stream));
+        FileStream stream ("test/test.func", StreamMode::read);
+        string name = "test";
+        program->AddFunction (name, (Function*) LoadFunction (&stream));
     }
 
     Context context;
-    context.stack = new mordor_u8[1024 * 16];
     context.stack_size = 1024 * 16;
+    context.stack = new mordor_u8[context.stack_size];
 
     mordor_u8* retval_address;
     
@@ -92,7 +78,7 @@ int main () {
         mordorInterpreterExecute (&context, (ProgramInterface*) program, add_test_function, 0, &retval_address);
     }
     time = coin::TimeNanoseconds () - time;
-    printf ("successfully executed in %lluns\n\n", time);
+    printf ("successfully executed in %lluns with '%i'\n\n", time, *((int*) retval_address));
 
     printf ("Invoking a blank function 1000000 times:\n");
     time = coin::TimeNanoseconds ();
@@ -102,7 +88,7 @@ int main () {
     time = coin::TimeNanoseconds () - time;
     printf ("successfully executed in %lluns\n", time);
 
-    free (add_test_function);
+    delete add_test_function;
     free (operations);
 
     return 0;

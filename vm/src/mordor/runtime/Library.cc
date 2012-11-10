@@ -10,4 +10,8 @@ Library::Library (string& path, lib library) {
     library_ = library;
 }
 
+void Library::AddFunction (std::string& name, func function) {
+    functions_[name] = function;
+}
+
 }

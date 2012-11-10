@@ -72,7 +72,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>..\..\coin\utils\include;..\..\coin\include;..\..\include;include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\coin\Release;..\..\lib;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -126,10 +126,10 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>utils.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>utils.lib;imagehlp.lib;zlibwapi.lib;libconfig.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -142,6 +142,7 @@
     <ClInclude Include="include\internal\runtime\Library.h" />
     <ClInclude Include="include\internal\runtime\LibraryManager.h" />
     <ClInclude Include="include\internal\runtime\Program.h" />
+    <ClInclude Include="include\internal\utils\zip.h" />
     <ClInclude Include="include\mordor\def.h" />
     <ClInclude Include="include\mordor\interpreter\core.h" />
     <ClInclude Include="include\mordor\mordor_begin.h" />
@@ -157,11 +158,13 @@
     <ClCompile Include="src\mordor\bytecode\compile.cc" />
     <ClCompile Include="src\mordor\bytecode\load.cc" />
     <ClCompile Include="src\mordor\interpreter\core.cc" />
+    <ClCompile Include="src\mordor\runtime\Environment.cc" />
     <ClCompile Include="src\mordor\runtime\Library.cc" />
     <ClCompile Include="src\mordor\runtime\LibraryManager.cc" />
     <ClCompile Include="src\mordor\runtime\loader.cc" />
     <ClCompile Include="src\mordor\runtime\Program.cc" />
     <ClCompile Include="src\mordor\test.cc" />
+    <ClCompile Include="src\mordor\utils\zip.cc" />
     <ClCompile Include="src\windows\runtime\LibraryManager_windows.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

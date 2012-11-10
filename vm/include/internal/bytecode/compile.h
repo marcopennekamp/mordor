@@ -1,5 +1,5 @@
-#ifndef MORDOR_INTERNAL_BYTECODE_COMPILE_H
-#define MORDOR_INTERNAL_BYTECODE_COMPILE_H
+#ifndef MORDOR_INTERNAL_BYTECODE_COMPILE_H_
+#define MORDOR_INTERNAL_BYTECODE_COMPILE_H_
 
 
 namespace mordor {
@@ -11,4 +11,4 @@ Function* CompileBytecodeFunction (BytecodeFunction* func);
 
 }
 
-#endif /* MORDOR_INTERNAL_BYTECODE_COMPILE_H */
+#endif /* MORDOR_INTERNAL_BYTECODE_COMPILE_H_ */

@@ -13,17 +13,17 @@ FunctionInterface*  LoadFunction (StreamInterface* stream_interface) {
 
     /* Create Function and read stack size. */
     Function* function = new Function ();
-    stream->ReadBuffer ((u8*) &function->stack_size, sizeof (function->stack_size));
+    stream->Read ((u8*) &function->stack_size, sizeof (function->stack_size));
 
     /* Read function ID. */
-    stream->ReadBuffer ((u8*) &function->id, sizeof (function->id));
+    stream->Read ((u8*) &function->id, sizeof (function->id));
 
     /* Get length of operation data block. */
-    mordor_u64 length = stream->FileSize () - stream->Position ();
+    mordor_u64 length = stream->Size () - stream->Position ();
 
     /* Read operations. */
     function->operations = new Operation [(u32) length / sizeof (Operation)];
-    stream->ReadBuffer ((u8*) function->operations, (u32) length);
+    stream->Read ((u8*) function->operations, (u32) length);
 
     return (FunctionInterface*) function;
 }

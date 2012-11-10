@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <mordor/interpreter/core.h>
 #include <mordor/runtime/Operation.h>
 
@@ -19,6 +18,7 @@ using namespace mordor;
 #define OP_START(NAME)  case OP_ ## NAME :
 #define OP_END          goto LExecEnd;
 #define OP_RESTART      goto LExec;
+#define OP_RETURN       goto LReturn;
 
 
 
@@ -46,6 +46,8 @@ using namespace mordor;
 
 
 /* Class extraction functions. */
+
+namespace {
 
 inline void extract_P (Operation op, mordor_u16& param0) {
     param0 = op >> 16 & 0xFFFF;
@@ -80,7 +82,7 @@ inline void extract_L (Operation op, mordor_u64& param0) {
 }
 
 inline void extract_M (Operation op, mordor_u8& param0, mordor_u8& param1, mordor_u8& param2, mordor_u8& param3, mordor_u8& param4, mordor_u8& param5) {
-    /* TODO(Marco): Probably needs some optimization here. */
+    /* TODO(Marco): Probably needs some optimization here. If possible, that is. */
     param0 = op >> 16 & 0xFF;
     param1 = op >> 24 & 0xFF;
     param2 = op >> 32 & 0xFF;
@@ -96,6 +98,8 @@ inline void extract_M (Operation op, mordor_u8& param0, mordor_u8& param1, mordo
 
 inline mordor_u64* fetch_Long (mordor_u8* stack, mordor_u16 id) {
     return (mordor_u64*) (stack + id * sizeof (mordor_u32));
+}
+
 }
 
 
@@ -123,14 +127,8 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, P
     /* Current op. */
     mordor_u64 op;
 
-    goto LExec;
 
-    /* Increments the instruction pointer after an instruction. */
-  LExecEnd:
-    ++op_pointer;
-    goto LExec;
-
-  /* Executes the next instruction. */
+    /* Executes the next instruction. */
   LExec:
     op = *op_pointer;
 
@@ -143,127 +141,127 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, P
         OP_RESTART }
 
         OP_START (CALL) { OPC_W (function_id)
-            mordorInterpreterExecute (context, program, ((Program*) program)->GetFunction (function_id), stack_top, &retval_address);
+            mordorInterpreterExecute (context, program, ((Program*) program)->GetFunctionFromCache (function_id), stack_top, &retval_address);
         OP_END }
 
-        __OP_CALL_NATIVE : {
+        OP_START (CALL_NATIVE) {
 
-        }
+        OP_END }
 
         OP_START (RET) { OPC_P (src)
             *return_address = stack + src * sizeof (mordor_u32);
-        }
+        OP_RETURN }
 
         OP_START (RETl) { OPC_P (src)
             *return_address = stack + src * sizeof (mordor_u32);
-        }
+        OP_RETURN }
 
 
     /* MEM. */
 
-        __OP_REGMOV : {
+        OP_START (REGMOV) {
 
-        }
+        OP_END }
 
-        __OP_REGMOVl : {
+        OP_START (REGMOVl) {
 
-        }
+        OP_END }
 
         OP_START (MOV) { OPC_PP (dest, src)
             stack_u32[dest] = stack_u32[src];
-        }
+        OP_END }
 
-        __OP_MOVl : {
+        OP_START (MOVl) {
 
-        }
+        OP_END }
 
         OP_START (kMOV) { OPC_PW (dest, src)
             stack_u32[dest] = src;
         OP_END }
 
-        __OP_kMOVl : {
+        OP_START (kMOVl) {
 
-        }
+        OP_END }
 
-        __OP_kMOVM : {
+        OP_START (kMOVM) {
 
-        }
+        OP_END }
 
-        __OP_kMOVMb : {
+        OP_START (kMOVMb) {
 
-        }
+        OP_END }
 
-        __OP_kMOVMs : {
+        OP_START (kMOVMs) {
 
-        }
+        OP_END }
 
-        __OP_kMOVMl : {
+        OP_START (kMOVMl) {
 
-        }
+        OP_END }
 
-        __OP_MOV_M2V : {
+        OP_START (MOV_M2V) {
 
-        }
+        OP_END }
 
-        __OP_MOV_M2Vb : {
+        OP_START (MOV_M2Vb) {
 
-        }
+        OP_END }
 
-        __OP_MOV_M2Vs : {
+        OP_START (MOV_M2Vs) {
 
-        }
+        OP_END }
 
-        __OP_MOV_M2Vl : {
+        OP_START (MOV_M2Vl) {
 
-        }
+        OP_END }
 
-        __OP_MOV_V2M : {
+        OP_START (MOV_V2M) {
 
-        }
+        OP_END }
 
-        __OP_MOV_V2Mb : {
+        OP_START (MOV_V2Mb) {
 
-        }
+        OP_END }
 
-        __OP_MOV_V2Ms : {
+        OP_START (MOV_V2Ms) {
 
-        }
+        OP_END }
 
-        __OP_MOV_V2Ml : {
+        OP_START (MOV_V2Ml) {
 
-        }
+        OP_END }
 
-        __OP_MOVO_M2V : {
+        OP_START (MOVO_M2V) {
 
-        }
+        OP_END }
 
-        __OP_MOVO_M2Vb : {
+        OP_START (MOVO_M2Vb) {
 
-        }
+        OP_END }
 
-        __OP_MOVO_M2Vs : {
+        OP_START (MOVO_M2Vs) {
 
-        }
+        OP_END }
 
-        __OP_MOVO_M2Vl : {
+        OP_START (MOVO_M2Vl) {
 
-        }
+        OP_END }
 
-        __OP_MOVO_V2M : {
+        OP_START (MOVO_V2M) {
 
-        }
+        OP_END }
 
-        __OP_MOVO_V2Mb : {
+        OP_START (MOVO_V2Mb) {
 
-        }
+        OP_END }
 
-        __OP_MOVO_V2Ms : {
+        OP_START (MOVO_V2Ms) {
 
-        }
+        OP_END }
 
-        __OP_MOVO_V2Ml : {
+        OP_START (MOVO_V2Ml) {
 
-        }
+        OP_END }
 
 
     /* ARITH. */
@@ -278,309 +276,316 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, P
             *dest_addr += src_value;
         OP_END }
 
-        __OP_fADD : {
+        OP_START (fADD) {
 
-        }
+        OP_END }
 
-        __OP_fADDl : {
+        OP_START (fADDl) {
 
-        }
+        OP_END }
 
-        __OP_kADD : {
+        OP_START (kADD) {
 
-        }
+        OP_END }
 
-        __OP_kADDl : {
+        OP_START (kADDl) {
 
-        }
+        OP_END }
 
-        __OP_fkADD : {
+        OP_START (fkADD) {
 
-        }
+        OP_END }
 
-        __OP_fkADDl : {
+        OP_START (fkADDl) {
 
-        }
+        OP_END }
 
         OP_START (SUB) { OPC_PP (dest, src)
             stack_u32[dest] -= stack_u32[src];
-        }
+        OP_END }
 
-        __OP_SUBl : {
+        OP_START (SUBl) {
 
-        }
+        OP_END }
 
-        __OP_fSUB : {
+        OP_START (fSUB) {
 
-        }
+        OP_END }
 
-        __OP_fSUBl : {
+        OP_START (fSUBl) {
 
-        }
+        OP_END }
 
-        __OP_kSUB : {
+        OP_START (kSUB) {
 
-        }
+        OP_END }
 
-        __OP_kSUBl : {
+        OP_START (kSUBl) {
 
-        }
+        OP_END }
 
-        __OP_fkSUB : {
+        OP_START (fkSUB) {
 
-        }
+        OP_END }
 
-        __OP_fkSUBl : {
+        OP_START (fkSUBl) {
 
-        }
+        OP_END }
 
         OP_START (sMUL) { OPC_PP (dest, src)
             mordor_s32* dest_addr = (mordor_s32*) stack_u32 + dest;
             mordor_s32 src_val = *((mordor_s32*) stack_u32 + src);
             *dest_addr *= src_val;
-        }
+        OP_END }
 
-        __OP_sMULl : {
+        OP_START (sMULl) {
 
-        }
+        OP_END }
 
         OP_START (uMUL) { OPC_PP (dest, src)
             stack_u32[dest] *= stack_u32[src];
-        }
+        OP_END }
 
-        __OP_uMULl : {
+        OP_START (uMULl) {
 
-        }
+        OP_END }
 
-        __OP_fMUL : {
+        OP_START (fMUL) {
 
-        }
+        OP_END }
 
-        __OP_fMULl : {
+        OP_START (fMULl) {
 
-        }
+        OP_END }
 
-        __OP_skMUL : {
+        OP_START (skMUL) {
 
-        }
+        OP_END }
 
-        __OP_skMULl : {
+        OP_START (skMULl) {
 
-        }
+        OP_END }
 
-        __OP_ukMUL : {
+        OP_START (ukMUL) {
 
-        }
+        OP_END }
 
-        __OP_ukMULl : {
+        OP_START (ukMULl) {
 
-        }
+        OP_END }
 
-        __OP_fkMUL : {
+        OP_START (fkMUL) {
 
-        }
+        OP_END }
 
-        __OP_fkMULl : {
+        OP_START (fkMULl) {
 
-        }
+        OP_END }
 
-        __OP_sDIV : {
+        OP_START (sDIV) {
 
-        }
+        OP_END }
 
-        __OP_sDIVl : {
+        OP_START (sDIVl) {
 
-        }
+        OP_END }
 
-        __OP_uDIV : {
+        OP_START (uDIV) {
 
-        }
+        OP_END }
 
-        __OP_uDIVl : {
+        OP_START (uDIVl) {
 
-        }
+        OP_END }
 
-        __OP_fDIV : {
+        OP_START (fDIV) {
 
-        }
+        OP_END }
 
-        __OP_fDIVl : {
+        OP_START (fDIVl) {
 
-        }
+        OP_END }
 
-        __OP_skDIV : {
+        OP_START (skDIV) {
 
-        }
+        OP_END }
 
-        __OP_skDIVl : {
+        OP_START (skDIVl) {
 
-        }
+        OP_END }
 
-        __OP_ukDIV : {
+        OP_START (ukDIV) {
 
-        }
+        OP_END }
 
-        __OP_ukDIVl : {
+        OP_START (ukDIVl) {
 
-        }
+        OP_END }
 
-        __OP_fkDIV : {
+        OP_START (fkDIV) {
 
-        }
+        OP_END }
 
-        __OP_fkDIVl : {
+        OP_START (fkDIVl) {
 
-        }
+        OP_END }
 
-        __OP_sREM : {
+        OP_START (sREM) {
 
-        }
+        OP_END }
 
-        __OP_sREMl : {
+        OP_START (sREMl) {
 
-        }
+        OP_END }
 
-        __OP_uREM : {
+        OP_START (uREM) {
 
-        }
+        OP_END }
 
-        __OP_uREMl : {
+        OP_START (uREMl) {
 
-        }
+        OP_END }
 
-        __OP_skREM : {
+        OP_START (skREM) {
 
-        }
+        OP_END }
 
-        __OP_skREMl : {
+        OP_START (skREMl) {
 
-        }
+        OP_END }
 
-        __OP_ukREM : {
+        OP_START (ukREM) {
 
-        }
+        OP_END }
 
-        __OP_ukREMl : {
+        OP_START (ukREMl) {
 
-        }
+        OP_END }
 
-        __OP_NEG : {
+        OP_START (NEG) {
 
-        }
+        OP_END }
 
-        __OP_NEGl : {
+        OP_START (NEGl) {
 
-        }
+        OP_END }
 
 
     /* BITWISE. */
 
-        __OP_AND : {
+        OP_START (AND) {
 
-        }
+        OP_END }
 
-        __OP_ANDl : {
+        OP_START (ANDl) {
 
-        }
+        OP_END }
 
-        __OP_kAND : {
+        OP_START (kAND) {
 
-        }
+        OP_END }
 
-        __OP_kANDl : {
+        OP_START (kANDl) {
 
-        }
+        OP_END }
 
-        __OP_OR : {
+        OP_START (OR) {
 
-        }
+        OP_END }
 
-        __OP_ORl : {
+        OP_START (ORl) {
 
-        }
+        OP_END }
 
-        __OP_kOR : {
+        OP_START (kOR) {
 
-        }
+        OP_END }
 
-        __OP_kORl : {
+        OP_START (kORl) {
 
-        }
+        OP_END }
 
-        __OP_XOR : {
+        OP_START (XOR) {
 
-        }
+        OP_END }
 
-        __OP_XORl : {
+        OP_START (XORl) {
 
-        }
+        OP_END }
 
-        __OP_kXOR : {
+        OP_START (kXOR) {
 
-        }
+        OP_END }
 
-        __OP_kXORl : {
+        OP_START (kXORl) {
 
-        }
+        OP_END }
 
-        __OP_SHL : {
+        OP_START (SHL) {
 
-        }
+        OP_END }
 
-        __OP_SHLl : {
+        OP_START (SHLl) {
 
-        }
+        OP_END }
 
-        __OP_kSHL : {
+        OP_START (kSHL) {
 
-        }
+        OP_END }
 
-        __OP_kSHLl : {
+        OP_START (kSHLl) {
 
-        }
+        OP_END }
 
-        __OP_SHR : {
+        OP_START (SHR) {
 
-        }
+        OP_END }
 
-        __OP_SHRl : {
+        OP_START (SHRl) {
 
-        }
+        OP_END }
 
-        __OP_kSHR : {
+        OP_START (kSHR) {
 
-        }
+        OP_END }
 
-        __OP_kSHRl : {
+        OP_START (kSHRl) {
 
-        }
+        OP_END }
 
-        __OP_ASHR : {
+        OP_START (ASHR) {
 
-        }
+        OP_END }
 
-        __OP_ASHRl : {
+        OP_START (ASHRl) {
 
-        }
+        OP_END }
 
-        __OP_kASHR : {
+        OP_START (kASHR) {
 
-        }
+        OP_END }
 
-        __OP_kASHRl : {
+        OP_START (kASHRl) {
 
-        }
+        OP_END }
 
-        __OP_NOT : {
+        OP_START (NOT) {
 
-        }
+        OP_END }
 
-        __OP_NOTl : {
+        OP_START (NOTl) {
 
-        }
+        OP_END }
 
-        default:
-            return;
+        default: OP_RETURN
     }
 
+
+    /* Increments the instruction pointer after an instruction. */
+  LExecEnd:
+    ++op_pointer;
+    goto LExec;
+
+  LReturn:
+    return;
 }

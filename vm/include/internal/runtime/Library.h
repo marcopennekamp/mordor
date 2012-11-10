@@ -1,9 +1,10 @@
 #ifndef MORDOR_INTERNAL_RUNTIME_LIBRARY_H_
 #define MORDOR_INTERNAL_RUNTIME_LIBRARY_H_
 
-#include <mordor/def.h>
-
 #include <string>
+#include <map>
+
+#include <mordor/def.h>
 
 
 #if (MORDOR_OS == windows)
@@ -25,12 +26,18 @@ typedef void* lib;
 namespace mordor {
 
 class Library {
+  public:
+    typedef void* (_stdcall* func) ();
+
   private:
     std::string path_;
+    std::map<std::string, func> functions_;
     lib library_;
 
   public:
     Library (std::string& path, lib library);
+
+    void AddFunction (std::string& name, func function);
 
     inline lib library () { return library_; }
     inline std::string path () { return path_; }

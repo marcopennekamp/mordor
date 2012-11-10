@@ -18,11 +18,13 @@ class LibraryManager {
   public:
     ~LibraryManager ();
 
-    void AddRuntimeLibrary (Library* library);
-    void RemoveRuntimeLibrary (std::string& path);
+    Library* GetRuntimeLibrary (std::string& name);
 
-    void LoadRuntimeLibrary (std::string& path);
+    void LoadRuntimeLibrary (std::string& name);
     void UnloadRuntimeLibrary (Library* library);
+
+    void AddRuntimeLibrary (Library* library);
+    void RemoveRuntimeLibrary (std::string& name);
 };
 
 }

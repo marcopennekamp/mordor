@@ -40,6 +40,12 @@
     <Filter Include="Source Files\interpreter">
       <UniqueIdentifier>{c4a40922-59d7-46e2-a995-57a685e904dd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\internal\utils">
+      <UniqueIdentifier>{bb7ee240-ed6b-4343-97fb-e74c612db9cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{a00b1dde-a48e-4cf0-83c4-be9d0084a920}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\internal\runtime\Function.h">
@@ -99,6 +105,9 @@
     <ClInclude Include="include\internal\runtime\Library.h">
       <Filter>Header Files\internal\runtime</Filter>
     </ClInclude>
+    <ClInclude Include="include\internal\utils\zip.h">
+      <Filter>Header Files\internal\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\mordor\interpreter\core.cc">
@@ -127,6 +136,12 @@
     </ClCompile>
     <ClCompile Include="src\mordor\runtime\LibraryManager.cc">
       <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\runtime\Environment.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\utils\zip.cc">
+      <Filter>Source Files\utils</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

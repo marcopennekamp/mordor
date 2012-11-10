@@ -1,5 +1,5 @@
-#ifndef MORDOR_RUNTIME_LOADER_H
-#define	MORDOR_RUNTIME_LOADER_H
+#ifndef MORDOR_RUNTIME_LOADER_H_
+#define	MORDOR_RUNTIME_LOADER_H_
 
 #include <coin/utils/StreamInterface.h>
 
@@ -14,5 +14,5 @@ FunctionInterface*  LoadFunction (StreamInterface* stream);
 
 #include <mordor/mordor_end.h>
 
-#endif
+#endif  /* MORDOR_RUNTIME_LOADER_H_ */
 
