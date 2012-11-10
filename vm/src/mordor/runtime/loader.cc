@@ -16,7 +16,7 @@ FunctionInterface*  LoadFunction (StreamInterface* stream_interface) {
     stream->Read ((u8*) &function->stack_size, sizeof (function->stack_size));
 
     /* Read function ID. */
-    stream->Read ((u8*) &function->id, sizeof (function->id));
+    // stream->Read ((u8*) &function->id, sizeof (function->id));
 
     /* Get length of operation data block. */
     mordor_u64 length = stream->Size () - stream->Position ();

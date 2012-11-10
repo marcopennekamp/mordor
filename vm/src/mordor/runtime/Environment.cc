@@ -1,7 +1,13 @@
+#include <algorithm>
+
 #include <zlib/unzip.h>
 
 #include <libconfig.h>
 
+#include <coin/utils/Stream.h>
+
+#include <internal/bytecode/BytecodeFunction.h>
+#include <internal/bytecode/load.h>
 #include <internal/runtime/Environment.h>
 #include <internal/utils/zip.h>
 
@@ -19,7 +25,7 @@ bool Environment::_EvaluateProgramConfig (unzFile archive) {
 
     /* Load 'program' file. */
     mordor_char* file_data = NULL;
-    zip::GetFileData (archive, (const void**) &file_data, mordor_true, NULL);
+    zip::GetFileData (archive, (const void**) &file_data, NULL, mordor_true, NULL);
     if (file_data == NULL) {
         return false;
     }
@@ -68,13 +74,55 @@ Program* Environment::LoadProgram (const char* path) {
         return NULL;
     }
 
+    /* Create Program. */
+    Program* program = new Program ();
+
+    /* Load all '.func' files. */
+    bool found = (unzGoToFirstFile (archive) == UNZ_OK);
+    for (; found; found = (unzGoToNextFile (archive) == UNZ_OK)) {
+        mordor_u8* file_data = NULL;
+        mordor_u32 file_size;
+        string file_name;
+        {
+            const mordor_s8* file_name_array = NULL;
+            zip::GetFileData (archive, (const void**) &file_data, &file_size, mordor_false, &file_name_array);
+            if (file_data == NULL || file_name_array == NULL) {
+                if (file_data != NULL) delete[] file_data;
+                if (file_name_array != NULL) delete file_name_array;
+                continue;
+            }
+            file_name = file_name_array;
+            delete[] file_name_array;
+        }
+
+        /* Check whether file_name has the extension ".func". */
+        printf ("Check file '%s' with size '%i'.\n", file_name.c_str (), file_size);
+
+        size_t index = file_name.find_last_of ('.');
+        if (index == string::npos) continue;
+        if (file_name.substr (index, file_name.size ()) == ".func") {
+            /* Correct name. */
+            string name = file_name.substr (0, index);
+            replace (name.begin (), name.end (), '/', '.');
+
+            /* Read and add BytecodeFunction. */
+            coin::BufferStream stream (file_data, file_size, coin::StreamMode::read);
+            BytecodeFunction* function = LoadBytecodeFunction (&stream);
+            program->AddBytecodeFunction (name, function);
+            printf ("Added Function '%s'.\n", name.c_str ());
+        }
+    }
+
     unzClose (archive);
+
+    /* Add Program. */
+    programs_.push_back (program);
 
     return NULL;
 }
 
 
-void Environment::InitializePrograms () {
+void Environment::Initialize () {
 
 }
 

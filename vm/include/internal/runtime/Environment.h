@@ -24,7 +24,7 @@ class Environment {
   public:
     Program* LoadProgram (const char* path);
 
-    void InitializePrograms ();
+    void Initialize ();
 
     Function* FindFunction (std::string& name);
 

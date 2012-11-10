@@ -1,11 +1,10 @@
 #include <internal/utils/zip.h>
 
 
-
 namespace mordor {
 namespace zip {
 
-void GetFileData (unzFile archive, const void** file_data_ptr, mordor_bool append_zero, const mordor_s8** file_name_ptr) {
+void GetFileData (unzFile archive, const void** file_data_ptr, mordor_u32* file_size_ptr, mordor_bool append_zero, const mordor_s8** file_name_ptr) {
     unz_file_info info;
     unzGetCurrentFileInfo (archive, &info, NULL, NULL, NULL, NULL, NULL, NULL);
 
@@ -19,6 +18,7 @@ void GetFileData (unzFile archive, const void** file_data_ptr, mordor_bool appen
         unzReadCurrentFile (archive, (voidp) file_data, info.uncompressed_size);
         unzCloseCurrentFile (archive);
         *file_data_ptr = file_data;
+        if (file_size_ptr != NULL) *file_size_ptr = file_size;
     }
 
     /* Get file name if requested. */

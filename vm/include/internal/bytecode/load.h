@@ -1,13 +1,14 @@
 #ifndef MORDOR_INTERNAL_BYTECODE_LOAD_H
 #define MORDOR_INTERNAL_BYTECODE_LOAD_H
 
+#include <coin/utils/Stream.h>
+
 
 namespace mordor {
 
-class Stream;
 class BytecodeFunction;
 
-BytecodeFunction* LoadBytecodeFunction (Stream* stream);
+BytecodeFunction* LoadBytecodeFunction (coin::Stream* stream);
 
 }
 

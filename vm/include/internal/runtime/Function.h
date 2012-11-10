@@ -9,8 +9,6 @@ namespace mordor {
 class Function {
   public:
 
-    mordor_u32  id;
-
     mordor_u32  stack_size;
 
     Operation*  operations;

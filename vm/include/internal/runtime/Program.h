@@ -11,14 +11,22 @@
 namespace mordor {
 
 class Function;
+class BytecodeFunction;
 
 class Program {
   private:
     std::map<std::string, mordor_u32> functions_;
     std::vector<Function*> function_cache_;
 
+    std::vector<BytecodeFunction*>* bytecode_function_cache_;
+
   public:
-    void        AddFunction (std::string& name, Function* function);
+    Program ();
+
+    void        Initialize ();
+
+    void        AddBytecodeFunction (std::string& name, BytecodeFunction* function);
+
     Function*   GetFunctionFromCache (mordor_u32 index);
     mordor_u32  GetFunctionId (std::string& name);
 };

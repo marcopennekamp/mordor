@@ -24,8 +24,11 @@ int main () {
     coin::TimeInit ();
 
     /* Load Program 'test'. */
+    mordor_u64 time = coin::TimeNanoseconds ();
     Environment env;
     env.LoadProgram ("test.mordor");
+    time = coin::TimeNanoseconds () - time;
+    printf ("Initialization took %lluns.\n", time);
 
     /* Interpreter tests. */
     Operation* operations;
@@ -51,21 +54,6 @@ int main () {
 
     Program* program = new Program ();
 
-    /* Load main.func. */
-    {
-        FileStream stream ("test/return.func", StreamMode::read);
-        Function* function = (Function*) LoadFunction (&stream);
-        string name = "return";
-        program->AddFunction (name, function);
-    }
-
-    /* Load test.func. */
-    {
-        FileStream stream ("test/test.func", StreamMode::read);
-        string name = "test";
-        program->AddFunction (name, (Function*) LoadFunction (&stream));
-    }
-
     Context context;
     context.stack_size = 1024 * 16;
     context.stack = new mordor_u8[context.stack_size];
@@ -73,7 +61,7 @@ int main () {
     mordor_u8* retval_address;
     
     printf ("Invoking a function that adds 1000 times for 1000 times:\n");
-    mordor_u64 time = coin::TimeNanoseconds ();
+    time = coin::TimeNanoseconds ();
     for (int i = 0; i < 1000; ++i) {
         mordorInterpreterExecute (&context, (ProgramInterface*) program, add_test_function, 0, &retval_address);
     }
