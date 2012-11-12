@@ -21,6 +21,8 @@ class Program {
     std::vector<BytecodeFunction*>* bytecode_function_cache_;
 
   public:
+    static const mordor_u32 INVALID_ID = 0xFFFFFFFF;
+
     Program ();
 
     void        Initialize ();

@@ -96,8 +96,12 @@ inline void extract_M (Operation op, mordor_u8& param0, mordor_u8& param1, mordo
 
 /* Fetch functions. */
 
-inline mordor_u64* fetch_Long (mordor_u8* stack, mordor_u16 id) {
-    return (mordor_u64*) (stack + id * sizeof (mordor_u32));
+inline mordor_u64& fetch_u64 (mordor_u8* stack, mordor_u16 id) {
+    return *(mordor_u64*) (stack + id);
+}
+
+inline mordor_u32& fetch_u32 (mordor_u8* stack, mordor_u16 id) {
+    return *(mordor_u32*) (stack + id);
 }
 
 }
@@ -105,28 +109,26 @@ inline mordor_u64* fetch_Long (mordor_u8* stack, mordor_u16 id) {
 
 
 
-extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, ProgramInterface* program, FunctionInterface* function_interface, mordor_u32 caller_stack_top, mordor_u8** return_address) {
+extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, FunctionInterface* function_interface, mordor_u32 caller_stack_top) {
     /* General stuff. */
     Function*   function    = (Function*) function_interface;
     Context*    context = (Context*) context_interface;
     Operation*  op_pointer  = function->operations;
     mordor_u32  stack_top   = caller_stack_top + function->stack_size;
-    mordor_u8*  retval_address;
 
     // TODO: This is a security check!
-    if (stack_top > context->stack_size) {
+    if (stack_top > context->stack ().size ()) {
         printf ("Error: Requested stack size exceeds Context stack limit.");
         return;
     }
 
     /* Stacks. */
-    mordor_u8*  stack       = ((mordor_u8*) context->stack + caller_stack_top);
+    mordor_u8*  stack       = ((mordor_u8*) context->stack ().array () + caller_stack_top);
     mordor_u32* stack_u32   = (mordor_u32*) stack;
     mordor_f32* stack_f32   = (mordor_f32*) stack;
 
     /* Current op. */
     mordor_u64 op;
-
 
     /* Executes the next instruction. */
   LExec:
@@ -137,11 +139,12 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, P
     /* BASIC. */
 
         _OP_START (kJMP) { _OPC_W (offset)
+            // printf ("JMP from %p, base %p, by %i (%llX)\n", op_pointer, function->operations, (mordor_s32) offset, op);
             op_pointer = (Operation*) (((mordor_u8*) op_pointer) + ((mordor_s32) offset));
         _OP_RESTART }
 
         _OP_START (CALL) { _OPC_W (function_id)
-            mordorInterpreterExecute (context, program, ((Program*) program)->GetFunctionFromCache (function_id), stack_top, &retval_address);
+            mordorInterpreterExecute (context, ((Program*) context->program ())->GetFunctionFromCache (function_id), stack_top);
         _OP_END }
 
         _OP_START (CALL_NATIVE) {
@@ -149,11 +152,11 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, P
         _OP_END }
 
         _OP_START (RET) { _OPC_P (src)
-            *return_address = stack + src * sizeof (mordor_u32);
+            context->return_value_address () = stack + src;
         _OP_RETURN }
 
         _OP_START (RETl) { _OPC_P (src)
-            *return_address = stack + src * sizeof (mordor_u32);
+            context->return_value_address () = stack + src;
         _OP_RETURN }
 
 
@@ -168,7 +171,7 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, P
         _OP_END }
 
         _OP_START (MOV) { _OPC_PP (dest, src)
-            stack_u32[dest] = stack_u32[src];
+            fetch_u32 (stack, dest) = fetch_u32 (stack, src);
         _OP_END }
 
         _OP_START (MOVl) {
@@ -176,7 +179,7 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, P
         _OP_END }
 
         _OP_START (kMOV) { _OPC_PW (dest, src)
-            stack_u32[dest] = src;
+            fetch_u32 (stack, dest)  = src;
         _OP_END }
 
         _OP_START (kMOVl) {
@@ -267,13 +270,11 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, P
     /* ARITH. */
 
         _OP_START (ADD) { _OPC_PP (dest, src)
-            stack_u32[dest] += stack_u32[src];
+            fetch_u32 (stack, dest) += fetch_u32 (stack, src);
         _OP_END }
 
         _OP_START (ADDl) { _OPC_PP (dest, src)
-            mordor_u64* dest_addr = fetch_Long (stack, dest);
-            mordor_u64  src_value = *fetch_Long (stack, src);
-            *dest_addr += src_value;
+            fetch_u64 (stack, dest) += fetch_u64 (stack, src);
         _OP_END }
 
         _OP_START (fADD) {
@@ -301,7 +302,7 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, P
         _OP_END }
 
         _OP_START (SUB) { _OPC_PP (dest, src)
-            stack_u32[dest] -= stack_u32[src];
+            fetch_u32 (stack, dest) -= fetch_u32 (stack, src);
         _OP_END }
 
         _OP_START (SUBl) {
@@ -333,8 +334,8 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, P
         _OP_END }
 
         _OP_START (sMUL) { _OPC_PP (dest, src)
-            mordor_s32* dest_addr = (mordor_s32*) stack_u32 + dest;
-            mordor_s32 src_val = *((mordor_s32*) stack_u32 + src);
+            mordor_s32* dest_addr = (mordor_s32*) (stack + dest);
+            mordor_s32 src_val = *((mordor_s32*) (stack + src));
             *dest_addr *= src_val;
         _OP_END }
 
@@ -343,7 +344,7 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, P
         _OP_END }
 
         _OP_START (uMUL) { _OPC_PP (dest, src)
-            stack_u32[dest] *= stack_u32[src];
+            fetch_u32 (stack, dest) *= fetch_u32 (stack, src);
         _OP_END }
 
         _OP_START (uMULl) {

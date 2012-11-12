@@ -145,6 +145,7 @@
     <ClInclude Include="include\internal\runtime\LibraryManager.h" />
     <ClInclude Include="include\internal\runtime\Program.h" />
     <ClInclude Include="include\internal\utils\Array.h" />
+    <ClInclude Include="include\internal\utils\Pointer.h" />
     <ClInclude Include="include\internal\utils\zip.h" />
     <ClInclude Include="include\mordor\bytecode\BytecodeOperation.h" />
     <ClInclude Include="include\mordor\def.h" />
@@ -162,6 +163,7 @@
     <ClCompile Include="src\mordor\bytecode\compile.cc" />
     <ClCompile Include="src\mordor\bytecode\load.cc" />
     <ClCompile Include="src\mordor\interpreter\core.cc" />
+    <ClCompile Include="src\mordor\runtime\Context.cc" />
     <ClCompile Include="src\mordor\runtime\Environment.cc" />
     <ClCompile Include="src\mordor\runtime\Library.cc" />
     <ClCompile Include="src\mordor\runtime\LibraryManager.cc" />

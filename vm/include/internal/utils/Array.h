@@ -13,26 +13,36 @@ class Array {
     size_t size_;
 
   public:
-    explicit Array (size_t size) {
+    inline Array () { }
+
+    inline explicit Array (const size_t size) {
+        Create (size);
+    }
+
+    inline ~Array () {
+        Delete ();
+    }
+
+    inline void Create (const size_t size) {
         array_ = new T[size];
         size_ = size;
     }
 
-    inline ~Array () {
+    inline void Delete () {
         delete[] array_;
     }
 
-    inline void Init (T value) {
+    inline void Set (const T value) {
         for (size_t i = 0; i < size_; ++i) {
             this[i] = value;
         }
     }
 
-    inline void SetMemory (mordor_u8 value) {
+    inline void SetMemory (const mordor_u8 value) {
         memset (array_, value, size_ * sizeof (T));
     }
 
-    inline T& operator[] (size_t index) const {
+    inline T& operator[] (const size_t index) const {
         return array_[index];
     }
 
@@ -40,7 +50,7 @@ class Array {
         return array_;
     }
 
-    inline size_t size () const {
+    inline const size_t size () const {
         return size_;
     }
 };
@@ -48,4 +58,4 @@ class Array {
 }
 
 
-#endif  /* MORDOR_INTERNAL_UTILS_DYNAMICARRAY_H_ */
+#endif  /* MORDOR_INTERNAL_UTILS_ARRAY_H_ */

@@ -15,6 +15,7 @@ enum mordorOperationType {
     OP_CALL_NATIVE  = 0x03,
     OP_RET          = 0x04,
     OP_RETl         = 0x05,
+    OP_RET_VOID     = 0x06,
 
     /* MEM. */
     OP_REGMOV       = 0x10,

@@ -29,15 +29,14 @@ namespace mordor {
 
 namespace {
 
-enum VariableType {
-    TYPE_I = 0x00,
-    TYPE_L,
-    TYPE_UI,
-    TYPE_UL,
-    TYPE_F,
-    TYPE_FL,
-    TYPE_P
-};
+const mordor_u32 kPointerSize = sizeof (void*);
+
+typedef mordor_u8 VariableType;
+const mordor_u8 TYPE_I = 0x01;
+const mordor_u8 TYPE_U = 0x02;
+const mordor_u8 TYPE_F = 0x04;
+const mordor_u8 TYPE_P = 0x08;
+const mordor_u8 TYPE_IS_LONG = 0x10;
 
 struct StackEntry {
     VariableType type;
@@ -80,50 +79,70 @@ inline void get_s10 (const BytecodeOperation* ptr, mordor_s16& param0) {
  * Returns an address on the stack for the given variable or pointer.
  * May or may not reserve stack space.
  */
-inline mordor_u16 get_stack_address_for_element (const mordor_u32 element, const mordor_u32 element_size, Array<mordor_u16>& element_to_stack, mordor_u32& stack_top) {
+inline mordor_u16 get_stack_address_for_element (const mordor_u32 element, const VariableType type, Array<mordor_u16>& element_to_stack, mordor_u32& stack_top) {
     mordor_u16 address = element_to_stack[element];
-    if (address == 0xFFFF) { /* Must reserve address on stack. */
+
+    /* Reserve address if needed. */
+    if (address == 0xFFFF) {
+        /* Compute element size. */
+        mordor_u32 element_size;
+        bool is_pointer = false;
+        if ((type & TYPE_P) > 0) {
+            element_size = kPointerSize;
+            is_pointer = true;
+        }else {
+            element_size = ((type & TYPE_IS_LONG) > 0) ? 8 : 4;
+        }
+        printf ("Element size is %u", element_size);
+
+        /* Check whether local stack is not exceeded. */
         if (stack_top + element_size >= 0xFFFF) {
             printf ("Maximum stack size exceeded!\n");
             return 0;
         }
 
+        /* Reserve addresses. */
         address = stack_top;
-        switch (element_size) { /* Reserve address on stack. */
-          case 8: /* Long variables. */
+        if (!is_pointer && element_size == 8) { /* Long variables. */
             element_to_stack[element + 1] = address + 4;
-            /* Fallthrough: do first part. */
-          case 4: /* Normal variables. */
-            element_to_stack[element] = address;
-            break;
         }
+        element_to_stack[element] = address;
         stack_top += element_size;
     }
 
     return address & 0xFFFF;
 }
 
-inline void load_element (const mordor_u16 element, mordor_u32 element_size, VariableType type, Array<mordor_u16>& element_to_stack, StackEntry*& bc_stack_top, mordor_u32& stack_top) {
-    mordor_u16 address = get_stack_address_for_element (element, element_size, element_to_stack, stack_top);
-    bc_stack_top->Set (type, false, address);
+inline void load_element (const mordor_u16 element, const VariableType type, Array<mordor_u16>& element_to_stack, StackEntry*& bc_stack_top, mordor_u32& stack_top) {
+    /* Resolve address. */
+    mordor_u16 address = get_stack_address_for_element (element, type, element_to_stack, stack_top);
     ++bc_stack_top;
+    bc_stack_top->Set (type, false, address);
 }
 
 
 
 
-/* Operation creation. */
+/* Operation building. */
 
 inline void add_operation (const Operation op, vector<Operation>& operation_buffer) {
     operation_buffer.push_back (op);
 }
 
-inline Operation build_operation (const mordor_u16 opcode) {
+inline Operation build_operation_I (const mordor_u16 opcode) {
     return (Operation) opcode;
 }
 
-inline Operation build_operation_w (const mordor_u16 opcode, const mordor_u32 param0) {
-    return build_operation (opcode) | (((Operation) param0) << 16);
+inline Operation build_operation_P (const mordor_u16 opcode, const mordor_u16 param0) {
+    return build_operation_I (opcode) | (((Operation) param0) << 16);
+}
+
+inline Operation build_operation_W (const mordor_u16 opcode, const mordor_u32 param0) {
+    return build_operation_I (opcode) | (((Operation) param0) << 16);
+}
+
+inline Operation build_operation_PW (const mordor_u16 opcode, const mordor_u16 param0, const mordor_u32 param1) {
+    return build_operation_I (opcode) | (((Operation) param0) << 16) | (((Operation) param1) << 32);
 }
 
 
@@ -131,8 +150,6 @@ inline Operation build_operation_w (const mordor_u16 opcode, const mordor_u32 pa
 
 
 Function* CompileBytecodeFunction (const BytecodeFunction* func) {
-    const mordor_u32 kPointerSize = sizeof (void*);
-
     mordor_u64 time = coin::TimeNanoseconds ();
 
     printf ("code size: %u\n", func->code_size);
@@ -142,11 +159,11 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
     printf ("operation count: %u\n", func->operation_count);
     
     /* Holds the compiled code. */
-    vector<Operation> operation_buffer; 
+    vector<Operation> operation_buffer;
     operation_buffer.reserve (func->operation_count);
 
     /* The top of the internal stack. */
-    mordor_u32 stack_top = 0; 
+    mordor_u32 stack_top = 0;
 
     /* Maps bytecode variable ids to stack addresses. */
     Array<mordor_u16> variable_to_stack (func->variable_table_size);
@@ -199,6 +216,7 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
 
   LJumpIdMapLoopEnd:
     /* Reset bytecode operation local variables. */
+    mordor_u32 bc_op_number = bc_op_count;
     bc_op = func->code;
     bc_op_count = 0;
 
@@ -218,53 +236,71 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
 
             _START (JMP) {
                 _S10 (offset)
-                Operation op = build_operation (OP_kJMP);
+                Operation op = build_operation_I (OP_kJMP);
                 op = op | ((((Operation) (((mordor_s64) bc_op_count) + offset)) << 16) & 0xFFFFFFFF); /* Will be >= 0, so shift left is okay. */
                 add_operation (op, operation_buffer);
             } _END
 
             _START (RETURN) {
-
+                if (bc_stack_top->constant) {
+                    /* Set variable etc. */
+                    add_operation (build_operation_PW (OP_kMOV, stack_top, bc_stack_top->id), operation_buffer);
+                    add_operation (build_operation_P (OP_RET, stack_top), operation_buffer);
+                    stack_top += 4; /* TODO(Marco)/Maybe: Map this to the actual constant! */
+                }else {
+                    if ((bc_stack_top->type & TYPE_IS_LONG) > 0) {
+                        add_operation (build_operation_P (OP_RETl, bc_stack_top->id), operation_buffer);
+                    }else {
+                        add_operation (build_operation_P (OP_RET, bc_stack_top->id), operation_buffer);
+                    }
+                }
+                bc_stack_top--;
             } _END
 
-            _START (RETURN_VOID) {
-
+            _START (RETURN_VOID) { /* This should only be used when it is not the last operation. Otherwise superfluous. */
+                add_operation (build_operation_I (OP_RET_VOID), operation_buffer);
             } _END
 
-            _START (iLOAD) { 
+            _START (iLOAD) {
                 _U10 (variable)
-                load_element (variable, 4, TYPE_I, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, TYPE_I, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (lLOAD) {
                 _U10 (variable)
-                load_element (variable, 8, TYPE_L, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, TYPE_I | TYPE_IS_LONG, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (uiLOAD) {
                 _U10 (variable)
-                load_element (variable, 4, TYPE_UI, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, TYPE_U, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (ulLOAD) {
                 _U10 (variable)
-                load_element (variable, 8, TYPE_UL, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, TYPE_U | TYPE_IS_LONG, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (fLOAD) {
                 _U10 (variable)
-                load_element (variable, 4, TYPE_F, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, TYPE_F, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (flLOAD) {
                 _U10 (variable)
-                load_element (variable, 8, TYPE_FL, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, TYPE_F | TYPE_IS_LONG, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (pLOAD) {
                 _U10 (pointer)
-                load_element (pointer, kPointerSize, TYPE_P, pointer_to_stack, bc_stack_top, stack_top);
+                load_element (pointer, TYPE_P, pointer_to_stack, bc_stack_top, stack_top);
             } _END
+
+            _START (CONST) {
+                _U10 (constant)
+                ++bc_stack_top;
+                bc_stack_top->Set (TYPE_U, true, constant);
+            }
         }
 
         ++bc_op;
@@ -274,8 +310,8 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
 
   LCompileLoopEnd:
     /* Add END operation that is required both for interpreter and further compilation. */
-    add_operation (build_operation (OP_END), operation_buffer); 
-    
+    add_operation (build_operation_I (OP_END), operation_buffer); 
+
     /* Resolve all jumps. */
     int i = 0;
     while (true) {
@@ -294,8 +330,9 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
                 printf ("Error: Possible jump location not set!\n");
                 return NULL;
             }else {
-                //printf ("New Jump location found! %i jumps to %u!\n", i, position);
-                operation_buffer[i] = build_operation_w (OP_kJMP, position);
+                printf ("New Jump location found! %i jumps to %u! by %i\n", i, position, (mordor_s32) ((((mordor_s64) position) - i) * sizeof(Operation)));
+                operation_buffer[i] = build_operation_W (OP_kJMP, (mordor_s32) ((((mordor_s64) position) - (mordor_s64) i) * sizeof(Operation)));
+                printf ("Op: %llX\n", op);
             }
             break;
         }
@@ -308,11 +345,17 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
     function->stack_size = stack_top;
     size_t size = operation_buffer.size ();
     //printf ("Function size is %u!\n", size);
-    Operation* operations = new Operation[operation_buffer.size ()];
-    memcpy (operations, &operation_buffer[0], size);
+    function->operations = new Operation[operation_buffer.size ()];
+    memcpy (function->operations, &operation_buffer[0], size * sizeof (Operation));
 
     time = coin::TimeNanoseconds () - time;
     printf ("Compilation took %lluns!\n", time);
+
+    printf ("\n\n");
+    for (int i = 0; i < size; ++i) {
+        printf ("%llX\n", function->operations[i]);
+    }
+    printf ("\n\n");
 
     return function;
 }

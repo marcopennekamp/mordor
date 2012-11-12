@@ -108,16 +108,8 @@ Program* Environment::LoadProgram (const char* path) {
 
             /* Read and add BytecodeFunction. */
             coin::BufferStream stream (file_data, file_size, coin::StreamMode::read);
-            /*
-            for (; stream.Position () < 16; ) {
-                u32 byte;
-                stream.Read ((u8*) &byte, 4);
-                printf ("%X\n", byte);
-            }*/
-            
             BytecodeFunction* function = LoadBytecodeFunction (&stream);
             program->AddBytecodeFunction (name, function);
-            CompileBytecodeFunction (function);
             printf ("Added Function '%s'.\n", name.c_str ());
         }
     }
@@ -132,12 +124,22 @@ Program* Environment::LoadProgram (const char* path) {
 
 
 void Environment::Initialize () {
-
+    size_t size = programs_.size ();
+    for (size_t i = 0; i < size; ++i) {
+        programs_[i]->Initialize ();
+    }
 }
 
 
 Function* Environment::FindFunction (std::string& name) {
-
+    size_t size = programs_.size ();
+    for (size_t i = 0; i < size; ++i) {
+        mordor_u32 id = programs_[i]->GetFunctionId (name);
+        if (id != Program::INVALID_ID) {
+            return programs_[i]->GetFunctionFromCache (id);
+        }
+    }
+    return NULL;
 }
 
 }

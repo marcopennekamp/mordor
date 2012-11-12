@@ -117,6 +117,9 @@
     <ClInclude Include="include\internal\utils\Array.h">
       <Filter>Header Files\internal\utils</Filter>
     </ClInclude>
+    <ClInclude Include="include\internal\utils\Pointer.h">
+      <Filter>Header Files\internal\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\mordor\interpreter\core.cc">
@@ -151,6 +154,9 @@
     </ClCompile>
     <ClCompile Include="src\mordor\utils\zip.cc">
       <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\runtime\Context.cc">
+      <Filter>Source Files\runtime</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
