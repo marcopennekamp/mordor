@@ -12,7 +12,8 @@ namespace mordor {
 LibraryManager::~LibraryManager () {
     auto it = library_map_.begin ();
     for (; it != library_map_.end (); ++it) {
-        UnloadRuntimeLibrary (it->second);
+        FreeLibrary (it->second->library ());
+        delete it->second;
     }
 }
 
@@ -58,6 +59,7 @@ void LibraryManager::LoadRuntimeLibrary (string& name) {
 void LibraryManager::UnloadRuntimeLibrary (Library* library) {
     FreeLibrary (library->library ());
     RemoveRuntimeLibrary (library->path ());
+    delete library;
 }
 
 }

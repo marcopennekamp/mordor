@@ -21,7 +21,7 @@ class LibraryManager {
     Library* GetRuntimeLibrary (std::string& name);
 
     void LoadRuntimeLibrary (std::string& name);
-    void UnloadRuntimeLibrary (Library* library);
+    void UnloadRuntimeLibrary (Library* library); /* Deletes the Library object. */
 
     void AddRuntimeLibrary (Library* library);
     void RemoveRuntimeLibrary (std::string& name);
