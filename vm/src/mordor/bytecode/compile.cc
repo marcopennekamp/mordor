@@ -135,15 +135,12 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
 
     mordor_u64 time = coin::TimeNanoseconds ();
 
-    
     printf ("code size: %u\n", func->code_size);
     printf ("var table size: %u\n", func->variable_table_size);
     printf ("ptr table size: %u\n", func->pointer_table_size);
     printf ("max stack size: %u\n", func->maximum_stack_size);
     printf ("operation count: %u\n", func->operation_count);
     
-    return NULL;
-
     /* Holds the compiled code. */
     vector<Operation> operation_buffer; 
     operation_buffer.reserve (func->operation_count);
