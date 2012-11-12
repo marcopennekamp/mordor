@@ -70,7 +70,7 @@
     <LibraryPath>..\..\coin\Release;..\..\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\coin\utils\include;..\..\coin\include;..\..\include;include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\coin\utils\include;..\..\coin\include;..\..\include;include;D:\Projects\cpp\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\coin\Release;..\..\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <GenerateManifest>false</GenerateManifest>
@@ -125,6 +125,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <PreprocessToFile>false</PreprocessToFile>
+      <OmitFramePointers>true</OmitFramePointers>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -143,6 +144,7 @@
     <ClInclude Include="include\internal\runtime\Library.h" />
     <ClInclude Include="include\internal\runtime\LibraryManager.h" />
     <ClInclude Include="include\internal\runtime\Program.h" />
+    <ClInclude Include="include\internal\utils\Array.h" />
     <ClInclude Include="include\internal\utils\zip.h" />
     <ClInclude Include="include\mordor\bytecode\BytecodeOperation.h" />
     <ClInclude Include="include\mordor\def.h" />

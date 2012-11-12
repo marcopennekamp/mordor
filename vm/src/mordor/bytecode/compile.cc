@@ -1,6 +1,9 @@
 #include <vector>
 #include <map>
 
+#include <boost/scoped_ptr.hpp>
+#include <internal/utils/Array.h>
+
 #include <coin/utils/time.h>
 
 #include <mordor/bytecode/BytecodeOperation.h>
@@ -10,6 +13,7 @@
 #include <internal/runtime/Function.h>
 
 using namespace std;
+using namespace boost;
 
 
 #define _START(NAME)    case BCOP_ ## NAME :
@@ -76,7 +80,7 @@ inline void get_s10 (const BytecodeOperation* ptr, mordor_s16& param0) {
  * Returns an address on the stack for the given variable or pointer.
  * May or may not reserve stack space.
  */
-inline mordor_u16 get_stack_address_for_element (const mordor_u32 element, const mordor_u32 element_size, mordor_u16* element_to_stack, mordor_u32& stack_top) {
+inline mordor_u16 get_stack_address_for_element (const mordor_u32 element, const mordor_u32 element_size, Array<mordor_u16>& element_to_stack, mordor_u32& stack_top) {
     mordor_u16 address = element_to_stack[element];
     if (address == 0xFFFF) { /* Must reserve address on stack. */
         if (stack_top + element_size >= 0xFFFF) {
@@ -99,7 +103,7 @@ inline mordor_u16 get_stack_address_for_element (const mordor_u32 element, const
     return address & 0xFFFF;
 }
 
-inline void load_element (const mordor_u16 element, mordor_u32 element_size, VariableType type, mordor_u16* element_to_stack, StackEntry*& bc_stack_top, mordor_u32& stack_top) {
+inline void load_element (const mordor_u16 element, mordor_u32 element_size, VariableType type, Array<mordor_u16>& element_to_stack, StackEntry*& bc_stack_top, mordor_u32& stack_top) {
     mordor_u16 address = get_stack_address_for_element (element, element_size, element_to_stack, stack_top);
     bc_stack_top->Set (type, false, address);
     ++bc_stack_top;
@@ -127,29 +131,39 @@ inline Operation build_operation_w (const mordor_u16 opcode, const mordor_u32 pa
 
 
 Function* CompileBytecodeFunction (const BytecodeFunction* func) {
-    mordor_u64 time = coin::TimeNanoseconds ();
-
     const mordor_u32 kPointerSize = sizeof (void*);
 
-    /*
+    mordor_u64 time = coin::TimeNanoseconds ();
+
+    
     printf ("code size: %u\n", func->code_size);
     printf ("var table size: %u\n", func->variable_table_size);
     printf ("ptr table size: %u\n", func->pointer_table_size);
     printf ("max stack size: %u\n", func->maximum_stack_size);
     printf ("operation count: %u\n", func->operation_count);
-    */
+    
+    return NULL;
 
-    /* Initialisation. */
-    vector<Operation> operation_buffer; /* Holds the compiled code. */
+    /* Holds the compiled code. */
+    vector<Operation> operation_buffer; 
     operation_buffer.reserve (func->operation_count);
-    mordor_u32 stack_top = 0; /* The top of the internal stack. */
-    mordor_u16* variable_to_stack = new mordor_u16[func->variable_table_size]; /* Maps bytecode variable ids to stack addresses. */
-    memset (variable_to_stack, 0xFF /* Results in 0xFFFF. */, func->variable_table_size * sizeof (*variable_to_stack));
-    mordor_u16* pointer_to_stack = new mordor_u16[func->pointer_table_size]; /* Maps bytecode pointer ids to stack addresses. */
-    memset (pointer_to_stack, 0xFF /* Results in 0xFFFF. */, func->pointer_table_size * sizeof (*pointer_to_stack));
 
-    StackEntry* bc_stack = new StackEntry[func->maximum_stack_size];
-    StackEntry* bc_stack_top = bc_stack;
+    /* The top of the internal stack. */
+    mordor_u32 stack_top = 0; 
+
+    /* Maps bytecode variable ids to stack addresses. */
+    Array<mordor_u16> variable_to_stack (func->variable_table_size);
+    variable_to_stack.SetMemory (0xFF); /* Results in 0xFFFF. */
+
+    /* Maps bytecode pointer ids to stack addresses. */
+    Array<mordor_u16> pointer_to_stack (func->pointer_table_size);
+    pointer_to_stack.SetMemory (0xFF); /* Results in 0xFFFF. */
+
+    /* The typed Stack that is used to deduce types of variables. */
+    Array<StackEntry> bc_stack (func->maximum_stack_size);
+    StackEntry* bc_stack_top = bc_stack.array ();
+
+    /* Local variables to keep the current bytecode operation.*/
     BytecodeOperation* bc_op = func->code;
     mordor_u32 bc_op_count = 0;
 
@@ -159,8 +173,8 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
 
        Future use: When multiple bc operations are packed, they may not be involved in a jump instruction.
     */
-    mordor_u32* jump_id_map = new mordor_u32[func->operation_count];
-    memset (jump_id_map, 0xFF, func->operation_count * sizeof (*jump_id_map)); /* No jumps detected yet. */
+    Array<mordor_u32> jump_id_map (func->operation_count);
+    jump_id_map.SetMemory (0xFF); /* Results in 0xFFFFFFFF. */
 
 
     /* Build jump id map. */
@@ -187,13 +201,14 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
 
 
   LJumpIdMapLoopEnd:
+    /* Reset bytecode operation local variables. */
     bc_op = func->code;
     bc_op_count = 0;
 
     /* Compile all the code! */
     while (true) {
         /* Set jump id. */
-        mordor_u32* jump_id = jump_id_map + bc_op_count;
+        mordor_u32* jump_id = jump_id_map.array () + bc_op_count;
         bool is_jumped_to = *jump_id == 0xFFFFFFFE;
         if (is_jumped_to || *jump_id != 0xFFFFFFFF) *jump_id = (mordor_u32) operation_buffer.size ();
 
@@ -291,11 +306,6 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
     }
 
   LJumpResolveLoopEnd:
-    delete[] variable_to_stack;
-    delete[] pointer_to_stack;
-    delete[] jump_id_map;
-    delete[] bc_stack;
-
     /* Create function. */
     Function* function = new Function ();
     function->stack_size = stack_top;

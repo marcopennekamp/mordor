@@ -12,10 +12,10 @@ BytecodeFunction* LoadBytecodeFunction (coin::Stream* stream) {
     BytecodeFunction* function = new BytecodeFunction ();
 
     /* Read options. */
-    stream->Read ((u8*) &function->variable_table_size, sizeof (function->variable_table_size));
-    stream->Read ((u8*) &function->pointer_table_size, sizeof (function->pointer_table_size));
-    stream->Read ((u8*) &function->maximum_stack_size, sizeof (function->maximum_stack_size));
-    stream->Read ((u8*) &function->operation_count, sizeof (function->operation_count));
+    stream->ReadU32 (function->variable_table_size);
+    stream->ReadU32 (function->pointer_table_size);
+    stream->ReadU32 (function->maximum_stack_size);
+    stream->ReadU32 (function->operation_count);
 
     /* Calculate code size. */
     function->code_size = stream->Size () - stream->Position ();

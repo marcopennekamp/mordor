@@ -114,6 +114,9 @@
     <ClInclude Include="include\mordor\bytecode\BytecodeOperation.h">
       <Filter>Header Files\mordor\bytecode</Filter>
     </ClInclude>
+    <ClInclude Include="include\internal\utils\Array.h">
+      <Filter>Header Files\internal\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\mordor\interpreter\core.cc">
