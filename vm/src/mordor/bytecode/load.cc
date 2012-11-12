@@ -11,9 +11,11 @@ namespace mordor {
 BytecodeFunction* LoadBytecodeFunction (coin::Stream* stream) {
     BytecodeFunction* function = new BytecodeFunction ();
 
-    /* Read variable and pointer table size. */
+    /* Read options. */
     stream->Read ((u8*) &function->variable_table_size, sizeof (function->variable_table_size));
     stream->Read ((u8*) &function->pointer_table_size, sizeof (function->pointer_table_size));
+    stream->Read ((u8*) &function->maximum_stack_size, sizeof (function->maximum_stack_size));
+    stream->Read ((u8*) &function->operation_count, sizeof (function->operation_count));
 
     /* Calculate code size. */
     function->code_size = stream->Size () - stream->Position ();

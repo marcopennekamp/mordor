@@ -15,31 +15,31 @@ using namespace mordor;
 
 /* Operation definition macros. */
 
-#define OP_START(NAME)  case OP_ ## NAME :
-#define OP_END          goto LExecEnd;
-#define OP_RESTART      goto LExec;
-#define OP_RETURN       goto LReturn;
+#define _OP_START(NAME)  case OP_ ## NAME :
+#define _OP_END          goto LExecEnd;
+#define _OP_RESTART      goto LExec;
+#define _OP_RETURN       goto LReturn;
 
 
 
 
 /* Class parameter parsing. */
 
-#define OPC_P(P0)               mordor_u16 P0; \
+#define _OPC_P(P0)               mordor_u16 P0; \
                                   extract_P (op, P0);
-#define OPC_PP(P0, P1)          mordor_u16 P0, P1; \
+#define _OPC_PP(P0, P1)          mordor_u16 P0, P1; \
                                   extract_PP (op, P0, P1);
-#define OPC_PPP(P0, P1, P2)     mordor_u16 P0, P1, P2; \
+#define _OPC_PPP(P0, P1, P2)     mordor_u16 P0, P1, P2; \
                                   extract_PPP (op, P0, P1, P2);
 
-#define OPC_W(P0)               mordor_u32 P0; \
+#define _OPC_W(P0)               mordor_u32 P0; \
                                   extract_W (op, P0);
-#define OPC_WP(P0, P1)          mordor_u32 P0; mordor_u16 P1; \
+#define _OPC_WP(P0, P1)          mordor_u32 P0; mordor_u16 P1; \
                                   extract_WP (op, P0, P1);
-#define OPC_PW(P0, P1)          mordor_u16 P0; mordor_u32 P1; \
+#define _OPC_PW(P0, P1)          mordor_u16 P0; mordor_u32 P1; \
                                   extract_PW (op, P0, P1);
 
-#define OPC_L(P0)               mordor_u64 P0; \
+#define _OPC_L(P0)               mordor_u64 P0; \
                                   extract_L (op, P0);
 
 
@@ -136,448 +136,448 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, P
 
     /* BASIC. */
 
-        OP_START (kJMP) { OPC_W (offset)
+        _OP_START (kJMP) { _OPC_W (offset)
             op_pointer = (Operation*) (((mordor_u8*) op_pointer) + ((mordor_s32) offset));
-        OP_RESTART }
+        _OP_RESTART }
 
-        OP_START (CALL) { OPC_W (function_id)
+        _OP_START (CALL) { _OPC_W (function_id)
             mordorInterpreterExecute (context, program, ((Program*) program)->GetFunctionFromCache (function_id), stack_top, &retval_address);
-        OP_END }
+        _OP_END }
 
-        OP_START (CALL_NATIVE) {
+        _OP_START (CALL_NATIVE) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (RET) { OPC_P (src)
+        _OP_START (RET) { _OPC_P (src)
             *return_address = stack + src * sizeof (mordor_u32);
-        OP_RETURN }
+        _OP_RETURN }
 
-        OP_START (RETl) { OPC_P (src)
+        _OP_START (RETl) { _OPC_P (src)
             *return_address = stack + src * sizeof (mordor_u32);
-        OP_RETURN }
+        _OP_RETURN }
 
 
     /* MEM. */
 
-        OP_START (REGMOV) {
+        _OP_START (REGMOV) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (REGMOVl) {
+        _OP_START (REGMOVl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOV) { OPC_PP (dest, src)
+        _OP_START (MOV) { _OPC_PP (dest, src)
             stack_u32[dest] = stack_u32[src];
-        OP_END }
+        _OP_END }
 
-        OP_START (MOVl) {
+        _OP_START (MOVl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kMOV) { OPC_PW (dest, src)
+        _OP_START (kMOV) { _OPC_PW (dest, src)
             stack_u32[dest] = src;
-        OP_END }
+        _OP_END }
 
-        OP_START (kMOVl) {
+        _OP_START (kMOVl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kMOVM) {
+        _OP_START (kMOVM) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kMOVMb) {
+        _OP_START (kMOVMb) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kMOVMs) {
+        _OP_START (kMOVMs) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kMOVMl) {
+        _OP_START (kMOVMl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOV_M2V) {
+        _OP_START (MOV_M2V) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOV_M2Vb) {
+        _OP_START (MOV_M2Vb) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOV_M2Vs) {
+        _OP_START (MOV_M2Vs) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOV_M2Vl) {
+        _OP_START (MOV_M2Vl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOV_V2M) {
+        _OP_START (MOV_V2M) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOV_V2Mb) {
+        _OP_START (MOV_V2Mb) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOV_V2Ms) {
+        _OP_START (MOV_V2Ms) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOV_V2Ml) {
+        _OP_START (MOV_V2Ml) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOVO_M2V) {
+        _OP_START (MOVO_M2V) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOVO_M2Vb) {
+        _OP_START (MOVO_M2Vb) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOVO_M2Vs) {
+        _OP_START (MOVO_M2Vs) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOVO_M2Vl) {
+        _OP_START (MOVO_M2Vl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOVO_V2M) {
+        _OP_START (MOVO_V2M) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOVO_V2Mb) {
+        _OP_START (MOVO_V2Mb) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOVO_V2Ms) {
+        _OP_START (MOVO_V2Ms) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (MOVO_V2Ml) {
+        _OP_START (MOVO_V2Ml) {
 
-        OP_END }
+        _OP_END }
 
 
     /* ARITH. */
 
-        OP_START (ADD) { OPC_PP (dest, src)
+        _OP_START (ADD) { _OPC_PP (dest, src)
             stack_u32[dest] += stack_u32[src];
-        OP_END }
+        _OP_END }
 
-        OP_START (ADDl) { OPC_PP (dest, src)
+        _OP_START (ADDl) { _OPC_PP (dest, src)
             mordor_u64* dest_addr = fetch_Long (stack, dest);
             mordor_u64  src_value = *fetch_Long (stack, src);
             *dest_addr += src_value;
-        OP_END }
+        _OP_END }
 
-        OP_START (fADD) {
+        _OP_START (fADD) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fADDl) {
+        _OP_START (fADDl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kADD) {
+        _OP_START (kADD) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kADDl) {
+        _OP_START (kADDl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fkADD) {
+        _OP_START (fkADD) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fkADDl) {
+        _OP_START (fkADDl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (SUB) { OPC_PP (dest, src)
+        _OP_START (SUB) { _OPC_PP (dest, src)
             stack_u32[dest] -= stack_u32[src];
-        OP_END }
+        _OP_END }
 
-        OP_START (SUBl) {
+        _OP_START (SUBl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fSUB) {
+        _OP_START (fSUB) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fSUBl) {
+        _OP_START (fSUBl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kSUB) {
+        _OP_START (kSUB) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kSUBl) {
+        _OP_START (kSUBl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fkSUB) {
+        _OP_START (fkSUB) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fkSUBl) {
+        _OP_START (fkSUBl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (sMUL) { OPC_PP (dest, src)
+        _OP_START (sMUL) { _OPC_PP (dest, src)
             mordor_s32* dest_addr = (mordor_s32*) stack_u32 + dest;
             mordor_s32 src_val = *((mordor_s32*) stack_u32 + src);
             *dest_addr *= src_val;
-        OP_END }
+        _OP_END }
 
-        OP_START (sMULl) {
+        _OP_START (sMULl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (uMUL) { OPC_PP (dest, src)
+        _OP_START (uMUL) { _OPC_PP (dest, src)
             stack_u32[dest] *= stack_u32[src];
-        OP_END }
+        _OP_END }
 
-        OP_START (uMULl) {
+        _OP_START (uMULl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fMUL) {
+        _OP_START (fMUL) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fMULl) {
+        _OP_START (fMULl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (skMUL) {
+        _OP_START (skMUL) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (skMULl) {
+        _OP_START (skMULl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (ukMUL) {
+        _OP_START (ukMUL) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (ukMULl) {
+        _OP_START (ukMULl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fkMUL) {
+        _OP_START (fkMUL) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fkMULl) {
+        _OP_START (fkMULl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (sDIV) {
+        _OP_START (sDIV) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (sDIVl) {
+        _OP_START (sDIVl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (uDIV) {
+        _OP_START (uDIV) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (uDIVl) {
+        _OP_START (uDIVl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fDIV) {
+        _OP_START (fDIV) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fDIVl) {
+        _OP_START (fDIVl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (skDIV) {
+        _OP_START (skDIV) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (skDIVl) {
+        _OP_START (skDIVl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (ukDIV) {
+        _OP_START (ukDIV) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (ukDIVl) {
+        _OP_START (ukDIVl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fkDIV) {
+        _OP_START (fkDIV) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (fkDIVl) {
+        _OP_START (fkDIVl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (sREM) {
+        _OP_START (sREM) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (sREMl) {
+        _OP_START (sREMl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (uREM) {
+        _OP_START (uREM) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (uREMl) {
+        _OP_START (uREMl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (skREM) {
+        _OP_START (skREM) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (skREMl) {
+        _OP_START (skREMl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (ukREM) {
+        _OP_START (ukREM) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (ukREMl) {
+        _OP_START (ukREMl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (NEG) {
+        _OP_START (NEG) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (NEGl) {
+        _OP_START (NEGl) {
 
-        OP_END }
+        _OP_END }
 
 
     /* BITWISE. */
 
-        OP_START (AND) {
+        _OP_START (AND) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (ANDl) {
+        _OP_START (ANDl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kAND) {
+        _OP_START (kAND) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kANDl) {
+        _OP_START (kANDl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (OR) {
+        _OP_START (OR) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (ORl) {
+        _OP_START (ORl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kOR) {
+        _OP_START (kOR) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kORl) {
+        _OP_START (kORl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (XOR) {
+        _OP_START (XOR) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (XORl) {
+        _OP_START (XORl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kXOR) {
+        _OP_START (kXOR) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kXORl) {
+        _OP_START (kXORl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (SHL) {
+        _OP_START (SHL) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (SHLl) {
+        _OP_START (SHLl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kSHL) {
+        _OP_START (kSHL) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kSHLl) {
+        _OP_START (kSHLl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (SHR) {
+        _OP_START (SHR) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (SHRl) {
+        _OP_START (SHRl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kSHR) {
+        _OP_START (kSHR) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kSHRl) {
+        _OP_START (kSHRl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (ASHR) {
+        _OP_START (ASHR) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (ASHRl) {
+        _OP_START (ASHRl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kASHR) {
+        _OP_START (kASHR) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (kASHRl) {
+        _OP_START (kASHRl) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (NOT) {
+        _OP_START (NOT) {
 
-        OP_END }
+        _OP_END }
 
-        OP_START (NOTl) {
+        _OP_START (NOTl) {
 
-        OP_END }
+        _OP_END }
 
-        default: OP_RETURN
+        default: _OP_RETURN
     }
 
 

@@ -7,7 +7,7 @@ namespace mordor {
 class Function;
 class BytecodeFunction;
 
-Function* CompileBytecodeFunction (BytecodeFunction* func);
+Function* CompileBytecodeFunction (const BytecodeFunction* func);
 
 }
 

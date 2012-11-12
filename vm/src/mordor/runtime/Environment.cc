@@ -7,6 +7,7 @@
 #include <coin/utils/Stream.h>
 
 #include <internal/bytecode/BytecodeFunction.h>
+#include <internal/bytecode/compile.h>
 #include <internal/bytecode/load.h>
 #include <internal/runtime/Environment.h>
 #include <internal/utils/zip.h>
@@ -107,8 +108,16 @@ Program* Environment::LoadProgram (const char* path) {
 
             /* Read and add BytecodeFunction. */
             coin::BufferStream stream (file_data, file_size, coin::StreamMode::read);
+            /*
+            for (; stream.Position () < 16; ) {
+                u32 byte;
+                stream.Read ((u8*) &byte, 4);
+                printf ("%X\n", byte);
+            }*/
+            
             BytecodeFunction* function = LoadBytecodeFunction (&stream);
             program->AddBytecodeFunction (name, function);
+            CompileBytecodeFunction (function);
             printf ("Added Function '%s'.\n", name.c_str ());
         }
     }

@@ -1,5 +1,5 @@
-#ifndef MORDOR_INTERNAL_BYTECODE_BYTECODEFUNCTION_H
-#define MORDOR_INTERNAL_BYTECODE_BYTECODEFUNCTION_H
+#ifndef MORDOR_INTERNAL_BYTECODE_BYTECODEFUNCTION_H_
+#define MORDOR_INTERNAL_BYTECODE_BYTECODEFUNCTION_H_
 
 #include <mordor/def.h>
 
@@ -10,6 +10,8 @@ class BytecodeFunction {
   public:
     mordor_u32 variable_table_size;
     mordor_u32 pointer_table_size;
+    mordor_u32 maximum_stack_size;
+    mordor_u32 operation_count;
 
     // Constant table
     // Global var name table
@@ -27,4 +29,4 @@ class BytecodeFunction {
 }
 
 
-#endif /* MORDOR_INTERNAL_BYTECODE_BYTECODEFUNCTION_H */
+#endif /* MORDOR_INTERNAL_BYTECODE_BYTECODEFUNCTION_H_ */

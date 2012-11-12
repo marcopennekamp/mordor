@@ -1,5 +1,5 @@
-#ifndef MORDOR_INTERPRETER_INTERPRETER_H
-#define	MORDOR_INTERPRETER_INTERPRETER_H
+#ifndef MORDOR_INTERPRETER_CORE_H_
+#define	MORDOR_INTERPRETER_CORE_H_
 
 #include <mordor/runtime/ContextInterface.h>
 #include <mordor/runtime/ProgramInterface.h>
@@ -14,5 +14,4 @@ void mordorInterpreterExecute (ContextInterface* context_interface, ProgramInter
 
 #include <mordor/mordor_end.h>
 
-#endif
-
+#endif  /* MORDOR_INTERPRETER_CORE_H_ */

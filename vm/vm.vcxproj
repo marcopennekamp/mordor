@@ -124,6 +124,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -143,6 +144,7 @@
     <ClInclude Include="include\internal\runtime\LibraryManager.h" />
     <ClInclude Include="include\internal\runtime\Program.h" />
     <ClInclude Include="include\internal\utils\zip.h" />
+    <ClInclude Include="include\mordor\bytecode\BytecodeOperation.h" />
     <ClInclude Include="include\mordor\def.h" />
     <ClInclude Include="include\mordor\interpreter\core.h" />
     <ClInclude Include="include\mordor\mordor_begin.h" />

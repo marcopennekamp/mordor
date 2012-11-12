@@ -46,6 +46,9 @@
     <Filter Include="Source Files\utils">
       <UniqueIdentifier>{a00b1dde-a48e-4cf0-83c4-be9d0084a920}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\mordor\bytecode">
+      <UniqueIdentifier>{41fc12b5-5da5-4553-84eb-d80af0b24101}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\internal\runtime\Function.h">
@@ -107,6 +110,9 @@
     </ClInclude>
     <ClInclude Include="include\internal\utils\zip.h">
       <Filter>Header Files\internal\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\bytecode\BytecodeOperation.h">
+      <Filter>Header Files\mordor\bytecode</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

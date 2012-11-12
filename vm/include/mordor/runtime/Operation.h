@@ -7,7 +7,6 @@
 typedef mordor_u64      mordorOperation;
 typedef mordorOperation Operation;
 
-
 enum mordorOperationType {
     /* BASIC. */
     OP_END          = 0x00,
