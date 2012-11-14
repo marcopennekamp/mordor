@@ -6,8 +6,10 @@ namespace mordor {
 
 class Function;
 class BytecodeFunction;
+class Environment;
+class Program;
 
-Function* CompileBytecodeFunction (const BytecodeFunction* func);
+Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* environment, Program* program);
 
 }
 

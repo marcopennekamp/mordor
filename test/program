@@ -1,7 +1,3 @@
-
-
-
-
 name = "test"
-libraries = ["testdll", "blabla"]
-dependencies = ["utils"]
+libraries = []
+dependencies = []

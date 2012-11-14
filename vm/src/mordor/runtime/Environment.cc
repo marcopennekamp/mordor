@@ -97,8 +97,6 @@ Program* Environment::LoadProgram (const char* path) {
         }
 
         /* Check whether file_name has the extension ".func". */
-        printf ("Check file '%s' with size '%i'.\n", file_name.c_str (), file_size);
-
         size_t index = file_name.find_last_of ('.');
         if (index == string::npos) continue;
         if (file_name.substr (index, file_name.size ()) == ".func") {
@@ -110,7 +108,7 @@ Program* Environment::LoadProgram (const char* path) {
             coin::BufferStream stream (file_data, file_size, coin::StreamMode::read);
             BytecodeFunction* function = LoadBytecodeFunction (&stream);
             program->AddBytecodeFunction (name, function);
-            printf ("Added Function '%s'.\n", name.c_str ());
+            // printf ("Added Function '%s'.\n", name.c_str ());
         }
     }
 
@@ -119,24 +117,44 @@ Program* Environment::LoadProgram (const char* path) {
     /* Add Program. */
     programs_.push_back (program);
 
-    return NULL;
+    return program;
 }
 
 
 void Environment::Initialize () {
     size_t size = programs_.size ();
+
+    /* Initialize Programs. */
     for (size_t i = 0; i < size; ++i) {
-        programs_[i]->Initialize ();
+        programs_[i]->Initialize (this);
+    }
+
+    /* Resolve their symbols. Must be called when everything has been compiled. */
+    for (size_t i = 0; i < size; ++i) {
+        programs_[i]->ResolveSymbols (this);
     }
 }
 
+
+// TODO(Marco): Duplicate code!
 
 Function* Environment::FindFunction (std::string& name) {
     size_t size = programs_.size ();
     for (size_t i = 0; i < size; ++i) {
         mordor_u32 id = programs_[i]->GetFunctionId (name);
-        if (id != Program::INVALID_ID) {
+        if (id != Program::INVALID_FUNCTION_ID) {
             return programs_[i]->GetFunctionFromCache (id);
+        }
+    }
+    return NULL;
+}
+
+BytecodeFunction* Environment::FindBytecodeFunction (std::string& name) {
+    size_t size = programs_.size ();
+    for (size_t i = 0; i < size; ++i) {
+        mordor_u32 id = programs_[i]->GetFunctionId (name);
+        if (id != Program::INVALID_FUNCTION_ID) {
+            return programs_[i]->bytecode_function_cache ()[id];
         }
     }
     return NULL;

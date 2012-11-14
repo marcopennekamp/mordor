@@ -143,14 +143,6 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, F
             op_pointer = (Operation*) (((mordor_u8*) op_pointer) + ((mordor_s32) offset));
         _OP_RESTART }
 
-        _OP_START (CALL) { _OPC_W (function_id)
-            mordorInterpreterExecute (context, ((Program*) context->program ())->GetFunctionFromCache (function_id), stack_top);
-        _OP_END }
-
-        _OP_START (CALL_NATIVE) {
-
-        _OP_END }
-
         _OP_START (RET) { _OPC_P (src)
             context->return_value_address () = stack + src;
         _OP_RETURN }
@@ -162,16 +154,17 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, F
 
     /* MEM. */
 
-        _OP_START (REGMOV) {
-
+        _OP_START (RETMOV) { _OPC_P (dest) 
+            fetch_u32 (stack, dest) = *((mordor_u32*) context->return_value_address ());
         _OP_END }
 
-        _OP_START (REGMOVl) {
+        _OP_START (RETMOVl) {
 
         _OP_END }
 
         _OP_START (MOV) { _OPC_PP (dest, src)
             fetch_u32 (stack, dest) = fetch_u32 (stack, src);
+            // printf ("MOV Result: %u from %u at %u\n", fetch_u32 (stack, dest), fetch_u32 (stack, src), caller_stack_top + src);
         _OP_END }
 
         _OP_START (MOVl) {
@@ -179,7 +172,8 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, F
         _OP_END }
 
         _OP_START (kMOV) { _OPC_PW (dest, src)
-            fetch_u32 (stack, dest)  = src;
+            fetch_u32 (stack, dest) = src;
+            // printf ("kMOV Result: %u\n", fetch_u32 (stack, dest));
         _OP_END }
 
         _OP_START (kMOVl) {
@@ -271,6 +265,7 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, F
 
         _OP_START (ADD) { _OPC_PP (dest, src)
             fetch_u32 (stack, dest) += fetch_u32 (stack, src);
+            // printf ("Result: %u\n", fetch_u32 (stack, dest));
         _OP_END }
 
         _OP_START (ADDl) { _OPC_PP (dest, src)
@@ -578,7 +573,25 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, F
 
         _OP_END }
 
-        default: _OP_RETURN
+
+    /* CALL. */
+
+        _OP_START (CALL) { _OPC_W (function_id)
+            mordorInterpreterExecute (context, ((Program*) context->program ())->GetFunctionFromCache (function_id), stack_top);
+            // printf ("Call finished with '%u'!\n", *((mordor_u32*) context->return_value_address ()));
+        _OP_END }
+
+        _OP_START (CALL_NATIVE) {
+
+        _OP_END }
+
+        _OP_START (PUSH) { _OPC_PP (src, offset)
+            fetch_u32 (context->stack ().array (), stack_top + offset) = fetch_u32 (stack, src);
+        _OP_END }
+
+        default: 
+            // if ((op & 0xFFFF) != OP_END) printf ("The following operation terminated the code: '%llX'!\n", op); 
+            _OP_RETURN
     }
 
 

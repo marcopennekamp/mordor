@@ -11,6 +11,8 @@
 #include <internal/bytecode/compile.h>
 #include <internal/bytecode/BytecodeFunction.h>
 #include <internal/runtime/Function.h>
+#include <internal/runtime/Environment.h>
+#include <internal/runtime/Program.h>
 
 using namespace std;
 using namespace boost;
@@ -32,6 +34,7 @@ namespace {
 const mordor_u32 kPointerSize = sizeof (void*);
 
 typedef mordor_u8 VariableType;
+const mordor_u8 TYPE_VOID = 0x00;
 const mordor_u8 TYPE_I = 0x01;
 const mordor_u8 TYPE_U = 0x02;
 const mordor_u8 TYPE_F = 0x04;
@@ -75,6 +78,27 @@ inline void get_s10 (const BytecodeOperation* ptr, mordor_s16& param0) {
 }
 
 
+inline void get_type_info (const VariableType type, mordor_u32& size, bool& is_pointer) {
+    if ((type & TYPE_P) > 0) {
+        size = kPointerSize;
+        is_pointer = true;
+    }else {
+        size = ((type & TYPE_IS_LONG) > 0) ? 8 : 4;
+        is_pointer = false;
+    }
+}
+
+inline mordor_u32 get_type_size (const VariableType type) {
+    mordor_u32 size;
+    bool is_pointer;
+    get_type_info (type, size, is_pointer);
+    return size;
+}
+
+inline bool needs_l_operation (const VariableType type) {
+    return get_type_size (type) == 8;
+}
+
 /**
  * Returns an address on the stack for the given variable or pointer.
  * May or may not reserve stack space.
@@ -86,14 +110,8 @@ inline mordor_u16 get_stack_address_for_element (const mordor_u32 element, const
     if (address == 0xFFFF) {
         /* Compute element size. */
         mordor_u32 element_size;
-        bool is_pointer = false;
-        if ((type & TYPE_P) > 0) {
-            element_size = kPointerSize;
-            is_pointer = true;
-        }else {
-            element_size = ((type & TYPE_IS_LONG) > 0) ? 8 : 4;
-        }
-        printf ("Element size is %u", element_size);
+        bool is_pointer;
+        get_type_info (type, element_size, is_pointer);
 
         /* Check whether local stack is not exceeded. */
         if (stack_top + element_size >= 0xFFFF) {
@@ -116,8 +134,8 @@ inline mordor_u16 get_stack_address_for_element (const mordor_u32 element, const
 inline void load_element (const mordor_u16 element, const VariableType type, Array<mordor_u16>& element_to_stack, StackEntry*& bc_stack_top, mordor_u32& stack_top) {
     /* Resolve address. */
     mordor_u16 address = get_stack_address_for_element (element, type, element_to_stack, stack_top);
-    ++bc_stack_top;
     bc_stack_top->Set (type, false, address);
+    ++bc_stack_top;
 }
 
 
@@ -137,6 +155,10 @@ inline Operation build_operation_P (const mordor_u16 opcode, const mordor_u16 pa
     return build_operation_I (opcode) | (((Operation) param0) << 16);
 }
 
+inline Operation build_operation_PP (const mordor_u16 opcode, const mordor_u16 param0, const mordor_u16 param1) {
+    return build_operation_I (opcode) | (((Operation) param0) << 16) | (((Operation) param1) << 32);
+}
+
 inline Operation build_operation_W (const mordor_u16 opcode, const mordor_u32 param0) {
     return build_operation_I (opcode) | (((Operation) param0) << 16);
 }
@@ -149,15 +171,19 @@ inline Operation build_operation_PW (const mordor_u16 opcode, const mordor_u16 p
 }
 
 
-Function* CompileBytecodeFunction (const BytecodeFunction* func) {
+Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* environment, Program* program) {
     mordor_u64 time = coin::TimeNanoseconds ();
 
+    // TODO(Marco): Idea: Keep track of tmp stack variables and invalidate them
+
+/*
     printf ("code size: %u\n", func->code_size);
     printf ("var table size: %u\n", func->variable_table_size);
     printf ("ptr table size: %u\n", func->pointer_table_size);
     printf ("max stack size: %u\n", func->maximum_stack_size);
     printf ("operation count: %u\n", func->operation_count);
-    
+*/
+
     /* Holds the compiled code. */
     vector<Operation> operation_buffer;
     operation_buffer.reserve (func->operation_count);
@@ -242,19 +268,17 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
             } _END
 
             _START (RETURN) {
-                if (bc_stack_top->constant) {
+                StackEntry* entry = bc_stack_top - 1;
+                if (entry->constant) {
                     /* Set variable etc. */
-                    add_operation (build_operation_PW (OP_kMOV, stack_top, bc_stack_top->id), operation_buffer);
+                    add_operation (build_operation_PW (OP_kMOV, stack_top, entry->id), operation_buffer);
                     add_operation (build_operation_P (OP_RET, stack_top), operation_buffer);
                     stack_top += 4; /* TODO(Marco)/Maybe: Map this to the actual constant! */
                 }else {
-                    if ((bc_stack_top->type & TYPE_IS_LONG) > 0) {
-                        add_operation (build_operation_P (OP_RETl, bc_stack_top->id), operation_buffer);
-                    }else {
-                        add_operation (build_operation_P (OP_RET, bc_stack_top->id), operation_buffer);
-                    }
+                    OperationType opcode = (needs_l_operation (entry->type)) ? OP_RETl : OP_RET;
+                    add_operation (build_operation_P (opcode, entry->id), operation_buffer);
                 }
-                bc_stack_top--;
+                --bc_stack_top;
             } _END
 
             _START (RETURN_VOID) { /* This should only be used when it is not the last operation. Otherwise superfluous. */
@@ -298,9 +322,77 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
 
             _START (CONST) {
                 _U10 (constant)
-                ++bc_stack_top;
                 bc_stack_top->Set (TYPE_U, true, constant);
-            }
+                ++bc_stack_top;
+            } _END
+
+            _START (CALL) {
+                _U10 (function_name_id)
+                /* Get function name and local id. */
+                BytecodeFunction* callee = NULL;
+                string& name = func->function_name_table[function_name_id];
+                mordor_u32 id = program->GetFunctionId (name);
+
+                if (id != Program::INVALID_FUNCTION_ID) {
+                    callee = program->bytecode_function_cache ()[id];
+                }else { 
+                    /* Not found in normal functions, get from function resolve cache. */
+                    id = program->GetFunctionIdFromResolveCache (name);
+
+                    /* Get the BytecodeFunction elsewhere. */
+                    callee = environment->FindBytecodeFunction (name);
+
+                    // TODO(Marco): Cache BytecodeFunction!
+                }
+
+                if (callee == NULL) {
+                    printf ("Error: Called function '%s' could not be found! Missing dependency?", name.c_str ());
+                    return NULL;
+                }
+
+                /* Push variables in lowest to highest stack order. */
+                StackEntry* end = bc_stack_top;
+                StackEntry* it = bc_stack_top - callee->parameter_count;
+                mordor_u32 offset = 0;
+                for (; it != end; ++it) {
+                    mordor_u32 size = get_type_size (it->type);
+                    OperationType opcode = (size == 8) ? OP_PUSHl : OP_PUSH;
+                    if (it->constant) {
+                        // TODO(Marco): Push constant properly.
+                        add_operation (build_operation_PW (OP_kMOV, stack_top, it->id), operation_buffer);
+                        add_operation (build_operation_PP (opcode, stack_top, offset), operation_buffer);
+                        stack_top += size;
+                        offset += size;
+                    }else { /* Push variable. */
+                        add_operation (build_operation_PP (opcode, it->id, offset), operation_buffer);
+                        offset += size;
+                    }
+                }
+                bc_stack_top -= callee->parameter_count; /* Reverse stack. */
+                
+                /* Add CALL instruction. */
+                add_operation (build_operation_W (OP_CALL, id), operation_buffer);
+
+                /* If function returns something, put that on the stack and create a bc stack entry! */
+                if (callee->return_type != TYPE_VOID) {
+                    mordor_u32 return_size = get_type_size (callee->return_type);
+                    OperationType opcode = (return_size == 8) ? OP_RETMOVl : OP_RETMOV;
+                    add_operation (build_operation_PP (opcode, stack_top, 0), operation_buffer);
+                    bc_stack_top->Set (callee->return_type, false, stack_top);
+                    ++bc_stack_top;
+                    stack_top += return_size;
+                }
+            } _END
+
+            _START (ADD) {
+                // TODO(Marco): Implement "real" add.
+                StackEntry* var0 = --bc_stack_top;
+                StackEntry* var1 = bc_stack_top - 1;
+                add_operation (build_operation_PP (OP_MOV, stack_top, var0->id), operation_buffer);
+                add_operation (build_operation_PP (OP_ADD, stack_top, var1->id), operation_buffer);
+                var1->Set (TYPE_I, false, stack_top);
+                stack_top += 4;
+            } _END
         }
 
         ++bc_op;
@@ -330,9 +422,8 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
                 printf ("Error: Possible jump location not set!\n");
                 return NULL;
             }else {
-                printf ("New Jump location found! %i jumps to %u! by %i\n", i, position, (mordor_s32) ((((mordor_s64) position) - i) * sizeof(Operation)));
+                // printf ("New Jump location found! %i jumps to %u! by %i\n", i, position, (mordor_s32) ((((mordor_s64) position) - i) * sizeof(Operation)));
                 operation_buffer[i] = build_operation_W (OP_kJMP, (mordor_s32) ((((mordor_s64) position) - (mordor_s64) i) * sizeof(Operation)));
-                printf ("Op: %llX\n", op);
             }
             break;
         }
@@ -349,14 +440,14 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func) {
     memcpy (function->operations, &operation_buffer[0], size * sizeof (Operation));
 
     time = coin::TimeNanoseconds () - time;
-    printf ("Compilation took %lluns!\n", time);
+   /* printf ("Compilation took %lluns!\n", time);
 
     printf ("\n\n");
     for (int i = 0; i < size; ++i) {
         printf ("%llX\n", function->operations[i]);
     }
-    printf ("\n\n");
-
+    printf ("\n\n"); */
+    
     return function;
 }
 

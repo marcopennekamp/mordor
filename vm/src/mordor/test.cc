@@ -46,7 +46,7 @@ int main () {
     for (int i = 4; i < length - 2; ++i) {
         operations[i] = 0x0000000800000031;
     }
-    operations[length - 2] = 0x0000000000000004;
+    operations[length - 2] = 0x000000000000000C;
     operations[length - 1] = 0x0000000000000000;
     Function* add_test_function = new Function ();
     add_test_function->stack_size = 64;
@@ -57,8 +57,6 @@ int main () {
     Function* blank_test_function = new Function ();
     blank_test_function->stack_size = 8;
     blank_test_function->operations = operations;
-
-    Program* program = new Program ();
 
     Context context (&env, main_prog);
 

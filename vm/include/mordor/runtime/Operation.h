@@ -11,15 +11,13 @@ enum mordorOperationType {
     /* BASIC. */
     OP_END          = 0x00,
     OP_kJMP         = 0x01,
-    OP_CALL         = 0x02,
-    OP_CALL_NATIVE  = 0x03,
-    OP_RET          = 0x04,
-    OP_RETl         = 0x05,
-    OP_RET_VOID     = 0x06,
+    OP_RET_VOID     = 0x0A,
+    OP_RET          = 0x0B,
+    OP_RETl         = 0x0C,
 
     /* MEM. */
-    OP_REGMOV       = 0x10,
-    OP_REGMOVl      = 0x11,
+    OP_RETMOV       = 0x10,
+    OP_RETMOVl      = 0x11,
 
     OP_MOV          = 0x12,
     OP_MOVl         = 0x13,
@@ -138,7 +136,13 @@ enum mordorOperationType {
     OP_kASHRl       = 0x87,
 
     OP_NOT          = 0x88,
-    OP_NOTl         = 0x89
+    OP_NOTl         = 0x89,
+
+    /* CALL.*/
+    OP_CALL         = 0xA0,
+    OP_CALL_NATIVE  = 0xA1,
+    OP_PUSH         = 0xB0,
+    OP_PUSHl        = 0xB1
 };
 typedef mordorOperationType OperationType;
 
