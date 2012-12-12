@@ -179,6 +179,7 @@ Label* getLabel (string& name, FunctionCompileData& compile_data) {
     if (it == labels.end ()) {
         Label* label = new Label ();
         label->index = compile_data.labels_next_index;
+        ++compile_data.labels_next_index;
         label->position = -1;
         it = labels.insert (labels.begin (), pair<string, Label*> (name, label));
     }
@@ -322,16 +323,17 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
         case kOp_jmp: {
             Token* next_token = nextToken (index++, tokens);
             if (next_token != NULL && next_token->tag == TOKEN_LITERAL) {
-                printf ("Jump to '%s'", next_token->string);
+                printf ("Jump to '%s'\n", next_token->string);
                 string name (next_token->string);
                 Label* label = getLabel (name, compile_data);
                 operation.type = BCOP_JMP;
-                operation.param0 = label->index;
+                operation.param0 = (mordor_u16) label->index;
             }else {
                 printf ("Error: 'jmp' must be followed by a literal naming the label to jump to.\n");
                 return -1;
             }
         }
+        break;
 
         case kOp_return: { /* "return" | "return", "void" */
             Token* next_token = nextToken (index, tokens);
@@ -524,13 +526,26 @@ size_t parseFunction (vector<Token*>& tokens, size_t index) {
             /* Iterate all labels to find the appropriate one. */
             mordor_u16 index = operation.param0;
             Label* label = NULL;
-            for (auto it = compile_data.labels.begin (); it != compile_data.labels.end (); ++it) {
-                if (it->second->index == index) label = it->second;
+            string name;
+            auto end = compile_data.labels.end ();
+            auto begin = compile_data.labels.begin ();
+            for (; begin != end; begin++) {
+                if (begin->second->index == index) {
+                    label = begin->second;
+                    name = begin->first;
+                    break;
+                }
             }
 
             if (label != NULL) {
-                printf ("Label '%s' found. Jump by %i.\n", ((mordor_s32) label->position) - i);
-                operation.param0 = (mordor_u16) (((mordor_s32) label->position) - i);
+                mordor_u16 jump_distance = (mordor_u16) (((mordor_s32) label->position) - i);
+                if (jump_distance == 0) {
+                    printf ("Error: Can not jump to the label '%s', because it is at the location of this operation.\n", name.c_str ());
+                    return -1;
+                }
+
+                printf ("Label '%s' found. Jump by %i.\n", name.c_str (), ((mordor_s32) label->position) - i);
+                operation.param0 = jump_distance;
             }else {
                 printf ("Error: A label does not exist. This should not have happened!\n");
                 return -1;
