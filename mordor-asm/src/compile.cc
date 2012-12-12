@@ -475,11 +475,8 @@ size_t parseFunction (vector<Token*>& tokens, size_t index) {
             break;
         }
 
-        printf ("%s\n", literal_token->string);
-
         Token* next_token = nextToken (index, tokens);
         if (next_token != NULL) {
-            printf ("NOT NULL");
             if (next_token->tag == TOKEN_CHARACTER && next_token->character == ':') { /* Label. */
                 string label_name (literal_token->string);
                 Label* label = getLabel (label_name, compile_data);
@@ -488,7 +485,7 @@ size_t parseFunction (vector<Token*>& tokens, size_t index) {
                     return -1;
                 }
                 label->position = compile_data.operations.size ();
-                index++;
+                index += 2;
             }else {
                 VariableType::T parsed_type = getTypeFromString (literal_token->string);
                 if (parsed_type == VariableType::VOID) { /* Operation. */
@@ -497,15 +494,16 @@ size_t parseFunction (vector<Token*>& tokens, size_t index) {
                         printf ("Op: '%s'\n", literal_token->string);
                         return -1; 
                     }
-                }else if (next_token == TOKEN_LITERAL) { /* Variable declaration. */
+                }else if (next_token->tag == TOKEN_LITERAL) { /* Variable declaration. */
                     Variable* variable = new Variable ();
                     variable->type = parsed_type;
                     variable->name = next_token->string;
                     setVariableIndex (*variable, compile_data);
                     compile_data.variables[variable->name] = variable;
-                    index++;
+                    index += 2;
                 }else {
-                    index++;
+                    printf ("Error: Unknown Token combination on line X\n"); // TODO(Marco): Print line!
+                    return -1;
                 }
             }
         }else { /* Can be a single operation or an invalid line. */
@@ -515,12 +513,6 @@ size_t parseFunction (vector<Token*>& tokens, size_t index) {
                 return -1; 
             }
         }
-
-        Token* token = nextToken (index, tokens);
-        if (token != NULL) {
-            printf ("%i %s", index, tokens[index]->string);
-        }
-        printf ("\n");
     }
 
     /* Resolve label positions. */

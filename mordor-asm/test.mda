@@ -12,6 +12,8 @@
     return
 
 !test.jump void
+    i64     a
+    i64     b
 init:
     load    a
     load    b
