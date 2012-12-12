@@ -1,0 +1,21 @@
+# Adds a to b.
+!test.add (i64 a, i64 b) i64
+    load    a
+    load    b
+    add
+    return
+
+!test.sub (i64 a, i64 b) i64
+    load    a
+    load    b
+    sub
+    return
+
+!test.jump void
+init:
+    load    a
+    load    b
+math:
+    add
+end:
+    jmp     init

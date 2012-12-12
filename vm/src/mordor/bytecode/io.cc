@@ -1,6 +1,6 @@
 #include <coin/utils/Stream.h>
 
-#include <internal/bytecode/load.h>
+#include <internal/bytecode/io.h>
 #include <internal/bytecode/BytecodeFunction.h>
 
 using namespace coin;

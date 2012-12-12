@@ -8,7 +8,7 @@
 
 #include <internal/bytecode/BytecodeFunction.h>
 #include <internal/bytecode/compile.h>
-#include <internal/bytecode/load.h>
+#include <internal/bytecode/io.h>
 #include <internal/runtime/Environment.h>
 #include <internal/utils/zip.h>
 

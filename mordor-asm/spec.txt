@@ -1,0 +1,68 @@
+Types:  (Runtime)
+    i32
+    u32
+    f32
+
+    i64
+    u64
+    f64
+
+    ptr
+    
+Types:  (Storage, additional to Runtime)
+    i8
+    u8
+    i16
+    u16
+
+Types:  (Functions, additional to Runtime)
+    void
+
+
+Function Declaration:
+    "!", <name>, (Parameter: <type>, <name>)*, <(return)type>
+
+Variable Declaration (reserves a name for a variable/pointer list space):
+    <type>, <name>
+
+Label Definition:
+    <name>, ":"
+
+
+Operations:
+    jmp <label>             -> (offset >= -512 and offset <= 511) JMP <label:offset>
+                             | JMPw <label:offset>
+    return                  -> RETURN
+    return void             -> RETURN_VOID
+    load   <variable>       -> xLOAD <variable:id>
+    load   <number>         -> CONST <constants:number>
+    store  <variable>       -> STORE <variable:id>
+
+    pop                     -> POP
+    
+    inc                     -> INC
+    inc    <variable>       -> INC_VAR <variable:id>
+    add                     -> ADD
+    sub                     -> SUB
+    mul                     -> MUL
+    div                     -> DIV
+    rem                     -> REM
+    neg                     -> NEG
+    shl                     -> SHL
+    shr                     -> SHR
+    and                     -> AND
+    or                      -> OR
+    xor                     -> XOR
+    not                     -> NOT
+
+    call    <function>      -> CALL <function:name>
+
+
+Value<->Type mappings:
+    0   -> i32
+    0u  -> u32
+    0f  -> f32
+
+    0l  -> i64
+    0ul -> u64
+    0fl -> f64

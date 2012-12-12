@@ -1,9 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2012 for Windows Desktop
+# Visual Studio 2012
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vm", "vm\vm.vcxproj", "{B146EA38-9A4C-4A2A-8C3A-E9165C8A95BE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testdll", "testdll\testdll.vcxproj", "{90787B11-4DE3-4147-B9F5-93D32ADF493D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tests", "tests\tests.vcxproj", "{9DB940EA-1175-40F1-9475-A43D08B7BC2A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mordor-asm", "mordor-asm\mordor-asm.vcxproj", "{61F875F4-A7E2-40A5-B849-22ED6481A932}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B146EA38-9A4C-4A2A-8C3A-E9165C8A95BE} = {B146EA38-9A4C-4A2A-8C3A-E9165C8A95BE}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,8 +45,32 @@ Global
 		{90787B11-4DE3-4147-B9F5-93D32ADF493D}.Release|Win32.Build.0 = Release|Win32
 		{90787B11-4DE3-4147-B9F5-93D32ADF493D}.Release|x64.ActiveCfg = Release|x64
 		{90787B11-4DE3-4147-B9F5-93D32ADF493D}.Release|x64.Build.0 = Release|x64
+		{9DB940EA-1175-40F1-9475-A43D08B7BC2A}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{9DB940EA-1175-40F1-9475-A43D08B7BC2A}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{9DB940EA-1175-40F1-9475-A43D08B7BC2A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9DB940EA-1175-40F1-9475-A43D08B7BC2A}.Debug|Win32.Build.0 = Debug|Win32
+		{9DB940EA-1175-40F1-9475-A43D08B7BC2A}.Debug|x64.ActiveCfg = Debug|Win32
+		{9DB940EA-1175-40F1-9475-A43D08B7BC2A}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{9DB940EA-1175-40F1-9475-A43D08B7BC2A}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{9DB940EA-1175-40F1-9475-A43D08B7BC2A}.Release|Win32.ActiveCfg = Release|Win32
+		{9DB940EA-1175-40F1-9475-A43D08B7BC2A}.Release|Win32.Build.0 = Release|Win32
+		{9DB940EA-1175-40F1-9475-A43D08B7BC2A}.Release|x64.ActiveCfg = Release|x64
+		{61F875F4-A7E2-40A5-B849-22ED6481A932}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{61F875F4-A7E2-40A5-B849-22ED6481A932}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{61F875F4-A7E2-40A5-B849-22ED6481A932}.Debug|Win32.ActiveCfg = Debug|Win32
+		{61F875F4-A7E2-40A5-B849-22ED6481A932}.Debug|Win32.Build.0 = Debug|Win32
+		{61F875F4-A7E2-40A5-B849-22ED6481A932}.Debug|x64.ActiveCfg = Debug|Win32
+		{61F875F4-A7E2-40A5-B849-22ED6481A932}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{61F875F4-A7E2-40A5-B849-22ED6481A932}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{61F875F4-A7E2-40A5-B849-22ED6481A932}.Release|Win32.ActiveCfg = Release|Win32
+		{61F875F4-A7E2-40A5-B849-22ED6481A932}.Release|Win32.Build.0 = Release|Win32
+		{61F875F4-A7E2-40A5-B849-22ED6481A932}.Release|x64.ActiveCfg = Release|x64
+		{61F875F4-A7E2-40A5-B849-22ED6481A932}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

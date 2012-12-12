@@ -63,9 +63,6 @@
     <ClInclude Include="include\internal\bytecode\compile.h">
       <Filter>Header Files\internal\bytecode</Filter>
     </ClInclude>
-    <ClInclude Include="include\internal\bytecode\load.h">
-      <Filter>Header Files\internal\bytecode</Filter>
-    </ClInclude>
     <ClInclude Include="include\mordor\runtime\FunctionInterface.h">
       <Filter>Header Files\mordor\runtime</Filter>
     </ClInclude>
@@ -120,15 +117,18 @@
     <ClInclude Include="include\internal\utils\Pointer.h">
       <Filter>Header Files\internal\utils</Filter>
     </ClInclude>
+    <ClInclude Include="include\internal\bytecode\VariableType.h">
+      <Filter>Header Files\internal\bytecode</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internal\bytecode\io.h">
+      <Filter>Header Files\internal\bytecode</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\mordor\interpreter\core.cc">
       <Filter>Source Files\interpreter</Filter>
     </ClCompile>
     <ClCompile Include="src\mordor\bytecode\compile.cc">
-      <Filter>Source Files\bytecode</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mordor\bytecode\load.cc">
       <Filter>Source Files\bytecode</Filter>
     </ClCompile>
     <ClCompile Include="src\mordor\runtime\loader.cc">
@@ -157,6 +157,9 @@
     </ClCompile>
     <ClCompile Include="src\mordor\runtime\Context.cc">
       <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\bytecode\io.cc">
+      <Filter>Source Files\bytecode</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

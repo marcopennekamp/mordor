@@ -20,6 +20,34 @@ using namespace mordor;
 using namespace std;
 
 
+void testAdd () {
+    Operation* operations;
+
+    Context context (NULL, NULL);
+    
+    int length = 1000 + 6;
+    operations = (Operation*) calloc (sizeof (Operation) * length, 1);
+    operations[0] = 0x0000000000000014; /* low. */
+    operations[1] = 0x0000000000040014; /* high. */
+    operations[2] = 0x0000000100080014; /* low. */
+    operations[3] = 0x00000000000C0014; /* high. */
+    for (int i = 4; i < length - 2; ++i) {
+        operations[i] = 0x0000000800000031;
+    }
+    operations[length - 2] = 0x000000000000000C;
+    operations[length - 1] = 0x0000000000000000;
+    Function* add_test_function = new Function ();
+    add_test_function->stack_size = 64;
+    add_test_function->operations = operations;
+
+    for (int i = 0; i < 1000; ++i) {
+        mordorInterpreterExecute (&context, add_test_function, 0);
+    }
+
+    delete add_test_function;
+}
+
+
 int main () {
     coin::TimeInit ();
 

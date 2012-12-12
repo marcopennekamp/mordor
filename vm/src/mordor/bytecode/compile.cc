@@ -13,6 +13,7 @@
 #include <internal/runtime/Function.h>
 #include <internal/runtime/Environment.h>
 #include <internal/runtime/Program.h>
+#include <internal/bytecode/VariableType.h>
 
 using namespace std;
 using namespace boost;
@@ -33,20 +34,12 @@ namespace {
 
 const mordor_u32 kPointerSize = sizeof (void*);
 
-typedef mordor_u8 VariableType;
-const mordor_u8 TYPE_VOID = 0x00;
-const mordor_u8 TYPE_I = 0x01;
-const mordor_u8 TYPE_U = 0x02;
-const mordor_u8 TYPE_F = 0x04;
-const mordor_u8 TYPE_P = 0x08;
-const mordor_u8 TYPE_IS_LONG = 0x10;
-
 struct StackEntry {
-    VariableType type;
+    VariableType::T type;
     bool constant;
     mordor_u16 id; /* Variable address or if constant == true, constant table id. */
 
-    void Set (const VariableType _type, const bool _constant, const mordor_u16 _id) {
+    void Set (const VariableType::T _type, const bool _constant, const mordor_u16 _id) {
         type = _type;
         constant = _constant;
         id = _id;
@@ -72,30 +65,30 @@ inline void get_s10 (const BytecodeOperation* ptr, mordor_s16& param0) {
         mordor_u16 high = *ptr & 0x01;
         param0 = -(high << 8 | low);
     }else { /* positive number. */
-        mordor_u16 high = *ptr & 0x03;
+        mordor_u16 high = *ptr & 0x01;
         param0 = high << 8 | low;
     }
 }
 
 
-inline void get_type_info (const VariableType type, mordor_u32& size, bool& is_pointer) {
-    if ((type & TYPE_P) > 0) {
+inline void get_type_info (const VariableType::T type, mordor_u32& size, bool& is_pointer) {
+    if ((type & VariableType::P) > 0) {
         size = kPointerSize;
         is_pointer = true;
     }else {
-        size = ((type & TYPE_IS_LONG) > 0) ? 8 : 4;
+        size = ((type & VariableType::IS_LONG) > 0) ? 8 : 4;
         is_pointer = false;
     }
 }
 
-inline mordor_u32 get_type_size (const VariableType type) {
+inline mordor_u32 get_type_size (const VariableType::T type) {
     mordor_u32 size;
     bool is_pointer;
     get_type_info (type, size, is_pointer);
     return size;
 }
 
-inline bool needs_l_operation (const VariableType type) {
+inline bool needs_l_operation (const VariableType::T type) {
     return get_type_size (type) == 8;
 }
 
@@ -103,7 +96,7 @@ inline bool needs_l_operation (const VariableType type) {
  * Returns an address on the stack for the given variable or pointer.
  * May or may not reserve stack space.
  */
-inline mordor_u16 get_stack_address_for_element (const mordor_u32 element, const VariableType type, Array<mordor_u16>& element_to_stack, mordor_u32& stack_top) {
+inline mordor_u16 get_stack_address_for_element (const mordor_u32 element, const VariableType::T type, Array<mordor_u16>& element_to_stack, mordor_u32& stack_top) {
     mordor_u16 address = element_to_stack[element];
 
     /* Reserve address if needed. */
@@ -131,7 +124,7 @@ inline mordor_u16 get_stack_address_for_element (const mordor_u32 element, const
     return address & 0xFFFF;
 }
 
-inline void load_element (const mordor_u16 element, const VariableType type, Array<mordor_u16>& element_to_stack, StackEntry*& bc_stack_top, mordor_u32& stack_top) {
+inline void load_element (const mordor_u16 element, const VariableType::T type, Array<mordor_u16>& element_to_stack, StackEntry*& bc_stack_top, mordor_u32& stack_top) {
     /* Resolve address. */
     mordor_u16 address = get_stack_address_for_element (element, type, element_to_stack, stack_top);
     bc_stack_top->Set (type, false, address);
@@ -287,42 +280,42 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
 
             _START (iLOAD) {
                 _U10 (variable)
-                load_element (variable, TYPE_I, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, VariableType::I, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (lLOAD) {
                 _U10 (variable)
-                load_element (variable, TYPE_I | TYPE_IS_LONG, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, VariableType::I | VariableType::IS_LONG, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (uiLOAD) {
                 _U10 (variable)
-                load_element (variable, TYPE_U, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, VariableType::U, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (ulLOAD) {
                 _U10 (variable)
-                load_element (variable, TYPE_U | TYPE_IS_LONG, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, VariableType::U | VariableType::IS_LONG, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (fLOAD) {
                 _U10 (variable)
-                load_element (variable, TYPE_F, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, VariableType::F, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (flLOAD) {
                 _U10 (variable)
-                load_element (variable, TYPE_F | TYPE_IS_LONG, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, VariableType::F | VariableType::IS_LONG, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (pLOAD) {
                 _U10 (pointer)
-                load_element (pointer, TYPE_P, pointer_to_stack, bc_stack_top, stack_top);
+                load_element (pointer, VariableType::P, pointer_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (CONST) {
                 _U10 (constant)
-                bc_stack_top->Set (TYPE_U, true, constant);
+                bc_stack_top->Set (VariableType::U, true, constant);
                 ++bc_stack_top;
             } _END
 
@@ -374,7 +367,7 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
                 add_operation (build_operation_W (OP_CALL, id), operation_buffer);
 
                 /* If function returns something, put that on the stack and create a bc stack entry! */
-                if (callee->return_type != TYPE_VOID) {
+                if (callee->return_type != VariableType::VOID) {
                     mordor_u32 return_size = get_type_size (callee->return_type);
                     OperationType opcode = (return_size == 8) ? OP_RETMOVl : OP_RETMOV;
                     add_operation (build_operation_PP (opcode, stack_top, 0), operation_buffer);
@@ -390,7 +383,7 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
                 StackEntry* var1 = bc_stack_top - 1;
                 add_operation (build_operation_PP (OP_MOV, stack_top, var0->id), operation_buffer);
                 add_operation (build_operation_PP (OP_ADD, stack_top, var1->id), operation_buffer);
-                var1->Set (TYPE_I, false, stack_top);
+                var1->Set (VariableType::I, false, stack_top);
                 stack_top += 4;
             } _END
         }
