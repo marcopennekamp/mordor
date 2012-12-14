@@ -3,10 +3,10 @@
 #################
 
 # Virtual Machine files
-.func 
+*.func 
 
 # Programs
-.mdr  
+*.mdr  
 
 
 #################
