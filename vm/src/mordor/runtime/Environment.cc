@@ -65,7 +65,7 @@ Program* Environment::LoadProgram (const char* path) {
     /* Open archive. */
     unzFile archive = unzOpen (path);
     if (archive == NULL) {
-        printf ("Program '%s' could not be loaded: Program archive not found!", path);
+        printf ("Program '%s' could not be loaded: Program archive not found!\n", path);
         return NULL;
     }
 
@@ -100,7 +100,7 @@ Program* Environment::LoadProgram (const char* path) {
         size_t index = file_name.find_last_of ('.');
         if (index == string::npos) continue;
         if (file_name.substr (index, file_name.size ()) == ".func") {
-            /* Correct name. */
+            /* Correct name ('/' to '.'). */
             string name = file_name.substr (0, index);
             replace (name.begin (), name.end (), '/', '.');
 
@@ -108,7 +108,6 @@ Program* Environment::LoadProgram (const char* path) {
             coin::BufferStream stream (file_data, file_size, coin::StreamMode::read);
             BytecodeFunction* function = LoadBytecodeFunction (&stream);
             program->AddBytecodeFunction (name, function);
-            // printf ("Added Function '%s'.\n", name.c_str ());
         }
     }
 

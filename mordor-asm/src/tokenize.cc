@@ -169,7 +169,18 @@ void TokenizeFile (const char* file_path, vector<Token*>& tokens) {
         }
 
         if (c == '\n' || c == '!' || c == ':') {
-            addToken (tokens, TOKEN_CHARACTER)->character = c;
+            bool add_token = true;
+            if (c == '\n') { /* Skip adding a character token if last token was '\n'. */
+                Token* last_token = tokens[tokens.size () - 1];
+                if (last_token->tag == TOKEN_CHARACTER && last_token->character == '\n') {
+                    add_token = false;
+                }
+            }
+
+            if (add_token) {
+                addToken (tokens, TOKEN_CHARACTER)->character = c;
+            }
+
             ++i;
             continue;
         }

@@ -29,7 +29,7 @@ void Program::Initialize (Environment* environment) {
     /* Compile Bytecode functions. */
     {
         size_t size = cache_->bytecode_function_cache.size ();
-        cache_->next_function_id = (mordor_u32) size;
+        cache_->next_function_id = (mordor_u32) size; /* Set the next available ID to the value after the last already known function. */
         function_cache_.resize (size);
         for (size_t i = 0; i < size; ++i) {
             BytecodeFunction* bc_func = cache_->bytecode_function_cache[i];

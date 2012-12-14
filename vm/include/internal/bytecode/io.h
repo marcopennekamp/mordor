@@ -9,7 +9,6 @@ namespace mordor {
 class BytecodeFunction;
 
 BytecodeFunction* LoadBytecodeFunction (coin::Stream* stream);
-void SaveBytecodeFunction (coin::Stream* stream, BytecodeFunction* function);
 
 }
 

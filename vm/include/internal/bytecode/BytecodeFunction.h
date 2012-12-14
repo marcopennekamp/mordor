@@ -44,9 +44,12 @@ public:
 
 
 public:
-    ~BytecodeFunction () {
-        delete[] code;
-    }
+    ~BytecodeFunction ();
+
+    /*
+     * Allocates the memory for the code. Also sets 'code_size'.
+     */
+    void AllocateCode (mordor_u32 _code_size);
 };
 
 }

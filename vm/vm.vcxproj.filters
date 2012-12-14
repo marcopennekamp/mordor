@@ -66,9 +66,6 @@
     <ClInclude Include="include\mordor\runtime\FunctionInterface.h">
       <Filter>Header Files\mordor\runtime</Filter>
     </ClInclude>
-    <ClInclude Include="include\mordor\runtime\loader.h">
-      <Filter>Header Files\mordor\runtime</Filter>
-    </ClInclude>
     <ClInclude Include="include\mordor\runtime\Operation.h">
       <Filter>Header Files\mordor\runtime</Filter>
     </ClInclude>
@@ -131,9 +128,6 @@
     <ClCompile Include="src\mordor\bytecode\compile.cc">
       <Filter>Source Files\bytecode</Filter>
     </ClCompile>
-    <ClCompile Include="src\mordor\runtime\loader.cc">
-      <Filter>Source Files\runtime</Filter>
-    </ClCompile>
     <ClCompile Include="src\mordor\runtime\Program.cc">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
@@ -163,6 +157,9 @@
     </ClCompile>
     <ClCompile Include="src\mordor\main.cc">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\bytecode\BytecodeFunction.cc">
+      <Filter>Source Files\bytecode</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

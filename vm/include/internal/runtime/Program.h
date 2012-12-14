@@ -15,19 +15,40 @@ class BytecodeFunction;
 class Environment;
 
 class Program {
-  private:
+private:
     struct InitializerCache {
+        /* 
+         * Maps Function names to indices in the function_cache. 
+         * Used to reference Functions before they are actually compiled.
+         */
         std::map<std::string, mordor_u32> function_resolve_cache;
+
+        /* 
+         * Saves all BytecodeFunctions. 
+         */
         std::vector<BytecodeFunction*> bytecode_function_cache;
+
         mordor_u32 next_function_id;
     };
 
-    std::map<std::string, mordor_u32> functions_;
-    std::vector<Function*> function_cache_;
-
+    /*
+     * Used to compile and link (linking with other Programs) the Program.
+     */
     InitializerCache* cache_;
 
-  public:
+    /*
+     * Holds all Functions owned by this Program.
+     */
+    std::map<std::string, mordor_u32> functions_;
+
+    /*
+     * Holds all Functions that are ever referenced in the Program's code. 
+     * This includes functions from other Programs.
+     */
+    std::vector<Function*> function_cache_;
+
+
+public:
     static const mordor_u32 INVALID_FUNCTION_ID = 0xFFFFFFFF;
 
     Program ();

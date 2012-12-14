@@ -33,8 +33,6 @@ class Environment {
 
   private:
     bool _EvaluateProgramConfig (unzFile archive);
-
-
 };
 
 }

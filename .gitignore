@@ -1,4 +1,15 @@
 #################
+## Mordor & myx
+#################
+
+# Virtual Machine files
+.func 
+
+# Programs
+.mdr  
+
+
+#################
 ## Eclipse
 #################
 

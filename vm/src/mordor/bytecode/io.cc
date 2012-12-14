@@ -33,11 +33,8 @@ BytecodeFunction* LoadBytecodeFunction (coin::Stream* stream) {
         }
     }
 
-    /* Calculate code size. */
-    function->code_size = stream->Size () - stream->Position ();
-
-    /* Read code. */
-    function->code = new mordor_u8 [function->code_size];
+    /* Set code size and read code. */
+    function->AllocateCode (stream->Size () - stream->Position ());
     stream->Read (function->code, function->code_size);
 
     return function;
