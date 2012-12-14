@@ -83,6 +83,88 @@ typedef enum mordorBytecodeOperationType BytecodeOperationType;
 const size_t BCOP_LENGTH = 0x40;
 
 
+/* This increment list specifies the byte size of every BCOP. 
+ * Elements with size 0 are unspecified / free slots.  
+ */
+static const int BCOP_SIZE [] = {
+    1, /* BCOP_END */
+    2, /* BCOP_JMP */
+    3, /* BCOP_JMPw */
+    1, /* BCOP_RETURN */
+    1, /* BCOP_RETURN_VOID */
+
+    2, /* BCOP_iLOAD */
+    2, /* BCOP_lLOAD */
+    2, /* BCOP_uiLOAD */
+    2, /* BCOP_ulLOAD */
+    2, /* BCOP_fLOAD */
+    2, /* BCOP_flLOAD */
+    2, /* BCOP_pLOAD */
+    2, /* BCOP_STORE */
+    2, /* BCOP_CONST */
+
+    0, 
+    0, 
+    
+    2, /* BCOP_ALOAD */
+    2, /* BCOP_ASTORE */
+    2, /* BCOP_MEMLOAD */
+    2, /* BCOP_MEMSTORE */
+    2, /* BCOP_LOAD_GLOBAL */
+    2, /* BCOP_STORE_GLOBAL */
+    2, /* BCOP_LOAD_FIELD */
+    2, /* BCOP_STORE_FIELD */
+    1, /* BCOP_POP */
+
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+
+    2, /* BCOP_INC_VAR */
+    1, /* BCOP_INC */
+    1, /* BCOP_ADD */
+    1, /* BCOP_SUB */
+    1, /* BCOP_MUL */
+    1, /* BCOP_DIV */
+    1, /* BCOP_REM */
+    1, /* BCOP_NEG */
+    1, /* BCOP_SHL */
+    1, /* BCOP_SHR */
+    1, /* BCOP_AND */
+    1, /* BCOP_OR */
+    1, /* BCOP_XOR */
+    1, /* BCOP_NOT */
+
+    2, /* BCOP_CEQ_0 */
+    2, /* BCOP_CNE_0 */
+    2, /* BCOP_CEQ */
+    2, /* BCOP_CNE */
+    2, /* BCOP_CGT */
+    2, /* BCOP_CGE */
+    
+    2, /* BCOP_CAST */
+
+    2, /* BCOP_ADR */
+    2, /* BCOP_ADR_GLOBAL */
+    2, /* BCOP_ADR_FIELD */
+
+    0,
+
+    2, /* BCOP_NEW */
+    2, /* BCOP_ANEW */
+    3, /* BCOP_INEW */
+
+    2, /* BCOP_CALL */
+    2, /* BCOP_ICALL */
+    1, /* BCOP_VCALL */
+
+    1  /* BCOP_BREAKPOINT */
+};
+
+
 #include <mordor/mordor_end.h>
 
 #endif  /* MORDOR_BYTECODE_BYTECODEOPERATION_H_ */

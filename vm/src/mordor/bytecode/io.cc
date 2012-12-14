@@ -11,23 +11,24 @@ namespace mordor {
 BytecodeFunction* LoadBytecodeFunction (coin::Stream* stream) {
     BytecodeFunction* function = new BytecodeFunction ();
 
-    /* Read options. */
-    stream->ReadU32 (function->variable_table_size);
-    stream->ReadU32 (function->pointer_table_size);
-    stream->ReadU32 (function->maximum_stack_size);
-    stream->ReadU32 (function->operation_count);
-
-    /* TODO(Marco): Read parameter types. */
+    /* General stuff. */
+    mordor_u8 exist_flags;
+    stream->ReadU8 (exist_flags);
     stream->ReadU8 (function->parameter_count);
     stream->ReadU8 (function->return_type);
 
+    /* Read options. */
+    stream->ReadU16 (function->variable_table_size);
+    stream->ReadU16 (function->pointer_table_size);
+    stream->ReadU16 (function->maximum_stack_size);
+    stream->ReadU16 (function->operation_count);
+
     /* Read function name table. */
-    {
+    if (exist_flags & BytecodeFunction::EXISTS_FUNCTION_NAME_TABLE) {
         mordor_u16 size;
         stream->ReadU16 (size);
-        function->function_name_table_size = size;
         function->function_name_table.Create (size);
-        for (size_t i = 0; i < size; ++i) {
+        for (mordor_u16 i = 0; i < size; ++i) {
             stream->ReadString (function->function_name_table[i]);
         }
     }

@@ -24,8 +24,8 @@ using namespace boost;
 #define _END            break;
 
 /* extracts 10 bit parameter, increments op by one. */
-#define _U10(P0)        mordor_u16 P0; get_u10 (bc_op, P0); ++bc_op;
-#define _S10(P0)        mordor_s16 P0; get_s10 (bc_op, P0); ++bc_op;
+#define _U10(P0)        mordor_u16 P0; get_u10 (bc_op, P0);
+#define _S10(P0)        mordor_s16 P0; get_s10 (bc_op, P0);
 
 
 namespace mordor {
@@ -169,14 +169,6 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
 
     // TODO(Marco): Idea: Keep track of tmp stack variables and invalidate them
 
-/*
-    printf ("code size: %u\n", func->code_size);
-    printf ("var table size: %u\n", func->variable_table_size);
-    printf ("ptr table size: %u\n", func->pointer_table_size);
-    printf ("max stack size: %u\n", func->maximum_stack_size);
-    printf ("operation count: %u\n", func->operation_count);
-*/
-
     /* Holds the compiled code. */
     vector<Operation> operation_buffer;
     operation_buffer.reserve (func->operation_count);
@@ -209,10 +201,10 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
     Array<mordor_u32> jump_id_map (func->operation_count);
     jump_id_map.SetMemory (0xFF); /* Results in 0xFFFFFFFF. */
 
-
     /* Build jump id map. */
     while (true) {
         mordor_u8 bc_opcode = get_opcode (bc_op);
+
         switch (bc_opcode) {
             _START (END) {
                 goto LJumpIdMapLoopEnd;
@@ -221,14 +213,14 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
             _START (JMP) {
                 _S10 (offset)
                 mordor_s64 to = ((mordor_s64) bc_op_count) + offset;
-                //printf ("Found JMP on %u by %i to %lli.\n",  bc_op_count, offset, to);
+                // printf ("Found JMP on %u by %i to %lli.\n",  bc_op_count, offset, to);
                 jump_id_map[to] = 0xFFFFFFFE;
             } _END
 
             default: _END
         }
 
-        ++bc_op;
+        bc_op += BCOP_SIZE[bc_opcode];
         ++bc_op_count;
     }
 
@@ -367,7 +359,7 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
                 add_operation (build_operation_W (OP_CALL, id), operation_buffer);
 
                 /* If function returns something, put that on the stack and create a bc stack entry! */
-                if (callee->return_type != VariableType::VOID) {
+                if (callee->return_type != VariableType::V) {
                     mordor_u32 return_size = get_type_size (callee->return_type);
                     OperationType opcode = (return_size == 8) ? OP_RETMOVl : OP_RETMOV;
                     add_operation (build_operation_PP (opcode, stack_top, 0), operation_buffer);
@@ -388,7 +380,7 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
             } _END
         }
 
-        ++bc_op;
+        bc_op += BCOP_SIZE[bc_opcode];
         ++bc_op_count;
     }
 
@@ -433,13 +425,7 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
     memcpy (function->operations, &operation_buffer[0], size * sizeof (Operation));
 
     time = coin::TimeNanoseconds () - time;
-   /* printf ("Compilation took %lluns!\n", time);
-
-    printf ("\n\n");
-    for (int i = 0; i < size; ++i) {
-        printf ("%llX\n", function->operations[i]);
-    }
-    printf ("\n\n"); */
+    printf ("Compilation took %lluns!\n", time);
     
     return function;
 }

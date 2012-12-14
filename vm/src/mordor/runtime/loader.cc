@@ -8,7 +8,7 @@ using namespace coin;
 using namespace mordor;
 
 
-FunctionInterface*  LoadFunction (StreamInterface* stream_interface) {
+FunctionInterface* LoadFunction (StreamInterface* stream_interface) {
     Stream* stream = (Stream*) stream_interface;
 
     /* Create Function and read stack size. */

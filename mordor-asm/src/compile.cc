@@ -4,12 +4,14 @@
 #include <string>
 
 #include <coin/utils/Stream.h>
+#include <coin/utils/directory.h>
 
 #include <mordor/bytecode/BytecodeOperation.h>
 
 #include <internal/bytecode/VariableType.h>
 
 #include "main.h"
+
 
 using namespace std;
 using namespace coin;
@@ -40,7 +42,7 @@ const VariableType::T kTypes [] = {
     VariableType::U | VariableType::IS_LONG,
     VariableType::F | VariableType::IS_LONG,
     VariableType::P,
-    VariableType::VOID
+    VariableType::V
 };
 
 
@@ -107,34 +109,43 @@ struct Operation {
 struct Variable {
     VariableType::T type;
     string name;
-    size_t index;
+    mordor_u16 index;
 };
 
 struct Label {
-    size_t index;
-    size_t position;
+    mordor_u16 index;
+    mordor_u32 position;
 };
 
 
 /* Holds all the data that is saved when compiling a function. */
 struct FunctionCompileData {
-    char* name;
+    string name;
     VariableType::T return_type;
-    size_t variable_table_next_index;
-    size_t pointer_table_next_index;
-    size_t max_stack_size;
-    size_t labels_next_index; /* Labels get an intermediate index so they can be used before being declared at a determined position. */
+    mordor_u16 variable_table_next_index;
+    mordor_u16 pointer_table_next_index;
+    mordor_u16 current_stack_size;
+    mordor_u16 max_stack_size;
+    mordor_u16 labels_next_index; /* Labels get an intermediate index so they can be used before being declared at a determined position. */
     map<string, Label*> labels;
     map<string, Variable*> variables;
     vector<Variable*> parameter_list;
     vector<Operation> operations;
 
     FunctionCompileData () {
-        return_type = VariableType::VOID;
+        return_type = VariableType::V;
         variable_table_next_index = 0;
         pointer_table_next_index = 0;
+        current_stack_size = 0;
         max_stack_size = 0;
         labels_next_index = 0;
+    }
+
+    void stack_size (mordor_s16 diff) {
+        current_stack_size += diff;
+        if (current_stack_size > max_stack_size) {
+            max_stack_size = current_stack_size;
+        }
     }
 
     ~FunctionCompileData () {
@@ -144,7 +155,7 @@ struct FunctionCompileData {
 
 
 VariableType::T getTypeFromString (const char* str) {
-    VariableType::T type = VariableType::VOID;
+    VariableType::T type = VariableType::V;
     for (int i = 0; i < kTypeNamesLength; ++i) {
         if (strcmp (str, kTypeNames[i]) == 0) {
             type = kTypes[i];
@@ -166,7 +177,7 @@ OperationType getOperationTypeFromString (const char* str) {
 void setVariableIndex (Variable& variable, FunctionCompileData& compile_data) {
     if ((variable.type & VariableType::P) > 0) { /* Pointer. */
         variable.index = compile_data.pointer_table_next_index++;
-    }else { /* "Normal" parameter. */
+    }else { /* "Normal" variable. */
         variable.index = compile_data.variable_table_next_index;
         compile_data.variable_table_next_index += ((variable.type & VariableType::IS_LONG) > 0) ? 2 : 1;
     }
@@ -202,20 +213,20 @@ void writeOperationPP (Operation& operation, Stream& out) {
 
 /* Note: Since the size of the number is 10bit, it is not saved in two's complement but a negated version of the positive number if negative. */
 void writeOperationSignedP (Operation& operation, Stream& out) {
-    mordor_s32 param0 = operation.param0;
+    mordor_s16 param0s = operation.param0;
 
     bool is_negative = false;
-    if (param0 < 0) {
-        param0 = -param0;
+    if (param0s < 0) {
+        operation.param0 = -param0s;
         is_negative = true;
     }
 
-    out.WriteU8 (operation.type << 2 & ((is_negative) ? 0x03 : 0x00) /* sign. */ & ((param0 >> 8) & 0x01));
-    out.WriteU8 (param0 & 0xFF);
+    out.WriteU8 (operation.type << 2 | ((is_negative) ? 0x02 : 0x00) /* sign. */ | ((operation.param0 >> 8) & 0x01));
+    out.WriteU8 (operation.param0 & 0xFF);
 }
 
 void writeOperationP (Operation& operation, Stream& out) {
-    out.WriteU8 (operation.type << 2 & ((operation.param0 >> 8) & 0x03));
+    out.WriteU8 (operation.type << 2 | (((operation.param0 >> 8) & 0x03)));
     out.WriteU8 (operation.param0 & 0xFF);
 }
 
@@ -315,6 +326,17 @@ void writeOperation (Operation& operation, Stream& out) {
     callbacks[operation.type] (operation, out);
 }
 
+
+/** Replaces dots '.' with slashes '/'. */
+void toFolderString (string& str) {
+    size_t size = str.length ();
+    for (size_t i = 0; i < size; ++i) {
+        if (str[i] == '.') {
+            str[i] = '/';
+        }
+    }
+}
+
 size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, FunctionCompileData& compile_data) {
     size_t tokens_size = tokens.size ();
     Operation operation;
@@ -323,11 +345,10 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
         case kOp_jmp: {
             Token* next_token = nextToken (index++, tokens);
             if (next_token != NULL && next_token->tag == TOKEN_LITERAL) {
-                printf ("Jump to '%s'\n", next_token->string);
                 string name (next_token->string);
                 Label* label = getLabel (name, compile_data);
                 operation.type = BCOP_JMP;
-                operation.param0 = (mordor_u16) label->index;
+                operation.param0 = label->index;
             }else {
                 printf ("Error: 'jmp' must be followed by a literal naming the label to jump to.\n");
                 return -1;
@@ -362,7 +383,7 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
                 VariableType::T type = variable->type; 
                 
                 /* Deduce operation type from variable type. */
-                if (type != VariableType::VOID) {
+                if (type != VariableType::V) {
                     if ((type & VariableType::IS_LONG) == 0) { /* Not long. */
                         switch (type & ~VariableType::IS_LONG) {
                             case VariableType::I:
@@ -392,27 +413,26 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
                         }
                     }
 
-                    operation.param0 = (mordor_u16) variable->index;
+                    operation.param0 = variable->index;
                 }
-
             }else { /* Constant. */
                 printf ("Error: Constants are not supported yet.\n");
                 return -1;
             }
 
-            compile_data.max_stack_size += 1;
+            compile_data.stack_size (1);
         }
         break;
 
         case kOp_add: {
             operation.type = BCOP_ADD;
-            compile_data.max_stack_size -= 2;
+            compile_data.stack_size (-2);
         }
         break;
 
         case kOp_sub: {
             operation.type = BCOP_SUB;
-            compile_data.max_stack_size -= 2;
+            compile_data.stack_size (-2);
         }
         break;
 
@@ -426,7 +446,7 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
     return index + 1; /* Skip newline. */
 }
 
-size_t parseFunction (vector<Token*>& tokens, size_t index) {
+size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) {
     size_t size = tokens.size ();
 
     FunctionCompileData compile_data;
@@ -486,11 +506,11 @@ size_t parseFunction (vector<Token*>& tokens, size_t index) {
                     printf ("Error: Label '%s' already exists!\n", literal_token->string);
                     return -1;
                 }
-                label->position = compile_data.operations.size ();
+                label->position = (mordor_u32) compile_data.operations.size ();
                 index += 2;
             }else {
                 VariableType::T parsed_type = getTypeFromString (literal_token->string);
-                if (parsed_type == VariableType::VOID) { /* Operation. */
+                if (parsed_type == VariableType::V) { /* Operation. */
                     index = parseOperation (getOperationTypeFromString (literal_token->string), index, tokens, compile_data);
                     if (index == -1) { /* Error occured. */
                         printf ("Op: '%s'\n", literal_token->string);
@@ -543,8 +563,6 @@ size_t parseFunction (vector<Token*>& tokens, size_t index) {
                     printf ("Error: Can not jump to the label '%s', because it is at the location of this operation.\n", name.c_str ());
                     return -1;
                 }
-
-                printf ("Label '%s' found. Jump by %i.\n", name.c_str (), ((mordor_s32) label->position) - i);
                 operation.param0 = jump_distance;
             }else {
                 printf ("Error: A label does not exist. This should not have happened!\n");
@@ -555,10 +573,36 @@ size_t parseFunction (vector<Token*>& tokens, size_t index) {
     }
 
     /* Turn RETURN_VOID at the end into END or add an END operation. */
-
+    Operation& last_operation = compile_data.operations[compile_data.operations.size () - 1];
+    if (last_operation.type == BCOP_RETURN_VOID) {
+        last_operation.type = BCOP_END;
+    }else {
+        Operation op;
+        op.type = BCOP_END;
+        compile_data.operations.push_back (op);
+    }
 
     /* Write function. */
+    string file_path = compile_data.name;
+    toFolderString (file_path);
+    file_path = root + "/" + file_path + ".func";
+    Directory::MakeDirectories (file_path, false);
 
+    FileStream stream (file_path.c_str (), StreamMode::write);
+
+    /* Write function info. */
+    stream.WriteU8 (0x00 /* Exist flags. */);
+    stream.WriteU8  ((mordor_u8) compile_data.parameter_list.size ());
+    stream.WriteU8  (compile_data.return_type);
+    stream.WriteU16 (compile_data.variable_table_next_index);
+    stream.WriteU16 (compile_data.pointer_table_next_index);
+    stream.WriteU16 (compile_data.max_stack_size);
+    stream.WriteU16 ((mordor_u16) compile_data.operations.size ());
+
+    /* Write Operations. */
+    for (size_t i = 0, size = compile_data.operations.size (); i < size; ++i) {
+        writeOperation (compile_data.operations[i], stream);
+    }
 
     return index;
 }
@@ -576,7 +620,7 @@ void Compile (const char* target_path, vector<Token*>& tokens) {
         if (token->tag == TOKEN_CHARACTER) {
             switch (token->character) {
               case '!':
-                i = parseFunction (tokens, i);
+                i = parseFunction (target_path, tokens, i);
                 continue;
             }
         }

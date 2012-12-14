@@ -166,13 +166,16 @@
     <ClCompile Include="src\mordor\bytecode\compile.cc" />
     <ClCompile Include="src\mordor\bytecode\io.cc" />
     <ClCompile Include="src\mordor\interpreter\core.cc" />
+    <ClCompile Include="src\mordor\main.cc" />
     <ClCompile Include="src\mordor\runtime\Context.cc" />
     <ClCompile Include="src\mordor\runtime\Environment.cc" />
     <ClCompile Include="src\mordor\runtime\Library.cc" />
     <ClCompile Include="src\mordor\runtime\LibraryManager.cc" />
     <ClCompile Include="src\mordor\runtime\loader.cc" />
     <ClCompile Include="src\mordor\runtime\Program.cc" />
-    <ClCompile Include="src\mordor\test.cc" />
+    <ClCompile Include="src\mordor\test.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\mordor\utils\zip.cc" />
     <ClCompile Include="src\windows\runtime\LibraryManager_windows.cc" />
   </ItemGroup>

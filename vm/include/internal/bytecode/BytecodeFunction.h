@@ -6,22 +6,30 @@
 #include <mordor/def.h>
 
 #include <internal/utils/Array.h>
+#include <internal/bytecode/VariableType.h>
 
 
 namespace mordor {
 
 class BytecodeFunction {
-  public:
-    mordor_u32 variable_table_size;
-    mordor_u32 pointer_table_size;
-    mordor_u32 maximum_stack_size;
-    mordor_u32 operation_count;
+public:
+    const static mordor_u8 EXISTS_CONSTANT_TABLE                = 0x01;
+    const static mordor_u8 EXISTS_GLOBAL_NAME_TABLE             = 0x02;
+    const static mordor_u8 EXISTS_STRUCT_NAME_TABLE             = 0x04;
+    const static mordor_u8 EXISTS_FIELD_NAME_TABLE              = 0x08;
+    const static mordor_u8 EXISTS_FUNCTION_NAME_TABLE           = 0x10;
+    const static mordor_u8 EXISTS_INTERFACE_STRUCT_INDEX_TABLE  = 0x20;
+    const static mordor_u8 EXISTS_STRUCT_FIELD_INDEX_TABLE      = 0x40;
 
+    VariableType::T return_type;
     mordor_u8 parameter_count;
-    mordor_u8 return_type; // TODO(Marco): Use proper Return Type type.
 
-    mordor_u16 function_name_table_size;
-    Array<std::string> function_name_table;
+    mordor_u16 variable_table_size;
+    mordor_u16 pointer_table_size;
+    mordor_u16 maximum_stack_size;
+    mordor_u16 operation_count;
+
+    Array<std::string, mordor_u16> function_name_table;
 
     // Constant table
     // Global var name table
@@ -33,6 +41,12 @@ class BytecodeFunction {
 
     mordor_u32 code_size;
     mordor_u8* code;
+
+
+public:
+    ~BytecodeFunction () {
+        delete[] code;
+    }
 };
 
 }

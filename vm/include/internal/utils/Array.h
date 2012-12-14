@@ -1,21 +1,26 @@
 #ifndef MORDOR_INTERNAL_UTILS_ARRAY_H_
 #define	MORDOR_INTERNAL_UTILS_ARRAY_H_
 
+#include <stdlib.h>
+
 #include <mordor/def.h>
 
 
 namespace mordor {
 
-template<typename T>
+template<typename T, typename SIZE_T = size_t>
 class Array {
   private:
     T* array_;
-    size_t size_;
+    SIZE_T size_;
 
   public:
-    inline Array () { }
+    inline Array () { 
+        array_ = NULL;
+        size_ = 0;
+    }
 
-    inline explicit Array (const size_t size) {
+    inline explicit Array (const SIZE_T size) {
         Create (size);
     }
 
@@ -23,17 +28,19 @@ class Array {
         Delete ();
     }
 
-    inline void Create (const size_t size) {
+    inline void Create (const SIZE_T size) {
         array_ = new T[size];
         size_ = size;
     }
 
     inline void Delete () {
-        delete[] array_;
+        if (array_ != NULL) {
+            delete[] array_;
+        }
     }
 
     inline void Set (const T value) {
-        for (size_t i = 0; i < size_; ++i) {
+        for (SIZE_T i = 0; i < size_; ++i) {
             this[i] = value;
         }
     }
@@ -42,7 +49,7 @@ class Array {
         memset (array_, value, size_ * sizeof (T));
     }
 
-    inline T& operator[] (const size_t index) const {
+    inline T& operator[] (const SIZE_T index) const {
         return array_[index];
     }
 
@@ -50,7 +57,7 @@ class Array {
         return array_;
     }
 
-    inline const size_t size () const {
+    inline const SIZE_T size () const {
         return size_;
     }
 };

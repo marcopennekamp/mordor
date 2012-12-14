@@ -46,7 +46,7 @@ void Program::Initialize (Environment* environment) {
     {
         size_t size = cache_->bytecode_function_cache.size ();
         for (size_t i = 0; i < size; ++i) {
-            delete cache_->bytecode_function_cache[i]; 
+            delete cache_->bytecode_function_cache[i];
         }
     }
 }
@@ -91,7 +91,7 @@ mordor_u32 Program::GetFunctionIdFromResolveCache (std::string& name) {
         return it->second;
     }
 
-    /* Otherwise: Cache. */
+    /* Otherwise: Add to cache. */
     mordor_u32 id = cache_->next_function_id++;
     cache_->function_resolve_cache[name] = id;
     

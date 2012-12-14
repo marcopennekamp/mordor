@@ -8,7 +8,7 @@ namespace mordor {
 namespace VariableType {
 
     typedef mordor_u8 T;
-    const mordor_u8 VOID = 0x00;
+    const mordor_u8 V = 0x00;
     const mordor_u8 I = 0x01;
     const mordor_u8 U = 0x02;
     const mordor_u8 F = 0x04;
