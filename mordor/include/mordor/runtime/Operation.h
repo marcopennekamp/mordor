@@ -4,8 +4,8 @@
 #include <mordor/mordor_begin.h>
 
 
-typedef mordor_u64      mordorOperation;
-typedef mordorOperation Operation;
+typedef mordor_u64       mordorOperation;
+typedef mordorOperation  Operation;
 
 enum mordorOperationType {
     /* BASIC. */

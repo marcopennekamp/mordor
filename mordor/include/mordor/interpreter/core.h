@@ -9,7 +9,7 @@
 #include <mordor/mordor_begin.h>
 
 
-void mordorInterpreterExecute (ContextInterface* context_interface, FunctionInterface* function, mordor_u32 caller_stack_top);
+MORDOR_DECL void mordorInterpreterExecute (ContextInterface* context_interface, FunctionInterface* function, mordor_u32 caller_stack_top);
 
 
 #include <mordor/mordor_end.h>

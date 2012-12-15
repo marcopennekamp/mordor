@@ -4,8 +4,8 @@
 #include <mordor/mordor_begin.h>
 
 
-typedef void    mordorEnvironmentInterface;
-typedef mordorEnvironmentInterface EnvironmentInterface;
+typedef void                        mordorEnvironmentInterface;
+typedef mordorEnvironmentInterface  EnvironmentInterface;
 
 
 #include <mordor/mordor_end.h>

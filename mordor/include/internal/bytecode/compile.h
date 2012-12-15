@@ -1,6 +1,8 @@
 #ifndef MORDOR_INTERNAL_BYTECODE_COMPILE_H_
 #define MORDOR_INTERNAL_BYTECODE_COMPILE_H_
 
+#include <mordor/def.h>
+
 
 namespace mordor {
 
@@ -9,7 +11,7 @@ class BytecodeFunction;
 class Environment;
 class Program;
 
-Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* environment, Program* program);
+MORDOR_DECL Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* environment, Program* program);
 
 }
 

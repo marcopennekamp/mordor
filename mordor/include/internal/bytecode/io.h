@@ -3,12 +3,14 @@
 
 #include <coin/utils/Stream.h>
 
+#include <mordor/def.h>
+
 
 namespace mordor {
 
 class BytecodeFunction;
 
-BytecodeFunction* LoadBytecodeFunction (coin::Stream* stream);
+MORDOR_DECL BytecodeFunction* LoadBytecodeFunction (coin::Stream* stream);
 
 }
 

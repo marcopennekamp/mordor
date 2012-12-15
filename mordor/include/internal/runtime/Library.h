@@ -25,16 +25,16 @@ typedef void* lib;
 
 namespace mordor {
 
-class Library {
-  public:
+class MORDOR_DECL Library {
+public:
     typedef void* (_stdcall* func) ();
 
-  private:
+private:
     std::string path_;
     std::map<std::string, func> functions_;
     lib library_;
 
-  public:
+public:
     Library (std::string& path, lib library);
 
     void AddFunction (std::string& name, func function);

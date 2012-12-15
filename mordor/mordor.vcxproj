@@ -19,12 +19,46 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cc" />
+    <ClInclude Include="include\internal\bytecode\BytecodeFunction.h" />
+    <ClInclude Include="include\internal\bytecode\compile.h" />
+    <ClInclude Include="include\internal\bytecode\io.h" />
+    <ClInclude Include="include\internal\bytecode\VariableType.h" />
+    <ClInclude Include="include\internal\runtime\Context.h" />
+    <ClInclude Include="include\internal\runtime\Environment.h" />
+    <ClInclude Include="include\internal\runtime\Function.h" />
+    <ClInclude Include="include\internal\runtime\Library.h" />
+    <ClInclude Include="include\internal\runtime\LibraryManager.h" />
+    <ClInclude Include="include\internal\runtime\Program.h" />
+    <ClInclude Include="include\internal\utils\Array.h" />
+    <ClInclude Include="include\internal\utils\Pointer.h" />
+    <ClInclude Include="include\internal\utils\zip.h" />
+    <ClInclude Include="include\mordor\bytecode\BytecodeOperation.h" />
+    <ClInclude Include="include\mordor\def.h" />
+    <ClInclude Include="include\mordor\interpreter\core.h" />
+    <ClInclude Include="include\mordor\mordor_begin.h" />
+    <ClInclude Include="include\mordor\mordor_end.h" />
+    <ClInclude Include="include\mordor\runtime\ContextInterface.h" />
+    <ClInclude Include="include\mordor\runtime\EnvironmentInterface.h" />
+    <ClInclude Include="include\mordor\runtime\FunctionInterface.h" />
+    <ClInclude Include="include\mordor\runtime\Operation.h" />
+    <ClInclude Include="include\mordor\runtime\ProgramInterface.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\mordor\bytecode\BytecodeFunction.cc" />
+    <ClCompile Include="src\mordor\bytecode\compile.cc" />
+    <ClCompile Include="src\mordor\bytecode\io.cc" />
+    <ClCompile Include="src\mordor\interpreter\core.cc" />
+    <ClCompile Include="src\mordor\runtime\Context.cc" />
+    <ClCompile Include="src\mordor\runtime\Environment.cc" />
+    <ClCompile Include="src\mordor\runtime\Library.cc" />
+    <ClCompile Include="src\mordor\runtime\LibraryManager.cc" />
+    <ClCompile Include="src\mordor\runtime\Program.cc" />
+    <ClCompile Include="src\mordor\utils\zip.cc" />
+    <ClCompile Include="src\windows\runtime\LibraryManager_windows.cc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B146EA38-9A4C-4A2A-8C3A-E9165C8A95BE}</ProjectGuid>
-    <RootNamespace>vm</RootNamespace>
-    <ProjectName>vm</ProjectName>
+    <ProjectGuid>{BF4E97F0-6073-4EEA-916F-E5EFEFA7AA26}</ProjectGuid>
+    <RootNamespace>mordor</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -47,7 +81,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -69,15 +103,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\coin\utils\include;..\..\coin\include;..\..\include;include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\coin\Release;..\..\lib;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\include;..\mordor\include;..\..\coin\include;..\..\coin\utils\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\lib;..\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\marco_000\Work\Projects\include;C:\Users\marco_000\Work\Projects\mordor\mordor\include;C:\Users\marco_000\Work\Projects\coin\include;C:\Users\marco_000\Work\Projects\coin\utils\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\marco_000\Work\Projects\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
-    <GenerateManifest>false</GenerateManifest>
     <IntDir>$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -101,22 +130,14 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Full</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <ExceptionHandling>false</ExceptionHandling>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>utils.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <TargetMachine>MachineX64</TargetMachine>
-      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -125,20 +146,21 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CompileAsManaged>false</CompileAsManaged>
+      <CompileAsWinRT>false</CompileAsWinRT>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <PreprocessToFile>false</PreprocessToFile>
-      <OmitFramePointers>true</OmitFramePointers>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PreprocessorDefinitions>MORDOR_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>utils.lib;mordor.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <Profile>true</Profile>
+      <AdditionalDependencies>utils.lib;imagehlp.lib;zlibwapi.lib;libconfig.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

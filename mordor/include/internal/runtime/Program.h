@@ -14,7 +14,7 @@ class Function;
 class BytecodeFunction;
 class Environment;
 
-class Program {
+class MORDOR_DECL Program {
 private:
     struct InitializerCache {
         /* 

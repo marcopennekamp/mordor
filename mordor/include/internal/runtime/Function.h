@@ -6,8 +6,8 @@
 
 namespace mordor {
 
-class Function {
-  public:
+class MORDOR_DECL Function {
+public:
 
     mordor_u32  stack_size;
 

@@ -16,14 +16,14 @@ namespace mordor {
 
 class BytecodeFunction;
 
-class Environment {
-  private:
+class MORDOR_DECL Environment {
+private:
     std::vector<Program*> programs_;
 
     LibraryManager library_manager_;
 
 
-  public:
+public:
     Program* LoadProgram (const char* path);
 
     void Initialize ();
@@ -31,7 +31,7 @@ class Environment {
     Function* FindFunction (std::string& name);
     BytecodeFunction* FindBytecodeFunction (std::string& name);
 
-  private:
+private:
     bool _EvaluateProgramConfig (unzFile archive);
 };
 

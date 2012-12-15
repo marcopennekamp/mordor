@@ -11,7 +11,7 @@
 
 namespace mordor {
 
-class BytecodeFunction {
+class MORDOR_DECL BytecodeFunction {
 public:
     const static mordor_u8 EXISTS_CONSTANT_TABLE                = 0x01;
     const static mordor_u8 EXISTS_GLOBAL_NAME_TABLE             = 0x02;

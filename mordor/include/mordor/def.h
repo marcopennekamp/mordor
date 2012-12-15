@@ -8,6 +8,16 @@
 
 
 /*
+ * DLL Exports.
+ */
+#ifdef MORDOR_EXPORT
+#define MORDOR_DECL __declspec (dllexport)
+#else
+#define MORDOR_DECL __declspec (dllimport)
+#endif
+
+
+/*
  * General typedefs.
  */
 typedef char mordor_s8;

@@ -4,8 +4,8 @@
 #include <mordor/mordor_begin.h>
 
 
-typedef void    mordorContextInterface;
-typedef mordorContextInterface ContextInterface;
+typedef void                    mordorContextInterface;
+typedef mordorContextInterface  ContextInterface;
 
 
 #include <mordor/mordor_end.h>

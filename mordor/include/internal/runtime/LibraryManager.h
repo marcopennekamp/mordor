@@ -11,11 +11,11 @@ namespace mordor {
 
 class Library;
 
-class LibraryManager {
-  private:
+class MORDOR_DECL LibraryManager {
+private:
     std::map<std::string, Library*> library_map_;
 
-  public:
+public:
     ~LibraryManager ();
 
     Library* GetRuntimeLibrary (std::string& name);
