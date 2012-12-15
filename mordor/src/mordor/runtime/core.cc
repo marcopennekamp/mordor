@@ -95,22 +95,12 @@ inline void extract_M (mdrOperation op, mdr_u8& param0, mdr_u8& param1, mdr_u8& 
 
 
 
-/* Fetch functions. */
-
-inline mdr_s32& fetch_s32 (mdr_u8* stack, mdr_u16 id) {
-    return *(mdr_s32*) (stack + id);
-}
-
-inline mdr_u32& fetch_u32 (mdr_u8* stack, mdr_u16 id) {
-    return *(mdr_u32*) (stack + id);
-}
-
-inline mdr_s64& fetch_s64 (mdr_u8* stack, mdr_u16 id) {
-    return *(mdr_s64*) (stack + id);
-}
-
-inline mdr_u64& fetch_u64 (mdr_u8* stack, mdr_u16 id) {
-    return *(mdr_u64*) (stack + id);
+/*
+ * Fetches the address of a stack variable with the type T at offset 'id'.
+ */
+template <typename T>
+inline T& fetch (mdr_u8* stack, mdr_u16 id) {
+    return *(T*) (stack + id);
 }
 
 }
@@ -132,9 +122,7 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
     }
 
     /* Stacks. */
-    mdr_u8*  stack       = ((mdr_u8*) context->stack ().array () + caller_stack_top);
-    mdr_u32* stack_u32   = (mdr_u32*) stack;
-    mdr_f32* stack_f32   = (mdr_f32*) stack;
+    mdr_u8* stack = ((mdr_u8*) context->stack ().array () + caller_stack_top);
 
     /* Current op. */
     mdr_u64 op;
@@ -147,9 +135,13 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
 
     /* BASIC. */
 
+        _OP_START (END) {
+
+        _OP_RETURN }
+
         _OP_START (kJMP) { _OPC_W (offset)
             // printf ("JMP from %p, base %p, by %i (%llX)\n", op_pointer, function->operations, (mordor_s32) offset, op);
-            op_pointer = (mdrOperation*) (((mdr_u8*) op_pointer) + ((mdr_s32) offset));
+            op_pointer = (mdrOperation*) ((mdr_u8*) op_pointer + (mdr_s32) offset);
         _OP_RESTART }
 
         _OP_START (RET) { _OPC_P (src)
@@ -164,23 +156,23 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
     /* MEM. */
 
         _OP_START (RETMOV) { _OPC_P (dest) 
-            fetch_u32 (stack, dest) = *((mdr_u32*) context->return_value_address ());
+            fetch<mdr_u32> (stack, dest) = *((mdr_u32*) context->return_value_address ());
         _OP_END }
 
         _OP_START (RETMOVl) { _OPC_P (dest)
-            fetch_u64 (stack, dest) = *((mdr_u64*) context->return_value_address ());
+            fetch<mdr_u64> (stack, dest) = *((mdr_u64*) context->return_value_address ());
         _OP_END }
 
         _OP_START (MOV) { _OPC_PP (dest, src)
-            fetch_u32 (stack, dest) = fetch_u32 (stack, src);
+            fetch<mdr_u32> (stack, dest) = fetch<mdr_u32> (stack, src);
         _OP_END }
 
         _OP_START (MOVl) { _OPC_PP (dest, src)
-            fetch_u64 (stack, dest) = fetch_u64 (stack, src);
+            fetch<mdr_u64> (stack, dest) = fetch<mdr_u64> (stack, src);
         _OP_END }
 
         _OP_START (kMOV) { _OPC_PW (dest, value)
-            fetch_u32 (stack, dest) = value;
+            fetch<mdr_u32> (stack, dest) = value;
         _OP_END }
 
         _OP_START (kMOVl) {
@@ -271,11 +263,11 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
     /* ARITH. */
 
         _OP_START (ADD) { _OPC_PP (dest, src)
-            fetch_u32 (stack, dest) += fetch_u32 (stack, src);
+            fetch<mdr_u32> (stack, dest) += fetch<mdr_u32> (stack, src);
         _OP_END }
 
         _OP_START (ADDl) { _OPC_PP (dest, src)
-            fetch_u64 (stack, dest) += fetch_u64 (stack, src);
+            fetch<mdr_u64> (stack, dest) += fetch<mdr_u64> (stack, src);
         _OP_END }
 
         _OP_START (fADD) { _OPC_PP (dest, src)
@@ -287,7 +279,7 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
         _OP_END }
 
         _OP_START (kADD) { _OPC_PW (dest, value)
-
+            fetch<mdr_u32> (stack, dest) += value;
         _OP_END }
 
         _OP_START (kADDl) { _OPC_PW (dest, constant_id)
@@ -303,11 +295,11 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
         _OP_END }
 
         _OP_START (SUB) { _OPC_PP (dest, src)
-            fetch_u32 (stack, dest) -= fetch_u32 (stack, src);
+            fetch<mdr_u32> (stack, dest) -= fetch<mdr_u32> (stack, src);
         _OP_END }
 
         _OP_START (SUBl) { _OPC_PP (dest, src)
-            fetch_u64 (stack, dest) -= fetch_u64 (stack, src);
+            fetch<mdr_u64> (stack, dest) -= fetch<mdr_u64> (stack, src);
         _OP_END }
 
         _OP_START (fSUB) { _OPC_PP (dest, src)
@@ -319,7 +311,7 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
         _OP_END }
 
         _OP_START (kSUB) { _OPC_PW (dest, value)
-
+            fetch<mdr_s32> (stack, dest) = value;
         _OP_END }
 
         _OP_START (kSUBl) { _OPC_PW (dest, constant_id)
@@ -335,19 +327,19 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
         _OP_END }
 
         _OP_START (sMUL) { _OPC_PP (dest, src)
-            fetch_s32 (stack, dest) *= fetch_s32 (stack, src);
+            fetch<mdr_s32> (stack, dest) *= fetch<mdr_s32> (stack, src);
         _OP_END }
 
         _OP_START (sMULl) { _OPC_PP (dest, src)
-            fetch_s64 (stack, dest) *= fetch_s64 (stack, src);
+            fetch<mdr_s64> (stack, dest) *= fetch<mdr_s64> (stack, src);
         _OP_END }
 
         _OP_START (uMUL) { _OPC_PP (dest, src)
-            fetch_u32 (stack, dest) *= fetch_u32 (stack, src);
+            fetch<mdr_u32> (stack, dest) *= fetch<mdr_u32> (stack, src);
         _OP_END }
 
         _OP_START (uMULl) { _OPC_PP (dest, src)
-            fetch_u64 (stack, dest) *= fetch_u64 (stack, src);
+            fetch<mdr_u64> (stack, dest) *= fetch<mdr_u64> (stack, src);
         _OP_END }
 
         _OP_START (fMUL) {
@@ -589,11 +581,11 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
         _OP_END }
 
         _OP_START (PUSH) { _OPC_PP (src, offset)
-            fetch_u32 (context->stack ().array (), stack_top + offset) = fetch_u32 (stack, src);
+            fetch<mdr_u32> (context->stack ().array (), stack_top + offset) = fetch<mdr_u32> (stack, src);
         _OP_END }
 
         default: 
-            // if ((op & 0xFFFF) != OP_END) printf ("The following operation terminated the code: '%llX'!\n", op); 
+            printf ("Error: An unexpected operation terminated the code: '%llX'!\n", op); 
             _OP_RETURN
     }
 
