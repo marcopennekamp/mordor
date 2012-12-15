@@ -7,7 +7,7 @@
 #include <mordor/def.h>
 
 
-#if (MORDOR_OS == windows)
+#if (MDR_OS == windows)
 #include <windows.h>
 namespace mordor {
 
@@ -25,7 +25,7 @@ typedef void* lib;
 
 namespace mordor {
 
-class MORDOR_DECL Library {
+class Library {
 public:
     typedef void* (_stdcall* func) ();
 

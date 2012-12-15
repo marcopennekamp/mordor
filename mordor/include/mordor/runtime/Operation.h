@@ -1,13 +1,17 @@
 #ifndef MORDOR_RUNTIME_OPERATION_H_
 #define	MORDOR_RUNTIME_OPERATION_H_
 
-#include <mordor/mordor_begin.h>
+#include <mordor/def.h>
+
+#ifdef	__cplusplus
+extern "C" {
+#endif
 
 
-typedef mordor_u64       mordorOperation;
-typedef mordorOperation  Operation;
+typedef mdr_u64       mdrOperation;
 
-enum mordorOperationType {
+
+enum mdrOperationType {
     /* BASIC. */
     OP_END          = 0x00,
     OP_kJMP         = 0x01,
@@ -144,10 +148,11 @@ enum mordorOperationType {
     OP_PUSH         = 0xB0,
     OP_PUSHl        = 0xB1
 };
-typedef mordorOperationType OperationType;
 
 
-#include <mordor/mordor_end.h>
+#ifdef	__cplusplus
+}
+#endif
 
 #endif  /* MORDOR_RUNTIME_OPERATION_H_ */
 

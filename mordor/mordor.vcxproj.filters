@@ -22,9 +22,6 @@
     <Filter Include="Header Files\mordor">
       <UniqueIdentifier>{7053298c-040f-45a0-8a1a-b7dc822d3045}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\mordor\interpreter">
-      <UniqueIdentifier>{8c69d6ed-8301-44a0-a337-9fb47b068f62}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\mordor\runtime">
       <UniqueIdentifier>{8f7085ca-5823-479b-96fd-fee9a4536bd8}</UniqueIdentifier>
     </Filter>
@@ -60,13 +57,7 @@
     <ClInclude Include="include\internal\bytecode\io.h">
       <Filter>Header Files\internal\bytecode</Filter>
     </ClInclude>
-    <ClInclude Include="include\internal\bytecode\VariableType.h">
-      <Filter>Header Files\internal\bytecode</Filter>
-    </ClInclude>
     <ClInclude Include="include\internal\utils\Array.h">
-      <Filter>Header Files\internal\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\utils\Pointer.h">
       <Filter>Header Files\internal\utils</Filter>
     </ClInclude>
     <ClInclude Include="include\internal\utils\zip.h">
@@ -93,32 +84,29 @@
     <ClInclude Include="include\mordor\bytecode\BytecodeOperation.h">
       <Filter>Header Files\mordor\bytecode</Filter>
     </ClInclude>
-    <ClInclude Include="include\mordor\interpreter\core.h">
-      <Filter>Header Files\mordor\interpreter</Filter>
-    </ClInclude>
-    <ClInclude Include="include\mordor\runtime\ContextInterface.h">
-      <Filter>Header Files\mordor\runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="include\mordor\runtime\EnvironmentInterface.h">
-      <Filter>Header Files\mordor\runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="include\mordor\runtime\FunctionInterface.h">
-      <Filter>Header Files\mordor\runtime</Filter>
-    </ClInclude>
     <ClInclude Include="include\mordor\runtime\Operation.h">
-      <Filter>Header Files\mordor\runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="include\mordor\runtime\ProgramInterface.h">
       <Filter>Header Files\mordor\runtime</Filter>
     </ClInclude>
     <ClInclude Include="include\mordor\def.h">
       <Filter>Header Files\mordor</Filter>
     </ClInclude>
-    <ClInclude Include="include\mordor\mordor_begin.h">
-      <Filter>Header Files\mordor</Filter>
+    <ClInclude Include="include\mordor\runtime\Environment.h">
+      <Filter>Header Files\mordor\runtime</Filter>
     </ClInclude>
-    <ClInclude Include="include\mordor\mordor_end.h">
-      <Filter>Header Files\mordor</Filter>
+    <ClInclude Include="include\mordor\runtime\Context.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\runtime\Function.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\runtime\Program.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\runtime\core.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\bytecode\VariableType.h">
+      <Filter>Header Files\internal\bytecode</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -130,9 +118,6 @@
     </ClCompile>
     <ClCompile Include="src\mordor\bytecode\io.cc">
       <Filter>Source Files\bytecode</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mordor\interpreter\core.cc">
-      <Filter>Source Files\interpreter</Filter>
     </ClCompile>
     <ClCompile Include="src\mordor\runtime\Context.cc">
       <Filter>Source Files\runtime</Filter>
@@ -154,6 +139,9 @@
     </ClCompile>
     <ClCompile Include="src\windows\runtime\LibraryManager_windows.cc">
       <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\runtime\core.cc">
+      <Filter>Source Files\interpreter</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

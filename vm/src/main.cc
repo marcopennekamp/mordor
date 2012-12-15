@@ -1,16 +1,12 @@
 #include <stdio.h>
 
+#include <string>
+
 #include <coin/utils/time.h>
 
-#include <mordor/interpreter/core.h>
+#include <mordor/runtime/core.h>
+#include <mordor/runtime/Environment.h>
 
-#include <internal/runtime/Environment.h>
-#include <internal/runtime/Context.h>
-#include <internal/bytecode/BytecodeFunction.h>
-#include <internal/utils/Array.h>
-
-
-using namespace mordor;
 using namespace std;
 
 
@@ -23,22 +19,24 @@ int main (int argc, char** argv) {
     coin::TimeInit ();
 
     /* Load Program in argv[1]. */
-    Environment env;
-    Program* program = env.LoadProgram (argv[1]);
-    env.Initialize ();
+    mdrEnvironment* env = mdrEnvCreate ();
+    mdrProgram* prog = mdrEnvLoadProgram (env, argv[1]);
+    mdrEnvInitialize (env);
 
-    Context context (&env, program);
+    mdrContext* ctx = mdrCtxCreate (env);
 
     /* Get add function. */
-    string func_name = "test.add";
-    Function* test_function = env.FindFunction (func_name);
+    mdrFunction* test_function = mdrEnvFindFunction (env, "test.add");
 
     /* Set Parameters and invoke add function. */
-    mordor_s64* stack = (mordor_s64*) context.stack ().array ();
+    mdr_s64* stack = (mdr_s64*) mdrCtxGetStack (ctx);
     stack[0] = 42;
     stack[1] = 42;
 
-    mordorInterpreterExecute (&context, test_function, 0);
+    mdrExecute (ctx, test_function, 0);
 
-    printf ("The function returned '%u'\n", *((mordor_s64*) context.return_value_address ()));
+    printf ("The function returned '%u'\n", *((mdr_s64*) mdrCtxGetReturnValueAddress (ctx)));
+
+    mdrEnvDestroy (env);
+    mdrCtxDestroy (ctx);
 }

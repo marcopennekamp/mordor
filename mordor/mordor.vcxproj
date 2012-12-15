@@ -22,7 +22,7 @@
     <ClInclude Include="include\internal\bytecode\BytecodeFunction.h" />
     <ClInclude Include="include\internal\bytecode\compile.h" />
     <ClInclude Include="include\internal\bytecode\io.h" />
-    <ClInclude Include="include\internal\bytecode\VariableType.h" />
+    <ClInclude Include="include\mordor\bytecode\VariableType.h" />
     <ClInclude Include="include\internal\runtime\Context.h" />
     <ClInclude Include="include\internal\runtime\Environment.h" />
     <ClInclude Include="include\internal\runtime\Function.h" />
@@ -30,24 +30,21 @@
     <ClInclude Include="include\internal\runtime\LibraryManager.h" />
     <ClInclude Include="include\internal\runtime\Program.h" />
     <ClInclude Include="include\internal\utils\Array.h" />
-    <ClInclude Include="include\internal\utils\Pointer.h" />
     <ClInclude Include="include\internal\utils\zip.h" />
     <ClInclude Include="include\mordor\bytecode\BytecodeOperation.h" />
     <ClInclude Include="include\mordor\def.h" />
-    <ClInclude Include="include\mordor\interpreter\core.h" />
-    <ClInclude Include="include\mordor\mordor_begin.h" />
-    <ClInclude Include="include\mordor\mordor_end.h" />
-    <ClInclude Include="include\mordor\runtime\ContextInterface.h" />
-    <ClInclude Include="include\mordor\runtime\EnvironmentInterface.h" />
-    <ClInclude Include="include\mordor\runtime\FunctionInterface.h" />
+    <ClInclude Include="include\mordor\runtime\Context.h" />
+    <ClInclude Include="include\mordor\runtime\core.h" />
+    <ClInclude Include="include\mordor\runtime\Environment.h" />
+    <ClInclude Include="include\mordor\runtime\Function.h" />
     <ClInclude Include="include\mordor\runtime\Operation.h" />
-    <ClInclude Include="include\mordor\runtime\ProgramInterface.h" />
+    <ClInclude Include="include\mordor\runtime\Program.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\mordor\bytecode\BytecodeFunction.cc" />
     <ClCompile Include="src\mordor\bytecode\compile.cc" />
     <ClCompile Include="src\mordor\bytecode\io.cc" />
-    <ClCompile Include="src\mordor\interpreter\core.cc" />
+    <ClCompile Include="src\mordor\runtime\core.cc" />
     <ClCompile Include="src\mordor\runtime\Context.cc" />
     <ClCompile Include="src\mordor\runtime\Environment.cc" />
     <ClCompile Include="src\mordor\runtime\Library.cc" />
@@ -154,7 +151,7 @@
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <PreprocessorDefinitions>MORDOR_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MDR_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>

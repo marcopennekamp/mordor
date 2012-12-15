@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mordor/interpreter/core.h>
+
+#include <mordor/runtime/core.h>
 #include <mordor/runtime/Operation.h>
 
 #include <internal/runtime/Context.h>
@@ -25,21 +26,21 @@ using namespace mordor;
 
 /* Class parameter parsing. */
 
-#define _OPC_P(P0)               mordor_u16 P0; \
+#define _OPC_P(P0)               mdr_u16 P0; \
                                   extract_P (op, P0);
-#define _OPC_PP(P0, P1)          mordor_u16 P0, P1; \
+#define _OPC_PP(P0, P1)          mdr_u16 P0, P1; \
                                   extract_PP (op, P0, P1);
-#define _OPC_PPP(P0, P1, P2)     mordor_u16 P0, P1, P2; \
+#define _OPC_PPP(P0, P1, P2)     mdr_u16 P0, P1, P2; \
                                   extract_PPP (op, P0, P1, P2);
 
-#define _OPC_W(P0)               mordor_u32 P0; \
+#define _OPC_W(P0)               mdr_u32 P0; \
                                   extract_W (op, P0);
-#define _OPC_WP(P0, P1)          mordor_u32 P0; mordor_u16 P1; \
+#define _OPC_WP(P0, P1)          mdr_u32 P0; mdr_u16 P1; \
                                   extract_WP (op, P0, P1);
-#define _OPC_PW(P0, P1)          mordor_u16 P0; mordor_u32 P1; \
+#define _OPC_PW(P0, P1)          mdr_u16 P0; mdr_u32 P1; \
                                   extract_PW (op, P0, P1);
 
-#define _OPC_L(P0)               mordor_u64 P0; \
+#define _OPC_L(P0)               mdr_u64 P0; \
                                   extract_L (op, P0);
 
 
@@ -49,39 +50,39 @@ using namespace mordor;
 
 namespace {
 
-inline void extract_P (Operation op, mordor_u16& param0) {
+inline void extract_P (mdrOperation op, mdr_u16& param0) {
     param0 = op >> 16 & 0xFFFF;
 }
 
-inline void extract_PP (Operation op, mordor_u16& param0, mordor_u16& param1) {
+inline void extract_PP (mdrOperation op, mdr_u16& param0, mdr_u16& param1) {
     extract_P (op, param0);
     param1 = op >> 32 & 0xFFFF;
 }
 
-inline void extract_PPP (Operation op, mordor_u16& param0, mordor_u16& param1, mordor_u16& param2) {
+inline void extract_PPP (mdrOperation op, mdr_u16& param0, mdr_u16& param1, mdr_u16& param2) {
     extract_PP (op, param0, param1);
     param2 = op >> 48 & 0xFFFF;
 }
 
-inline void extract_W (Operation op, mordor_u32& param0) {
+inline void extract_W (mdrOperation op, mdr_u32& param0) {
     param0 = op >> 16 & 0xFFFFFFFF;
 }
 
-inline void extract_WP (Operation op, mordor_u32& param0, mordor_u16& param1) {
+inline void extract_WP (mdrOperation op, mdr_u32& param0, mdr_u16& param1) {
     extract_W (op, param0);
     param1 = op >> 48 & 0xFFFF;
 }
 
-inline void extract_PW (Operation op, mordor_u16& param0, mordor_u32& param1) {
+inline void extract_PW (mdrOperation op, mdr_u16& param0, mdr_u32& param1) {
     extract_P (op, param0);
     param1 = op >> 32 & 0xFFFFFFFF;
 }
 
-inline void extract_L (Operation op, mordor_u64& param0) {
+inline void extract_L (mdrOperation op, mdr_u64& param0) {
     param0 = op >> 16 & 0xFFFFFFFFFFFF;
 }
 
-inline void extract_M (Operation op, mordor_u8& param0, mordor_u8& param1, mordor_u8& param2, mordor_u8& param3, mordor_u8& param4, mordor_u8& param5) {
+inline void extract_M (mdrOperation op, mdr_u8& param0, mdr_u8& param1, mdr_u8& param2, mdr_u8& param3, mdr_u8& param4, mdr_u8& param5) {
     /* TODO(Marco): Probably needs some optimization here. If possible, that is. */
     param0 = op >> 16 & 0xFF;
     param1 = op >> 24 & 0xFF;
@@ -96,12 +97,12 @@ inline void extract_M (Operation op, mordor_u8& param0, mordor_u8& param1, mordo
 
 /* Fetch functions. */
 
-inline mordor_u64& fetch_u64 (mordor_u8* stack, mordor_u16 id) {
-    return *(mordor_u64*) (stack + id);
+inline mdr_u64& fetch_u64 (mdr_u8* stack, mdr_u16 id) {
+    return *(mdr_u64*) (stack + id);
 }
 
-inline mordor_u32& fetch_u32 (mordor_u8* stack, mordor_u16 id) {
-    return *(mordor_u32*) (stack + id);
+inline mdr_u32& fetch_u32 (mdr_u8* stack, mdr_u16 id) {
+    return *(mdr_u32*) (stack + id);
 }
 
 }
@@ -109,26 +110,26 @@ inline mordor_u32& fetch_u32 (mordor_u8* stack, mordor_u16 id) {
 
 
 
-extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, FunctionInterface* function_interface, mordor_u32 caller_stack_top) {
+extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32 caller_stack_top) {
     /* General stuff. */
-    Function*   function    = (Function*) function_interface;
-    Context*    context = (Context*) context_interface;
-    Operation*  op_pointer  = function->operations;
-    mordor_u32  stack_top   = caller_stack_top + function->stack_size;
+    Function* function       = (Function*) func;
+    Context* context         = (Context*) ctx;
+    mdrOperation* op_pointer = function->operations;
+    mdr_u32 stack_top        = caller_stack_top + function->stack_size;
 
-    // TODO: This is a security check!
+    // TODO: This is a security check! May be slow.
     if (stack_top > context->stack ().size ()) {
         printf ("Error: Requested stack size exceeds Context stack limit.");
         return;
     }
 
     /* Stacks. */
-    mordor_u8*  stack       = ((mordor_u8*) context->stack ().array () + caller_stack_top);
-    mordor_u32* stack_u32   = (mordor_u32*) stack;
-    mordor_f32* stack_f32   = (mordor_f32*) stack;
+    mdr_u8*  stack       = ((mdr_u8*) context->stack ().array () + caller_stack_top);
+    mdr_u32* stack_u32   = (mdr_u32*) stack;
+    mdr_f32* stack_f32   = (mdr_f32*) stack;
 
     /* Current op. */
-    mordor_u64 op;
+    mdr_u64 op;
 
     /* Executes the next instruction. */
   LExec:
@@ -140,7 +141,7 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, F
 
         _OP_START (kJMP) { _OPC_W (offset)
             // printf ("JMP from %p, base %p, by %i (%llX)\n", op_pointer, function->operations, (mordor_s32) offset, op);
-            op_pointer = (Operation*) (((mordor_u8*) op_pointer) + ((mordor_s32) offset));
+            op_pointer = (mdrOperation*) (((mdr_u8*) op_pointer) + ((mdr_s32) offset));
         _OP_RESTART }
 
         _OP_START (RET) { _OPC_P (src)
@@ -155,7 +156,7 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, F
     /* MEM. */
 
         _OP_START (RETMOV) { _OPC_P (dest) 
-            fetch_u32 (stack, dest) = *((mordor_u32*) context->return_value_address ());
+            fetch_u32 (stack, dest) = *((mdr_u32*) context->return_value_address ());
         _OP_END }
 
         _OP_START (RETMOVl) {
@@ -329,8 +330,8 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, F
         _OP_END }
 
         _OP_START (sMUL) { _OPC_PP (dest, src)
-            mordor_s32* dest_addr = (mordor_s32*) (stack + dest);
-            mordor_s32 src_val = *((mordor_s32*) (stack + src));
+            mdr_s32* dest_addr = (mdr_s32*) (stack + dest);
+            mdr_s32 src_val = *((mdr_s32*) (stack + src));
             *dest_addr *= src_val;
         _OP_END }
 
@@ -577,7 +578,7 @@ extern "C" void mordorInterpreterExecute (ContextInterface* context_interface, F
     /* CALL. */
 
         _OP_START (CALL) { _OPC_W (function_id)
-            mordorInterpreterExecute (context, ((Program*) context->program ())->GetFunctionFromCache (function_id), stack_top);
+            mdrExecute (context, function->program->GetFunctionFromCache (function_id), stack_top);
             // printf ("Call finished with '%u'!\n", *((mordor_u32*) context->return_value_address ()));
         _OP_END }
 

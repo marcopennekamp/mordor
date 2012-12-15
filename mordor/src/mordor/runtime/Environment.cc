@@ -6,6 +6,8 @@
 
 #include <coin/utils/Stream.h>
 
+#include <mordor/runtime/Environment.h>
+
 #include <internal/bytecode/BytecodeFunction.h>
 #include <internal/bytecode/compile.h>
 #include <internal/bytecode/io.h>
@@ -13,6 +15,32 @@
 #include <internal/utils/zip.h>
 
 using namespace std;
+using namespace mordor;
+
+
+extern "C" {
+
+MDR_DECL mdrEnvironment* mdrEnvCreate () {
+    return (mdrEnvironment*) new Environment ();
+}
+
+MDR_DECL void mdrEnvDestroy (mdrEnvironment* env) {
+    delete (Environment*) env;
+}
+
+MDR_DECL void mdrEnvInitialize (mdrEnvironment* env) {
+    ((Environment*) env)->Initialize ();
+}
+
+MDR_DECL mdrProgram* mdrEnvLoadProgram (mdrEnvironment* env, const char* path) {
+    return (mdrProgram*) ((Environment*) env)->LoadProgram (path);
+}
+
+MDR_DECL mdrFunction* mdrEnvFindFunction (mdrEnvironment* env, const char* name) {
+    return (mdrFunction*) ((Environment*) env)->FindFunction (name);
+}
+
+}
 
 
 namespace mordor {
@@ -25,8 +53,8 @@ bool Environment::_EvaluateProgramConfig (unzFile archive) {
     }
 
     /* Load 'program' file. */
-    mordor_char* file_data = NULL;
-    zip::GetFileData (archive, (const void**) &file_data, NULL, mordor_true, NULL);
+    char* file_data = NULL;
+    zip::GetFileData (archive, (const void**) &file_data, NULL, mdr_true, NULL);
     if (file_data == NULL) {
         return false;
     }
@@ -81,12 +109,12 @@ Program* Environment::LoadProgram (const char* path) {
     /* Load all '.func' files. */
     bool found = (unzGoToFirstFile (archive) == UNZ_OK);
     for (; found; found = (unzGoToNextFile (archive) == UNZ_OK)) {
-        mordor_u8* file_data = NULL;
-        mordor_u32 file_size;
+        mdr_u8* file_data = NULL;
+        mdr_u32 file_size;
         string file_name;
         {
-            const mordor_s8* file_name_array = NULL;
-            zip::GetFileData (archive, (const void**) &file_data, &file_size, mordor_false, &file_name_array);
+            const mdr_s8* file_name_array = NULL;
+            zip::GetFileData (archive, (const void**) &file_data, &file_size, mdr_false, &file_name_array);
             if (file_data == NULL || file_name_array == NULL) {
                 if (file_data != NULL) delete[] file_data;
                 if (file_name_array != NULL) delete file_name_array;
@@ -137,10 +165,10 @@ void Environment::Initialize () {
 
 // TODO(Marco): Duplicate code!
 
-Function* Environment::FindFunction (std::string& name) {
+Function* Environment::FindFunction (const std::string& name) {
     size_t size = programs_.size ();
     for (size_t i = 0; i < size; ++i) {
-        mordor_u32 id = programs_[i]->GetFunctionId (name);
+        mdr_u32 id = programs_[i]->GetFunctionId (name);
         if (id != Program::INVALID_FUNCTION_ID) {
             return programs_[i]->GetFunctionFromCache (id);
         }
@@ -148,10 +176,10 @@ Function* Environment::FindFunction (std::string& name) {
     return NULL;
 }
 
-BytecodeFunction* Environment::FindBytecodeFunction (std::string& name) {
+BytecodeFunction* Environment::FindBytecodeFunction (const std::string& name) {
     size_t size = programs_.size ();
     for (size_t i = 0; i < size; ++i) {
-        mordor_u32 id = programs_[i]->GetFunctionId (name);
+        mdr_u32 id = programs_[i]->GetFunctionId (name);
         if (id != Program::INVALID_FUNCTION_ID) {
             return programs_[i]->bytecode_function_cache ()[id];
         }

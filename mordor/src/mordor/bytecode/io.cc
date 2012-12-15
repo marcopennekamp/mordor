@@ -12,7 +12,7 @@ BytecodeFunction* LoadBytecodeFunction (coin::Stream* stream) {
     BytecodeFunction* function = new BytecodeFunction ();
 
     /* General stuff. */
-    mordor_u8 exist_flags;
+    mdr_u8 exist_flags;
     stream->ReadU8 (exist_flags);
     stream->ReadU8 (function->parameter_count);
     stream->ReadU8 (function->return_type);
@@ -25,10 +25,10 @@ BytecodeFunction* LoadBytecodeFunction (coin::Stream* stream) {
 
     /* Read function name table. */
     if (exist_flags & BytecodeFunction::EXISTS_FUNCTION_NAME_TABLE) {
-        mordor_u16 size;
+        mdr_u16 size;
         stream->ReadU16 (size);
         function->function_name_table.Create (size);
-        for (mordor_u16 i = 0; i < size; ++i) {
+        for (mdr_u16 i = 0; i < size; ++i) {
             stream->ReadString (function->function_name_table[i]);
         }
     }

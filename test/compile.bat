@@ -1,1 +1,1 @@
-"../Release/mordor-asm.exe" test.mdr test.mda
+"../Release/mordor-asm.exe" test.mdr tests/add.mda

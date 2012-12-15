@@ -45,7 +45,7 @@ class Array {
         }
     }
 
-    inline void SetMemory (const mordor_u8 value) {
+    inline void SetMemory (const mdr_u8 value) {
         memset (array_, value, size_ * sizeof (T));
     }
 

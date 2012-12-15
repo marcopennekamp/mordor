@@ -10,7 +10,7 @@ namespace mordor {
 namespace zip {
 
 /* Both arrays have to be deleted with 'delete[]' by the caller. */
-MORDOR_DECL void GetFileData (unzFile archive, const void** file_data, mordor_u32* file_size, mordor_bool append_zero, const mordor_s8** file_name);
+void GetFileData (unzFile archive, const void** file_data, mdr_u32* file_size, mdr_bool append_zero, const mdr_s8** file_name);
 
 }
 }

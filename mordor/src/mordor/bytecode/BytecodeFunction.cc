@@ -8,9 +8,9 @@ BytecodeFunction::~BytecodeFunction () {
 }
 
 
-void BytecodeFunction::AllocateCode (mordor_u32 _code_size) {
+void BytecodeFunction::AllocateCode (mdr_u32 _code_size) {
     code_size = _code_size;
-    code = new mordor_u8[_code_size];
+    code = new mdr_u8[_code_size];
 }
 
 }

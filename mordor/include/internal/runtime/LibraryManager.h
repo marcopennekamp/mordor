@@ -1,17 +1,17 @@
 #ifndef MORDOR_INTERNAL_RUNTIME_LIBRARYMANAGER_H_
 #define MORDOR_INTERNAL_RUNTIME_LIBRARYMANAGER_H_
 
-#include <mordor/def.h>
-
 #include <string>
 #include <map>
+
+#include <mordor/def.h>
 
 
 namespace mordor {
 
 class Library;
 
-class MORDOR_DECL LibraryManager {
+class LibraryManager {
 private:
     std::map<std::string, Library*> library_map_;
 

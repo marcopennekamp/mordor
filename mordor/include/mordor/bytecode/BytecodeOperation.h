@@ -1,13 +1,17 @@
 #ifndef MORDOR_BYTECODE_BYTECODEOPERATION_H_
 #define	MORDOR_BYTECODE_BYTECODEOPERATION_H_
 
-#include <mordor/mordor_begin.h>
+#include <mordor/def.h>
+
+#ifdef	__cplusplus
+extern "C" {
+#endif
 
 
-typedef mordor_u8               mordorBytecodeOperation;
-typedef mordorBytecodeOperation BytecodeOperation;
+typedef mdr_u8 mdrBytecodeOperation;
 
-enum mordorBytecodeOperationType {
+
+enum mdrBytecodeOperationType {
     BCOP_END            = 0x00,
     BCOP_JMP            = 0x01,
     BCOP_JMPw           = 0x02,
@@ -78,12 +82,11 @@ enum mordorBytecodeOperationType {
 
     BCOP_BREAKPOINT     = 0x3F
 };
-typedef enum mordorBytecodeOperationType BytecodeOperationType;
 
 const size_t BCOP_LENGTH = 0x40;
 
 
-/* This increment list specifies the byte size of every BCOP. 
+/* This list specifies the byte size of every BCOP. 
  * Elements with size 0 are unspecified / free slots.  
  */
 static const int BCOP_SIZE [] = {
@@ -165,6 +168,8 @@ static const int BCOP_SIZE [] = {
 };
 
 
-#include <mordor/mordor_end.h>
+#ifdef	__cplusplus
+}
+#endif
 
 #endif  /* MORDOR_BYTECODE_BYTECODEOPERATION_H_ */

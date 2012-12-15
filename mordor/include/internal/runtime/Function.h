@@ -6,12 +6,11 @@
 
 namespace mordor {
 
-class MORDOR_DECL Function {
+class Function {
 public:
-
-    mordor_u32  stack_size;
-
-    Operation*  operations;
+    mdr_u32  stack_size;
+    mdrOperation*  operations;
+    Program* program;
 };
 
 }

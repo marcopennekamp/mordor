@@ -20,14 +20,14 @@ const int TOKEN_CHARACTER = 0x08;
 struct Token {
     int tag;
     union {
-        char* string;
-        char  character;
-        mordor_s32 nInt32;
-        mordor_s64 nInt64;
-        mordor_u32 nUInt32;
-        mordor_u64 nUInt64;
-        mordor_f32 nFloat32;
-        mordor_f64 nFloat64;
+        char*   string;
+        char    character;
+        mdr_s32 nInt32;
+        mdr_s64 nInt64;
+        mdr_u32 nUInt32;
+        mdr_u64 nUInt64;
+        mdr_f32 nFloat32;
+        mdr_f64 nFloat64;
     };
 
     ~Token () {

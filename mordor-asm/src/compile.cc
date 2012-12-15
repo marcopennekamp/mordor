@@ -7,8 +7,7 @@
 #include <coin/utils/directory.h>
 
 #include <mordor/bytecode/BytecodeOperation.h>
-
-#include <internal/bytecode/VariableType.h>
+#include <mordor/bytecode/VariableType.h>
 
 #include "main.h"
 
@@ -34,15 +33,15 @@ const char* kTypeNames [] = {
 };
 const size_t kTypeNamesLength = 8;
 
-const VariableType::T kTypes [] = {
-    VariableType::I,
-    VariableType::U,
-    VariableType::F,
-    VariableType::I | VariableType::IS_LONG,
-    VariableType::U | VariableType::IS_LONG,
-    VariableType::F | VariableType::IS_LONG,
-    VariableType::P,
-    VariableType::V
+const mdrVariableType kTypes [] = {
+    MDR_VARTYPE_I,
+    MDR_VARTYPE_U,
+    MDR_VARTYPE_F,
+    MDR_VARTYPE_I | MDR_VARTYPE_IS_LONG,
+    MDR_VARTYPE_U | MDR_VARTYPE_IS_LONG,
+    MDR_VARTYPE_F | MDR_VARTYPE_IS_LONG,
+    MDR_VARTYPE_P,
+    MDR_VARTYPE_V
 };
 
 
@@ -100,40 +99,40 @@ const char* kOperationTypeNames [] = {
 const size_t kOperationTypeNamesLength = 19;
 
 struct Operation {
-    BytecodeOperationType type;
-    mordor_u16 param0; /* High or number. */
-    mordor_u16 param1; /* Low. */
+    mdrBytecodeOperationType type;
+    mdr_u16 param0; /* High or number. */
+    mdr_u16 param1; /* Low. */
 };
 
 
 struct Variable {
-    VariableType::T type;
+    mdrVariableType type;
     string name;
-    mordor_u16 index;
+    mdr_u16 index;
 };
 
 struct Label {
-    mordor_u16 index;
-    mordor_u32 position;
+    mdr_u16 index;
+    mdr_u32 position;
 };
 
 
 /* Holds all the data that is saved when compiling a function. */
 struct FunctionCompileData {
     string name;
-    VariableType::T return_type;
-    mordor_u16 variable_table_next_index;
-    mordor_u16 pointer_table_next_index;
-    mordor_u16 current_stack_size;
-    mordor_u16 max_stack_size;
-    mordor_u16 labels_next_index; /* Labels get an intermediate index so they can be used before being declared at a determined position. */
+    mdrVariableType return_type;
+    mdr_u16 variable_table_next_index;
+    mdr_u16 pointer_table_next_index;
+    mdr_u16 current_stack_size;
+    mdr_u16 max_stack_size;
+    mdr_u16 labels_next_index; /* Labels get an intermediate index so they can be used before being declared at a determined position. */
     map<string, Label*> labels;
     map<string, Variable*> variables;
     vector<Variable*> parameter_list;
     vector<Operation> operations;
 
     FunctionCompileData () {
-        return_type = VariableType::V;
+        return_type = MDR_VARTYPE_V;
         variable_table_next_index = 0;
         pointer_table_next_index = 0;
         current_stack_size = 0;
@@ -141,7 +140,7 @@ struct FunctionCompileData {
         labels_next_index = 0;
     }
 
-    void stack_size (mordor_s16 diff) {
+    void stack_size (mdr_s16 diff) {
         current_stack_size += diff;
         if (current_stack_size > max_stack_size) {
             max_stack_size = current_stack_size;
@@ -154,8 +153,8 @@ struct FunctionCompileData {
 };
 
 
-VariableType::T getTypeFromString (const char* str) {
-    VariableType::T type = VariableType::V;
+mdrVariableType getTypeFromString (const char* str) {
+    mdrVariableType type = MDR_VARTYPE_V;
     for (int i = 0; i < kTypeNamesLength; ++i) {
         if (strcmp (str, kTypeNames[i]) == 0) {
             type = kTypes[i];
@@ -175,11 +174,11 @@ OperationType getOperationTypeFromString (const char* str) {
 }
 
 void setVariableIndex (Variable& variable, FunctionCompileData& compile_data) {
-    if ((variable.type & VariableType::P) > 0) { /* Pointer. */
+    if ((variable.type & MDR_VARTYPE_P) > 0) { /* Pointer. */
         variable.index = compile_data.pointer_table_next_index++;
     }else { /* "Normal" variable. */
         variable.index = compile_data.variable_table_next_index;
-        compile_data.variable_table_next_index += ((variable.type & VariableType::IS_LONG) > 0) ? 2 : 1;
+        compile_data.variable_table_next_index += ((variable.type & MDR_VARTYPE_IS_LONG) > 0) ? 2 : 1;
     }
 }
 
@@ -213,7 +212,7 @@ void writeOperationPP (Operation& operation, Stream& out) {
 
 /* Note: Since the size of the number is 10bit, it is not saved in two's complement but a negated version of the positive number if negative. */
 void writeOperationSignedP (Operation& operation, Stream& out) {
-    mordor_s16 param0s = operation.param0;
+    mdr_s16 param0s = operation.param0;
 
     bool is_negative = false;
     if (param0s < 0) {
@@ -380,34 +379,34 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
                     printf ("Error: Variable '%s' is not declared.\n", next_token->string);
                     return -1;
                 }
-                VariableType::T type = variable->type; 
+                mdrVariableType type = variable->type; 
                 
                 /* Deduce operation type from variable type. */
-                if (type != VariableType::V) {
-                    if ((type & VariableType::IS_LONG) == 0) { /* Not long. */
-                        switch (type & ~VariableType::IS_LONG) {
-                            case VariableType::I:
+                if (type != MDR_VARTYPE_V) {
+                    if ((type & MDR_VARTYPE_IS_LONG) == 0) { /* Not long. */
+                        switch (type & ~MDR_VARTYPE_IS_LONG) {
+                            case MDR_VARTYPE_I:
                                 operation.type = BCOP_iLOAD;
                                 break;
-                            case VariableType::U:
+                            case MDR_VARTYPE_U:
                                 operation.type = BCOP_uiLOAD;
                                 break;
-                            case VariableType::F:
+                            case MDR_VARTYPE_F:
                                 operation.type = BCOP_fLOAD;
                                 break;
-                            case VariableType::P:
+                            case MDR_VARTYPE_P:
                                 operation.type = BCOP_pLOAD;
                                 break;
                         }
                     }else { /* Long. */
-                        switch (type & ~VariableType::IS_LONG) {
-                            case VariableType::I:
+                        switch (type & ~MDR_VARTYPE_IS_LONG) {
+                            case MDR_VARTYPE_I:
                                 operation.type = BCOP_lLOAD;
                                 break;
-                            case VariableType::U:
+                            case MDR_VARTYPE_U:
                                 operation.type = BCOP_ulLOAD;
                                 break;
-                            case VariableType::F:
+                            case MDR_VARTYPE_F:
                                 operation.type = BCOP_flLOAD;
                                 break;
                         }
@@ -506,11 +505,11 @@ size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) 
                     printf ("Error: Label '%s' already exists!\n", literal_token->string);
                     return -1;
                 }
-                label->position = (mordor_u32) compile_data.operations.size ();
+                label->position = (mdr_u32) compile_data.operations.size ();
                 index += 2;
             }else {
-                VariableType::T parsed_type = getTypeFromString (literal_token->string);
-                if (parsed_type == VariableType::V) { /* Operation. */
+                mdrVariableType parsed_type = getTypeFromString (literal_token->string);
+                if (parsed_type == MDR_VARTYPE_V) { /* Operation. */
                     index = parseOperation (getOperationTypeFromString (literal_token->string), index, tokens, compile_data);
                     if (index == -1) { /* Error occured. */
                         printf ("Op: '%s'\n", literal_token->string);
@@ -544,7 +543,7 @@ size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) 
 
         if (operation.type == BCOP_JMP) {
             /* Iterate all labels to find the appropriate one. */
-            mordor_u16 index = operation.param0;
+            mdr_u16 index = operation.param0;
             Label* label = NULL;
             string name;
             auto end = compile_data.labels.end ();
@@ -558,7 +557,7 @@ size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) 
             }
 
             if (label != NULL) {
-                mordor_u16 jump_distance = (mordor_u16) (((mordor_s32) label->position) - i);
+                mdr_u16 jump_distance = (mdr_u16) (((mdr_s32) label->position) - i);
                 if (jump_distance == 0) {
                     printf ("Error: Can not jump to the label '%s', because it is at the location of this operation.\n", name.c_str ());
                     return -1;
@@ -592,12 +591,12 @@ size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) 
 
     /* Write function info. */
     stream.WriteU8 (0x00 /* Exist flags. */);
-    stream.WriteU8  ((mordor_u8) compile_data.parameter_list.size ());
+    stream.WriteU8  ((mdr_u8) compile_data.parameter_list.size ());
     stream.WriteU8  (compile_data.return_type);
     stream.WriteU16 (compile_data.variable_table_next_index);
     stream.WriteU16 (compile_data.pointer_table_next_index);
     stream.WriteU16 (compile_data.max_stack_size);
-    stream.WriteU16 ((mordor_u16) compile_data.operations.size ());
+    stream.WriteU16 ((mdr_u16) compile_data.operations.size ());
 
     /* Write Operations. */
     for (size_t i = 0, size = compile_data.operations.size (); i < size; ++i) {

@@ -11,20 +11,18 @@ namespace mordor {
 class Environment;
 class Program;
 
-class MORDOR_DECL Context {
+class Context {
 private:
     const Environment* environment_;
-    const Program* program_;
-    Array<mordor_u8> stack_;
-    mordor_u8* return_value_address_;
+    Array<mdr_u8> stack_;
+    mdr_u8* return_value_address_;
 
 public:
-    Context (const Environment* environment, const Program* program);
+    Context (const Environment* environment);
 
     inline const Environment* environment () { return environment_; }
-    inline const Program* program () { return program_; }
-    inline Array<mordor_u8>& stack () { return stack_; }
-    inline mordor_u8*& return_value_address () { return return_value_address_; }
+    inline Array<mdr_u8>& stack () { return stack_; }
+    inline mdr_u8*& return_value_address () { return return_value_address_; }
 };
 
 }

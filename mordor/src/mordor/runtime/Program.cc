@@ -18,8 +18,8 @@ Program::Program () {
 }
 
 
-void Program::AddBytecodeFunction (string& name, BytecodeFunction* function) {
-    mordor_u32 id = (mordor_u32) cache_->bytecode_function_cache.size ();
+void Program::AddBytecodeFunction (const string& name, BytecodeFunction* function) {
+    mdr_u32 id = (mdr_u32) cache_->bytecode_function_cache.size ();
     cache_->bytecode_function_cache.push_back (function);
     functions_[name] = id;
 }
@@ -29,7 +29,7 @@ void Program::Initialize (Environment* environment) {
     /* Compile Bytecode functions. */
     {
         size_t size = cache_->bytecode_function_cache.size ();
-        cache_->next_function_id = (mordor_u32) size; /* Set the next available ID to the value after the last already known function. */
+        cache_->next_function_id = (mdr_u32) size; /* Set the next available ID to the value after the last already known function. */
         function_cache_.resize (size);
         for (size_t i = 0; i < size; ++i) {
             BytecodeFunction* bc_func = cache_->bytecode_function_cache[i];
@@ -73,11 +73,11 @@ void Program::ResolveSymbols (Environment* environment) {
 }
 
 
-Function* Program::GetFunctionFromCache (mordor_u32 index) {
+Function* Program::GetFunctionFromCache (mdr_u32 index) {
     return function_cache_[index];
 }
 
-mordor_u32 Program::GetFunctionId (string& name) {
+mdr_u32 Program::GetFunctionId (const string& name) {
     auto it = functions_.find (name);
     if (it != functions_.end ()) {
         return it->second;
@@ -85,14 +85,14 @@ mordor_u32 Program::GetFunctionId (string& name) {
     return INVALID_FUNCTION_ID;
 }
 
-mordor_u32 Program::GetFunctionIdFromResolveCache (std::string& name) {
+mdr_u32 Program::GetFunctionIdFromResolveCache (const std::string& name) {
     auto it = cache_->function_resolve_cache.find (name);
     if (it != cache_->function_resolve_cache.end ()) { /* Already cached. */
         return it->second;
     }
 
     /* Otherwise: Add to cache. */
-    mordor_u32 id = cache_->next_function_id++;
+    mdr_u32 id = cache_->next_function_id++;
     cache_->function_resolve_cache[name] = id;
     
     return id;

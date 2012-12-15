@@ -10,7 +10,7 @@ namespace mordor {
 
 class BytecodeFunction;
 
-MORDOR_DECL BytecodeFunction* LoadBytecodeFunction (coin::Stream* stream);
+BytecodeFunction* LoadBytecodeFunction (coin::Stream* stream);
 
 }
 

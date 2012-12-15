@@ -11,7 +11,7 @@ class BytecodeFunction;
 class Environment;
 class Program;
 
-MORDOR_DECL Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* environment, Program* program);
+Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* environment, Program* program);
 
 }
 

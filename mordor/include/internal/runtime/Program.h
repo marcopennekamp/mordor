@@ -14,21 +14,21 @@ class Function;
 class BytecodeFunction;
 class Environment;
 
-class MORDOR_DECL Program {
+class Program {
 private:
     struct InitializerCache {
         /* 
          * Maps Function names to indices in the function_cache. 
          * Used to reference Functions before they are actually compiled.
          */
-        std::map<std::string, mordor_u32> function_resolve_cache;
+        std::map<std::string, mdr_u32> function_resolve_cache;
 
         /* 
          * Saves all BytecodeFunctions. 
          */
         std::vector<BytecodeFunction*> bytecode_function_cache;
 
-        mordor_u32 next_function_id;
+        mdr_u32 next_function_id;
     };
 
     /*
@@ -39,7 +39,7 @@ private:
     /*
      * Holds all Functions owned by this Program.
      */
-    std::map<std::string, mordor_u32> functions_;
+    std::map<std::string, mdr_u32> functions_;
 
     /*
      * Holds all Functions that are ever referenced in the Program's code. 
@@ -49,18 +49,18 @@ private:
 
 
 public:
-    static const mordor_u32 INVALID_FUNCTION_ID = 0xFFFFFFFF;
+    static const mdr_u32 INVALID_FUNCTION_ID = 0xFFFFFFFF;
 
     Program ();
 
-    void        Initialize (Environment* environment);
-    void        ResolveSymbols (Environment* environment);
-    void        AddBytecodeFunction (std::string& name, BytecodeFunction* function);
+    void Initialize (Environment* environment);
+    void ResolveSymbols (Environment* environment);
+    void AddBytecodeFunction (const std::string& name, BytecodeFunction* function);
 
-    Function*   GetFunctionFromCache (mordor_u32 index);
-    mordor_u32  GetFunctionId (std::string& name);
+    Function* GetFunctionFromCache (mdr_u32 index);
+    mdr_u32 GetFunctionId (const std::string& name);
 
-    mordor_u32  GetFunctionIdFromResolveCache (std::string& name); /* Do NOT use this after calling ResolveSymbols! */
+    mdr_u32 GetFunctionIdFromResolveCache (const std::string& name); /* Do NOT use this after calling ResolveSymbols! */
 
     inline std::vector<BytecodeFunction*>& bytecode_function_cache () { return cache_->bytecode_function_cache; }
 };

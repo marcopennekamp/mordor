@@ -2,7 +2,7 @@
 
 #include <coin/utils/Stream.h>
 
-#include <internal/bytecode/VariableType.h>
+#include <mordor/bytecode/VariableType.h>
 
 #include "main.h"
 
@@ -34,7 +34,7 @@ bool isLiteralCharacter (char c, bool beginning) {
     if (!beginning) {
         if (isNumber (c, false)) return true;
     }
-    return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '.';
+    return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || c == '.';
 }
 
 Token* addToken (vector<Token*>& tokens, int tag) {
@@ -57,7 +57,7 @@ size_t addNumberToken (vector<Token*>& tokens, char* data, size_t length, size_t
 
     vector<char> buffer;
 
-    VariableType::T type = VariableType::I;
+    mdrVariableType type = MDR_VARTYPE_I;
     bool has_dot = false;
 
     /* Find the number and determine the type. */
@@ -70,12 +70,12 @@ size_t addNumberToken (vector<Token*>& tokens, char* data, size_t length, size_t
             buffer.push_back (c);
         }else if (isNumber (c, index == start)) {
             buffer.push_back (c);
-        }else if (c == 'f' && (type & VariableType::F) == 0) {
-            type = VariableType::F;
-        }else if (c == 'u' && (type & VariableType::U) == 0) {
-            type = VariableType::U;
-        }else if (c == 'l' && (type & VariableType::IS_LONG) == 0) {
-            type |= VariableType::IS_LONG;
+        }else if (c == 'f' && (type & MDR_VARTYPE_F) == 0) {
+            type = MDR_VARTYPE_F;
+        }else if (c == 'u' && (type & MDR_VARTYPE_U) == 0) {
+            type = MDR_VARTYPE_U;
+        }else if (c == 'l' && (type & MDR_VARTYPE_IS_LONG) == 0) {
+            type |= MDR_VARTYPE_IS_LONG;
         }else {
             break;
         }
@@ -86,23 +86,23 @@ size_t addNumberToken (vector<Token*>& tokens, char* data, size_t length, size_t
 
     /* Parse values according to the type. */
     // TODO(Marco): The strtoX or atoX have to do it for now, until I write a faster specialized library for that. Also note that some versions depend on Visual Studio.
-    if ((type & VariableType::I) > 0) {
-        if ((type & VariableType::IS_LONG) > 0) {
-            addToken (tokens, TOKEN_INT_64)->nInt64 = (mordor_s64) _strtoi64 (str, NULL, 10);
+    if ((type & MDR_VARTYPE_I) > 0) {
+        if ((type & MDR_VARTYPE_IS_LONG) > 0) {
+            addToken (tokens, TOKEN_INT_64)->nInt64 = (mdr_s64) _strtoi64 (str, NULL, 10);
         }else {
-            addToken (tokens, TOKEN_INT_32)->nInt32 = (mordor_s32) atoi (str);
+            addToken (tokens, TOKEN_INT_32)->nInt32 = (mdr_s32) atoi (str);
         }
-    }else if ((type & VariableType::U) > 0) {
-        if ((type & VariableType::IS_LONG) > 0) {
-            addToken (tokens, TOKEN_UINT_64)->nUInt64 = (mordor_u64) _strtoui64 (str, NULL, 10);
+    }else if ((type & MDR_VARTYPE_U) > 0) {
+        if ((type & MDR_VARTYPE_IS_LONG) > 0) {
+            addToken (tokens, TOKEN_UINT_64)->nUInt64 = (mdr_u64) _strtoui64 (str, NULL, 10);
         }else {
-            addToken (tokens, TOKEN_UINT_32)->nUInt32 = (mordor_u32) atoi (str);
+            addToken (tokens, TOKEN_UINT_32)->nUInt32 = (mdr_u32) atoi (str);
         }
-    }else if ((type & VariableType::F) > 0) {
-        if ((type & VariableType::IS_LONG) > 0) {
-            addToken (tokens, TOKEN_FLOAT_64)->nFloat64 = (mordor_f64) strtod (str, NULL);
+    }else if ((type & MDR_VARTYPE_F) > 0) {
+        if ((type & MDR_VARTYPE_IS_LONG) > 0) {
+            addToken (tokens, TOKEN_FLOAT_64)->nFloat64 = (mdr_f64) strtod (str, NULL);
         }else {
-            addToken (tokens, TOKEN_FLOAT_32)->nFloat32 = (mordor_f32) strtod (str, NULL);
+            addToken (tokens, TOKEN_FLOAT_32)->nFloat32 = (mdr_f32) strtod (str, NULL);
         }
     }
 
@@ -171,8 +171,12 @@ void TokenizeFile (const char* file_path, vector<Token*>& tokens) {
         if (c == '\n' || c == '!' || c == ':') {
             bool add_token = true;
             if (c == '\n') { /* Skip adding a character token if last token was '\n'. */
-                Token* last_token = tokens[tokens.size () - 1];
-                if (last_token->tag == TOKEN_CHARACTER && last_token->character == '\n') {
+                if (tokens.size () > 0) {
+                    Token* last_token = tokens[tokens.size () - 1];
+                    if (last_token->tag == TOKEN_CHARACTER && last_token->character == '\n') {
+                        add_token = false;
+                    }
+                }else { /* Don't add as first token either. */
                     add_token = false;
                 }
             }
@@ -200,7 +204,12 @@ void TokenizeFile (const char* file_path, vector<Token*>& tokens) {
             continue;
         }
 
-        i = addLiteralToken (tokens, data, file_size, i);
+        if (isLiteralCharacter (c, true)) {
+            i = addLiteralToken (tokens, data, file_size, i);
+            continue; 
+        }
+
+        ++i;
     }
 
 }

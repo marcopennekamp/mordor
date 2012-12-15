@@ -1,57 +1,60 @@
+/* 
+ * The mordor prefix is mdr.
+ *
+ */
+
+
 #ifndef MORDOR_DEF_H_
 #define MORDOR_DEF_H_
+
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 
 /*
  * OS target.
  */
-#define MORDOR_OS windows
+#define MDR_OS windows
 
 
 /*
  * DLL Exports.
  */
-#ifdef MORDOR_EXPORT
-#define MORDOR_DECL __declspec (dllexport)
+#ifdef MDR_EXPORT
+#define MDR_DECL __declspec (dllexport)
 #else
-#define MORDOR_DECL __declspec (dllimport)
+#define MDR_DECL __declspec (dllimport)
 #endif
 
 
 /*
  * General typedefs.
  */
-typedef char mordor_s8;
-typedef unsigned char mordor_u8;
-typedef short int mordor_s16;
-typedef unsigned short int mordor_u16;
-typedef int mordor_s32;
-typedef unsigned int mordor_u32;
-typedef long long int mordor_s64;
-typedef unsigned long long int mordor_u64;
+typedef char                        mdr_s8;
+typedef unsigned char               mdr_u8;
+typedef short int                   mdr_s16;
+typedef unsigned short int          mdr_u16;
+typedef int                         mdr_s32;
+typedef unsigned int                mdr_u32;
+typedef long long int               mdr_s64;
+typedef unsigned long long int      mdr_u64;
 
-typedef float mordor_f32;
-typedef double mordor_f64;
+typedef float                       mdr_f32;
+typedef double                      mdr_f64;
 
-typedef mordor_u8 mordor_bool;
+typedef mdr_u8                      mdr_bool;
 
 
 /*
  * Constants.
  */
-#define mordor_false 0
-#define mordor_true 1
+#define mdr_false 0
+#define mdr_true 1
 
 
-/*
- * Internal string representation.
- * ASCII representation, because of memory limit reasons.
- */
-typedef mordor_s8 mordor_char;
-
-struct mordorString {
-    mordor_u16 length;
-    mordor_char* data;
-};
-typedef struct mordorString mordor_string;
+#ifdef	__cplusplus
+}
+#endif
 
 #endif  /* MORDOR_DEF_H_ */
