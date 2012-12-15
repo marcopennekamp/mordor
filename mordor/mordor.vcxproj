@@ -47,6 +47,7 @@
     <ClCompile Include="src\mordor\runtime\core.cc" />
     <ClCompile Include="src\mordor\runtime\Context.cc" />
     <ClCompile Include="src\mordor\runtime\Environment.cc" />
+    <ClCompile Include="src\mordor\runtime\Function.cc" />
     <ClCompile Include="src\mordor\runtime\Library.cc" />
     <ClCompile Include="src\mordor\runtime\LibraryManager.cc" />
     <ClCompile Include="src\mordor\runtime\Program.cc" />

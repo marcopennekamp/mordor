@@ -37,7 +37,7 @@ private:
     InitializerCache* cache_;
 
     /*
-     * Holds all Functions owned by this Program.
+     * Holds all Function IDs owned by this Program.
      */
     std::map<std::string, mdr_u32> functions_;
 
@@ -47,11 +47,14 @@ private:
      */
     std::vector<Function*> function_cache_;
 
+    mdr_u32 owned_functions_size_;
+
 
 public:
     static const mdr_u32 INVALID_FUNCTION_ID = 0xFFFFFFFF;
 
     Program ();
+    ~Program ();
 
     void Initialize (Environment* environment);
     void ResolveSymbols (Environment* environment);

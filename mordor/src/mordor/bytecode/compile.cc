@@ -417,12 +417,10 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
 
   LJumpResolveLoopEnd:
     /* Create function. */
-    Function* function = new Function ();
+    size_t size = operation_buffer.size ();
+    Function* function = new Function (size, 0);
     function->stack_size = stack_top;
     function->program = program;
-    size_t size = operation_buffer.size ();
-    //printf ("Function size is %u!\n", size);
-    function->operations = new mdrOperation[operation_buffer.size ()];
     memcpy (function->operations, &operation_buffer[0], size * sizeof (mdrOperation));
 
     time = coin::TimeNanoseconds () - time;

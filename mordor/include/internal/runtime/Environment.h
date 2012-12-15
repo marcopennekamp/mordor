@@ -24,6 +24,8 @@ private:
 
 
 public:
+    ~Environment ();
+
     Program* LoadProgram (const char* path);
 
     void Initialize ();

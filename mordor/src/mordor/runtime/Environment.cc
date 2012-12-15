@@ -7,6 +7,7 @@
 #include <coin/utils/Stream.h>
 
 #include <mordor/runtime/Environment.h>
+#include <mordor/runtime/Program.h>
 
 #include <internal/bytecode/BytecodeFunction.h>
 #include <internal/bytecode/compile.h>
@@ -44,6 +45,14 @@ MDR_DECL mdrFunction* mdrEnvFindFunction (mdrEnvironment* env, const char* name)
 
 
 namespace mordor {
+
+Environment::~Environment () {
+    /* Delete Programs. */
+    size_t size = programs_.size ();
+    for (size_t i = 0; i < size; ++i) {
+        mdrProgDestroy ((mdrProgram*) programs_[i]);
+    }
+}
 
 bool Environment::_EvaluateProgramConfig (unzFile archive) {
     /* Locate 'program' file. */
@@ -104,7 +113,7 @@ Program* Environment::LoadProgram (const char* path) {
     }
 
     /* Create Program. */
-    Program* program = new Program ();
+    Program* program = (Program*) mdrProgCreate ();
 
     /* Load all '.func' files. */
     bool found = (unzGoToFirstFile (archive) == UNZ_OK);

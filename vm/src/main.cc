@@ -33,8 +33,11 @@ int main (int argc, char** argv) {
     stack[0] = 42;
     stack[1] = 42;
 
+    mdr_u64 time = coin::TimeNanoseconds ();
+
     mdrExecute (ctx, test_function, 0);
 
+    printf ("Execution took %lluns\n", coin::TimeNanoseconds () - time);
     printf ("The function returned '%u'\n", *((mdr_s64*) mdrCtxGetReturnValueAddress (ctx)));
 
     mdrEnvDestroy (env);

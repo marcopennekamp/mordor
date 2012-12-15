@@ -143,5 +143,8 @@
     <ClCompile Include="src\mordor\runtime\core.cc">
       <Filter>Source Files\interpreter</Filter>
     </ClCompile>
+    <ClCompile Include="src\mordor\runtime\Function.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

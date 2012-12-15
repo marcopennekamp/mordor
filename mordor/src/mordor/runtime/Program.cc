@@ -1,6 +1,7 @@
 #include <stddef.h>
 
 #include <mordor/def.h>
+#include <mordor/runtime/Program.h>
 
 #include <internal/bytecode/compile.h>
 #include <internal/bytecode/BytecodeFunction.h>
@@ -9,12 +10,32 @@
 #include <internal/runtime/Program.h>
 
 using namespace std;
+using namespace mordor;
+
+
+extern "C" {
+
+mdrProgram* mdrProgCreate () {
+    return (mdrProgram*) new Program ();
+}
+
+void mdrProgDestroy (mdrProgram* prog) {
+    delete (Program*) prog;
+}
+
+}
 
 
 namespace mordor {
 
 Program::Program () {
     cache_ = new InitializerCache ();
+}
+
+Program::~Program () {
+    for (size_t i = 0; i < owned_functions_size_; ++i) {
+        delete function_cache_[i];
+    }
 }
 
 
@@ -28,10 +49,10 @@ void Program::AddBytecodeFunction (const string& name, BytecodeFunction* functio
 void Program::Initialize (Environment* environment) {
     /* Compile Bytecode functions. */
     {
-        size_t size = cache_->bytecode_function_cache.size ();
-        cache_->next_function_id = (mdr_u32) size; /* Set the next available ID to the value after the last already known function. */
-        function_cache_.resize (size);
-        for (size_t i = 0; i < size; ++i) {
+        owned_functions_size_ = (mdr_u32) cache_->bytecode_function_cache.size ();
+        cache_->next_function_id = owned_functions_size_; /* Set the next available ID to the value after the last already known function. */
+        function_cache_.resize (owned_functions_size_);
+        for (size_t i = 0; i < owned_functions_size_; ++i) {
             BytecodeFunction* bc_func = cache_->bytecode_function_cache[i];
             Function* function = CompileBytecodeFunction (bc_func, environment, this);
             if (function == NULL) {

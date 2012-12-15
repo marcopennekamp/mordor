@@ -17,8 +17,8 @@ extern "C" {
 
 typedef void    mdrFunction;
 
-MDR_DECL mdrFunction* mdrFuncCreate ();
-MDR_DECL void mdrFuncDestroy (mdrFunction* func);
+// MDR_DECL mdrFunction* mdrFuncCreate ();
+// MDR_DECL void mdrFuncDestroy (mdrFunction* func);
 
 
 #ifdef	__cplusplus
