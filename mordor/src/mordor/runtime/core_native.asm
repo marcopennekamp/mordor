@@ -1,12 +1,3 @@
-data segment
-jump_list   dq LExecute
-            dq Lp0
-            dq Lp1
-            dq Lp2
-            dq Lp3
-data ends
-
-
 .code
 
 public CallNativeFunctionU32

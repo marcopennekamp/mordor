@@ -118,28 +118,6 @@ inline T& fetch (mdr_u8* stack, mdr_u16 id) {
 }
 
 
-mdr_u64 __stdcall test (mdr_u64 a, mdr_u64 b, mdr_u64 c, mdr_u64 d) {
-    return 42;
-}
-
-mdr_s32 __stdcall test2 (mdr_s32 a, mdr_s32 b, mdr_s32 c, mdr_s32 d) {
-    printf ("beep\n");
-    fflush (stdout);
-    return a + b + c + d;
-}
-
-mdr_f32 __stdcall test3 (mdr_f32 a, mdr_f32 b, mdr_f32 c, mdr_f32 d) {
-    printf ("%f, %f, %f, %f\n", a, b, c, d);
-    return a + b + c + d;
-}
-
-mdr_u64 __stdcall test4 () {
-    return 42;
-}
-
-mdr_u64 __stdcall test5 (mdr_u64 a, mdr_u64 b, mdr_u64 c, mdr_u64 d, mdr_u64 e, mdr_u64 f) {
-    return a + b + c + d + e + f;
-}
 
 
 extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32 caller_stack_top) {
