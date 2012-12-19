@@ -147,4 +147,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <MASM Include="src\mordor\runtime\core_native.asm" />
+  </ItemGroup>
 </Project>

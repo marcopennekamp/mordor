@@ -31,6 +31,8 @@ namespace mordor {
 Context::Context (const Environment* environment) {
     environment_ = environment;
     stack_.Create (1024 * 16);
+    native_call_stack_.Create (4 * 8);
+    native_stack_size_ = 0;
 }
 
 }

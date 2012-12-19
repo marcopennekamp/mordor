@@ -172,6 +172,21 @@ void Environment::Initialize () {
 }
 
 
+mdr_u32 Environment::GetNativeFunctionIndex (const std::string& name) {
+    /* Search for already cached native function. */
+    auto it = native_function_id_map_.find (name);
+    if (it != native_function_id_map_.end ()) {
+        return it->second;
+    }
+    
+    /* Find native function. */
+    Library::func function = library_manager_.FindFunction (name);
+    if (function != NULL) {
+
+    }
+    return INVALID_NATIVE_FUNCTION_ID;
+}
+
 // TODO(Marco): Duplicate code!
 
 Function* Environment::FindFunction (const std::string& name) {

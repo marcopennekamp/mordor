@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mordor-asm", "mordor-asm\mo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mordor", "mordor\mordor.vcxproj", "{BF4E97F0-6073-4EEA-916F-E5EFEFA7AA26}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NativeTest", "NativeTest\NativeTest.vcxproj", "{094A7D00-83E2-4CF3-8762-2DE03D66693D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -57,6 +59,17 @@ Global
 		{BF4E97F0-6073-4EEA-916F-E5EFEFA7AA26}.Release|Win32.Build.0 = Release|Win32
 		{BF4E97F0-6073-4EEA-916F-E5EFEFA7AA26}.Release|x64.ActiveCfg = Release|x64
 		{BF4E97F0-6073-4EEA-916F-E5EFEFA7AA26}.Release|x64.Build.0 = Release|x64
+		{094A7D00-83E2-4CF3-8762-2DE03D66693D}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{094A7D00-83E2-4CF3-8762-2DE03D66693D}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{094A7D00-83E2-4CF3-8762-2DE03D66693D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{094A7D00-83E2-4CF3-8762-2DE03D66693D}.Debug|Win32.Build.0 = Debug|Win32
+		{094A7D00-83E2-4CF3-8762-2DE03D66693D}.Debug|x64.ActiveCfg = Debug|Win32
+		{094A7D00-83E2-4CF3-8762-2DE03D66693D}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{094A7D00-83E2-4CF3-8762-2DE03D66693D}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{094A7D00-83E2-4CF3-8762-2DE03D66693D}.Release|Win32.ActiveCfg = Release|Win32
+		{094A7D00-83E2-4CF3-8762-2DE03D66693D}.Release|Win32.Build.0 = Release|Win32
+		{094A7D00-83E2-4CF3-8762-2DE03D66693D}.Release|x64.ActiveCfg = Release|x64
+		{094A7D00-83E2-4CF3-8762-2DE03D66693D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

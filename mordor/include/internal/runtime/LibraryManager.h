@@ -6,10 +6,10 @@
 
 #include <mordor/def.h>
 
+#include <internal/runtime/Library.h>
+
 
 namespace mordor {
-
-class Library;
 
 class LibraryManager {
 private:
@@ -18,13 +18,14 @@ private:
 public:
     ~LibraryManager ();
 
-    Library* GetRuntimeLibrary (std::string& name);
+    Library* GetRuntimeLibrary (const std::string& name);
+    Library::func FindFunction (const std::string& name);
 
-    void LoadRuntimeLibrary (std::string& name);
+    void LoadRuntimeLibrary (const std::string& name);
     void UnloadRuntimeLibrary (Library* library); /* Deletes the Library object. */
 
     void AddRuntimeLibrary (Library* library);
-    void RemoveRuntimeLibrary (std::string& name);
+    void RemoveRuntimeLibrary (const std::string& name);
 };
 
 }

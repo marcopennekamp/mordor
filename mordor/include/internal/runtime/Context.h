@@ -12,6 +12,19 @@ class Environment;
 class Program;
 
 class Context {
+public:
+    /*
+     * Holds the register values for the x64 calling convention.
+     * This is needed because executing the interpreter itself pollutes rcx, rdx and possibly r8 and r9,
+     *   so they have to be added right before calling with very low level code.
+     *
+     * 32bit values have to be put in the low part of the memory, which equals the
+     *   array indices 0, 2, 4 or 6 with a 32bit pointer in mind.
+     */
+    Array<mdr_u64> native_call_stack_;
+
+    mdr_u32 native_stack_size_;
+
 private:
     const Environment* environment_;
     Array<mdr_u8> stack_;

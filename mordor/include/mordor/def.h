@@ -28,6 +28,23 @@ extern "C" {
 #endif
 
 
+/* 
+ * This is the calling convention used for functions that are called by mordor.
+ * Note: Uses the standard x64 calling convention, but specifies __stdcall to have a convention.
+ */
+#define MDRI_CALL __stdcall
+
+
+/* 
+ * Used to export or import functions that are called by mordor.
+ */
+#ifdef MDRI_EXPORT
+#define MDRI_DECL __declspec (dllexport)
+#else
+#define MDRI_DECL __declspec (dllimport)
+#endif
+
+
 /*
  * General typedefs.
  */

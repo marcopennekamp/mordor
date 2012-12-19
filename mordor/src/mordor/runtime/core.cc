@@ -2,14 +2,26 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <coin/utils/time.h>
+
 #include <mordor/runtime/core.h>
 #include <mordor/runtime/Operation.h>
 
 #include <internal/runtime/Context.h>
 #include <internal/runtime/Function.h>
 #include <internal/runtime/Program.h>
+#include <internal/runtime/Library.h>
 
 using namespace mordor;
+
+
+
+/* ASM externs. */
+
+extern "C" extern mdr_u32 CallNativeFunctionU32 (Library::func, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
+extern "C" extern mdr_u64 CallNativeFunctionU64 (Library::func, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
+extern "C" extern mdr_f32 CallNativeFunctionF32 (Library::func, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
+extern "C" extern mdr_f64 CallNativeFunctionF64 (Library::func, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
 
 
 
@@ -106,6 +118,28 @@ inline T& fetch (mdr_u8* stack, mdr_u16 id) {
 }
 
 
+mdr_u64 __stdcall test (mdr_u64 a, mdr_u64 b, mdr_u64 c, mdr_u64 d) {
+    return 42;
+}
+
+mdr_s32 __stdcall test2 (mdr_s32 a, mdr_s32 b, mdr_s32 c, mdr_s32 d) {
+    printf ("beep\n");
+    fflush (stdout);
+    return a + b + c + d;
+}
+
+mdr_f32 __stdcall test3 (mdr_f32 a, mdr_f32 b, mdr_f32 c, mdr_f32 d) {
+    printf ("%f, %f, %f, %f\n", a, b, c, d);
+    return a + b + c + d;
+}
+
+mdr_u64 __stdcall test4 () {
+    return 42;
+}
+
+mdr_u64 __stdcall test5 (mdr_u64 a, mdr_u64 b, mdr_u64 c, mdr_u64 d, mdr_u64 e, mdr_u64 f) {
+    return a + b + c + d + e + f;
+}
 
 
 extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32 caller_stack_top) {
@@ -136,8 +170,8 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
     /* BASIC. */
 
         _OP_START (END) {
-
-        _OP_RETURN }
+            _OP_RETURN
+        }
 
         _OP_START (kJMP) { _OPC_W (offset)
             // printf ("JMP from %p, base %p, by %i (%llX)\n", op_pointer, function->operations, (mordor_s32) offset, op);
@@ -146,16 +180,18 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
 
         _OP_START (RET) { _OPC_P (src)
             context->return_value_address () = stack + src;
-        _OP_RETURN }
+            _OP_RETURN
+        }
 
         _OP_START (RETl) { _OPC_P (src)
             context->return_value_address () = stack + src;
-        _OP_RETURN }
+            _OP_RETURN
+        }
 
 
     /* MEM. */
 
-        _OP_START (RETMOV) { _OPC_P (dest) 
+        _OP_START (RETMOV) { _OPC_P (dest)
             fetch<mdr_u32> (stack, dest) = *((mdr_u32*) context->return_value_address ());
         _OP_END }
 
@@ -578,14 +614,40 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
 
         _OP_START (CALL_NATIVE) {
 
+
+
+
+            context->native_stack_size_ = 0;
         _OP_END }
 
         _OP_START (PUSH) { _OPC_PP (src, offset)
             fetch<mdr_u32> (context->stack ().array (), stack_top + offset) = fetch<mdr_u32> (stack, src);
         _OP_END }
 
-        default: 
-            printf ("Error: An unexpected operation terminated the code: '%llX'!\n", op); 
+        _OP_START (PUSHl) { _OPC_PP (src, offset)
+            fetch<mdr_u64> (context->stack ().array (), stack_top + offset) = fetch<mdr_u64> (stack, src);
+        _OP_END }
+
+        _OP_START (NPUSH_REG) { _OPC_PP (src, offset)
+            ((mdr_u32*) (context->native_call_stack_.array ()))[offset] = fetch<mdr_u32> (stack, src);
+        _OP_END }
+
+        _OP_START (NPUSH_REGl) { _OPC_PP (src, offset)
+            context->native_call_stack_.array ()[offset] = fetch<mdr_u32> (stack, src);
+        _OP_END }
+
+        _OP_START (NPUSH_STACK) { _OPC_PP (src, offset)
+            fetch<mdr_u32> (context->stack ().array (), stack_top + offset) = fetch<mdr_u32> (stack, src);
+            context->native_stack_size_ += 1; /* Stack is 8 byte aligned. */
+        _OP_END }
+
+        _OP_START (NPUSH_STACKl) { _OPC_PP (src, offset)
+            fetch<mdr_u64> (context->stack ().array (), stack_top + offset) = fetch<mdr_u64> (stack, src);
+            context->native_stack_size_ += 1; /* Stack is 8 byte aligned. */
+        _OP_END }
+
+        default:
+            printf ("Error: An unexpected operation terminated the code: '%llX'!\n", op);
             _OP_RETURN
     }
 

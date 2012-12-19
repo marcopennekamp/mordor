@@ -27,7 +27,7 @@ namespace mordor {
 
 class Library {
 public:
-    typedef void* (_stdcall* func) ();
+    typedef void (_stdcall *func) ();
 
 private:
     std::string path_;
@@ -35,9 +35,9 @@ private:
     lib library_;
 
 public:
-    Library (std::string& path, lib library);
+    Library (const std::string& path, lib library);
 
-    void AddFunction (std::string& name, func function);
+    void AddFunction (const std::string& name, func function);
 
     inline lib library () { return library_; }
     inline std::string path () { return path_; }

@@ -17,7 +17,7 @@ LibraryManager::~LibraryManager () {
     }
 }
 
-void LibraryManager::LoadRuntimeLibrary (string& name) {
+void LibraryManager::LoadRuntimeLibrary (const string& name) {
     if (GetRuntimeLibrary (name) != NULL) {
         printf ("Info: Runtime Library '%s' already loaded!\n", name.c_str ());
         return;
