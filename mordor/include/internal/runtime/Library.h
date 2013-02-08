@@ -6,16 +6,18 @@
 
 #include <mordor/def.h>
 
+#include <internal/runtime/NativeFunction.h>
+
 
 #if (MDR_OS == windows)
 #include <windows.h>
-namespace mordor {
+namespace mdr {
 
 typedef HMODULE lib;
 
 }
 #else
-namespace mordor {
+namespace mdr {
 
 typedef void* lib;
 
@@ -23,26 +25,21 @@ typedef void* lib;
 #endif
 
 
-namespace mordor {
+namespace mdr {
 
 class Library {
-public:
-    typedef void (_stdcall *func) ();
-
 private:
     std::string path_;
-    std::map<std::string, func> functions_;
     lib library_;
 
 public:
     Library (const std::string& path, lib library);
-
-    void AddFunction (const std::string& name, func function);
 
     inline lib library () { return library_; }
     inline std::string path () { return path_; }
 };
 
 }
+
 
 #endif  /* MORDOR_INTERNAL_RUNTIME_LIBRARY_H_ */

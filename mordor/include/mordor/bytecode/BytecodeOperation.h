@@ -70,13 +70,12 @@ enum mdrBytecodeOperationType {
     BCOP_ADR_GLOBAL     = 0x36,
     BCOP_ADR_FIELD      = 0x37,
 
-    /* 38 free slot. */
+    BCOP_NEW            = 0x38,
+    BCOP_ANEW           = 0x39,
+    BCOP_INEW           = 0x3A,
 
-    BCOP_NEW            = 0x39,
-    BCOP_ANEW           = 0x3A,
-    BCOP_INEW           = 0x3B,
-
-    BCOP_CALL           = 0x3C,
+    BCOP_CALL           = 0x3B,
+    BCOP_NCALL          = 0x3C,
     BCOP_ICALL          = 0x3D,
     BCOP_VCALL          = 0x3E,
 
@@ -154,13 +153,12 @@ static const int BCOP_SIZE [] = {
     2, /* BCOP_ADR_GLOBAL */
     2, /* BCOP_ADR_FIELD */
 
-    0,
-
     2, /* BCOP_NEW */
     2, /* BCOP_ANEW */
     3, /* BCOP_INEW */
 
     2, /* BCOP_CALL */
+    3, /* BCOP_NCALL */
     2, /* BCOP_ICALL */
     1, /* BCOP_VCALL */
 

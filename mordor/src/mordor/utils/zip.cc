@@ -1,7 +1,7 @@
 #include <internal/utils/zip.h>
 
 
-namespace mordor {
+namespace mdr {
 namespace zip {
 
 void GetFileData (unzFile archive, const void** file_data_ptr, mdr_u32* file_size_ptr, mdr_bool append_zero, const mdr_s8** file_name_ptr) {

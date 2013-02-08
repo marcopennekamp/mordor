@@ -10,7 +10,7 @@
 #include <internal/runtime/Program.h>
 
 using namespace std;
-using namespace mordor;
+using namespace mdr;
 
 
 extern "C" {
@@ -26,7 +26,7 @@ void mdrProgDestroy (mdrProgram* prog) {
 }
 
 
-namespace mordor {
+namespace mdr {
 
 Program::Program () {
     cache_ = new InitializerCache ();
@@ -47,6 +47,11 @@ void Program::AddBytecodeFunction (const string& name, BytecodeFunction* functio
 
 
 void Program::Initialize (Environment* environment) {
+    /* Initialize native functions. */
+    {
+
+    }
+
     /* Compile Bytecode functions. */
     {
         owned_functions_size_ = (mdr_u32) cache_->bytecode_function_cache.size ();

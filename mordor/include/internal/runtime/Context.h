@@ -6,7 +6,7 @@
 #include <internal/utils/Array.h>
 
 
-namespace mordor {
+namespace mdr {
 
 class Environment;
 class Program;
@@ -21,19 +21,19 @@ public:
      * 32bit values have to be put in the low part of the memory, which equals the
      *   array indices 0, 2, 4 or 6 with a 32bit pointer in mind.
      */
-    Array<mdr_u64> native_call_stack_;
+    Array<mdr_u8> native_call_stack_;
 
     mdr_u32 native_stack_size_;
 
 private:
-    const Environment* environment_;
+    Environment* environment_;
     Array<mdr_u8> stack_;
     mdr_u8* return_value_address_;
 
 public:
-    Context (const Environment* environment);
+    Context (Environment* environment);
 
-    inline const Environment* environment () { return environment_; }
+    inline Environment* environment () { return environment_; }
     inline Array<mdr_u8>& stack () { return stack_; }
     inline mdr_u8*& return_value_address () { return return_value_address_; }
 };

@@ -1,0 +1,8 @@
+
+
+
+!call
+    load    42
+    load    42
+    call    add_int
+    return

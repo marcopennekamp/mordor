@@ -4,7 +4,7 @@
 #include <mordor/def.h>
 
 
-namespace mordor {
+namespace mdr {
 
 class Function;
 class BytecodeFunction;
@@ -14,5 +14,6 @@ class Program;
 Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* environment, Program* program);
 
 }
+
 
 #endif /* MORDOR_INTERNAL_BYTECODE_COMPILE_H_ */

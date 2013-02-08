@@ -20,7 +20,7 @@ extern "C" {
 typedef void    mdrContext;
 
 
-MDR_DECL mdrContext* mdrCtxCreate (const mdrEnvironment* env);
+MDR_DECL mdrContext* mdrCtxCreate (mdrEnvironment* env);
 MDR_DECL void mdrCtxDestroy (mdrContext* ctx);
 
 MDR_DECL mdr_u8* mdrCtxGetStack (mdrContext* ctx);

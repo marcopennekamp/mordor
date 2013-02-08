@@ -1,12 +1,16 @@
 #include <mordor/def.h>
 
+#include <stdio.h>
+
 struct T {
     mdr_u64 a;
     mdr_u64 b;
 };
 
-MDRI_DECL mdr_s64 MDRI_CALL power (mdr_s64 a) {
-    return a * a;
+MDRI_DECL mdr_u32 MDRI_CALL power (mdr_u32 a) {
+    mdr_u32 result = a * a;
+    printf ("%lli\n", result);
+    return result;
 }
 
 MDRI_DECL mdr_u64 MDRI_CALL negate (mdr_u64 a) {

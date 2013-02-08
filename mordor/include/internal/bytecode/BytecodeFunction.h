@@ -4,24 +4,26 @@
 #include <string>
 
 #include <mordor/def.h>
-#include <mordor/bytecode/VariableType.h>
+#include <mordor/bytecode/Type.h>
 
 #include <internal/utils/Array.h>
 
 
-namespace mordor {
+namespace mdr {
 
 class BytecodeFunction {
 public:
-    const static mdr_u8 EXISTS_CONSTANT_TABLE                = 0x01;
-    const static mdr_u8 EXISTS_GLOBAL_NAME_TABLE             = 0x02;
-    const static mdr_u8 EXISTS_STRUCT_NAME_TABLE             = 0x04;
-    const static mdr_u8 EXISTS_FIELD_NAME_TABLE              = 0x08;
-    const static mdr_u8 EXISTS_FUNCTION_NAME_TABLE           = 0x10;
-    const static mdr_u8 EXISTS_INTERFACE_STRUCT_INDEX_TABLE  = 0x20;
-    const static mdr_u8 EXISTS_STRUCT_FIELD_INDEX_TABLE      = 0x40;
+    struct Constant {
+        mdrType type;
+        mdr_u64 value;
+    };
 
-    mdrVariableType return_type;
+    const static mdr_u8 CONSTANT_TABLE_EXISTS   = 0x80;
+    const static mdr_u8 CONSTANT_TABLE_WIDE     = 0x40;
+    const static mdr_u8 NAME_TABLE_EXISTS       = 0x20;
+    const static mdr_u8 NAME_TABLE_WIDE         = 0x10;
+
+    mdrType return_type;
     mdr_u8 parameter_count;
 
     mdr_u16 variable_table_size;
@@ -29,15 +31,9 @@ public:
     mdr_u16 maximum_stack_size;
     mdr_u16 operation_count;
 
-    Array<std::string, mdr_u16> function_name_table;
+    Array<Constant, mdr_u16> constant_table;
+    Array<std::string, mdr_u16> name_table;
 
-    // Constant table
-    // Global var name table
-    // Struct name table
-    // Field name table
-    // Function name table
-    // Interface <-> Struct name table
-    // Struct <-> Field name table
 
     mdr_u32 code_size;
     mdr_u8* code;

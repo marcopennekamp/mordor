@@ -13,7 +13,7 @@
 #include <internal/runtime/Library.h>
 
 
-namespace mordor {
+namespace mdr {
 
 class BytecodeFunction;
 
@@ -21,30 +21,26 @@ class Environment {
 private:
     std::vector<Program*> programs_;
 
-    std::map<const std::string, mdr_u32> native_function_id_map_;
-    std::vector<Library::func> native_functions_;
-
     LibraryManager library_manager_;
 
 
 public:
-    static const mdr_u32 INVALID_NATIVE_FUNCTION_ID = 0xFFFFFFFF;
-
     ~Environment ();
 
     Program* LoadProgram (const char* path);
 
     void Initialize ();
 
-    mdr_u32 GetNativeFunctionIndex (const std::string& name);
-
     Function* FindFunction (const std::string& name);
     BytecodeFunction* FindBytecodeFunction (const std::string& name);
+
+    LibraryManager& library_manager () { return library_manager_; }
 
 private:
     bool _EvaluateProgramConfig (unzFile archive);
 };
 
 }
+
 
 #endif  /* MORDOR_INTERNAL_RUNTIME_ENVIRONMENT_H_ */

@@ -105,7 +105,10 @@
     <ClInclude Include="include\mordor\runtime\core.h">
       <Filter>Header Files\mordor\runtime</Filter>
     </ClInclude>
-    <ClInclude Include="include\mordor\bytecode\VariableType.h">
+    <ClInclude Include="include\internal\runtime\NativeFunction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\bytecode\Type.h">
       <Filter>Header Files\internal\bytecode</Filter>
     </ClInclude>
   </ItemGroup>
@@ -146,8 +149,14 @@
     <ClCompile Include="src\mordor\runtime\Function.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\mordor\bytecode\Type.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\runtime\NativeFunction.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="src\mordor\runtime\core_native.asm" />
+    <MASM Include="src\windows\runtime\core_native.asm" />
   </ItemGroup>
 </Project>

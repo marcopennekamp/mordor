@@ -13,11 +13,11 @@ typedef mdr_u64       mdrOperation;
 
 enum mdrOperationType {
     /* BASIC. */
-    OP_END          = 0x00,
-    OP_kJMP         = 0x01,
-    OP_RET_VOID     = 0x0A,
-    OP_RET          = 0x0B,
-    OP_RETl         = 0x0C,
+    OP_END              = 0x00,
+    OP_kJMP             = 0x01,
+    OP_RET_VOID         = 0x0A,
+    OP_RET              = 0x0B,
+    OP_RETl             = 0x0C,
 
     /* MEM. */
     OP_RETMOV           = 0x10,
@@ -144,13 +144,14 @@ enum mdrOperationType {
 
     /* CALL.*/
     OP_CALL             = 0xA0,
-    OP_CALL_NATIVE      = 0xA1,
+    OP_CALL_NATIVE_U32  = 0xA1,
+    OP_CALL_NATIVE_U64  = 0xA2,
+    OP_CALL_NATIVE_F32  = 0xA3,
+    OP_CALL_NATIVE_F64  = 0xA4,
     OP_PUSH             = 0xB0,
     OP_PUSHl            = 0xB1,
-    OP_NPUSH_REG        = 0xB2,
-    OP_NPUSH_REGl       = 0xB3,
-    OP_NPUSH_STACK      = 0xB4,
-    OP_NPUSH_STACKl     = 0xB5
+    OP_NPUSH            = 0xB2,
+    OP_NPUSHl           = 0xB3
 };
 
 

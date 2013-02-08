@@ -16,7 +16,7 @@
 #include <internal/utils/zip.h>
 
 using namespace std;
-using namespace mordor;
+using namespace mdr;
 
 
 extern "C" {
@@ -44,7 +44,7 @@ MDR_DECL mdrFunction* mdrEnvFindFunction (mdrEnvironment* env, const char* name)
 }
 
 
-namespace mordor {
+namespace mdr {
 
 Environment::~Environment () {
     /* Delete Programs. */
@@ -90,9 +90,9 @@ bool Environment::_EvaluateProgramConfig (unzFile archive) {
         }
     }
 
+    delete[] file_data;
     config_destroy (config);
     delete config;
-    delete[] file_data;
 
     return true;
 }
@@ -169,22 +169,6 @@ void Environment::Initialize () {
     for (size_t i = 0; i < size; ++i) {
         programs_[i]->ResolveSymbols (this);
     }
-}
-
-
-mdr_u32 Environment::GetNativeFunctionIndex (const std::string& name) {
-    /* Search for already cached native function. */
-    auto it = native_function_id_map_.find (name);
-    if (it != native_function_id_map_.end ()) {
-        return it->second;
-    }
-    
-    /* Find native function. */
-    Library::func function = library_manager_.FindFunction (name);
-    if (function != NULL) {
-
-    }
-    return INVALID_NATIVE_FUNCTION_ID;
 }
 
 // TODO(Marco): Duplicate code!

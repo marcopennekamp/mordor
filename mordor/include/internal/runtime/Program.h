@@ -5,10 +5,12 @@
 #include <map>
 #include <string>
 
+#include <internal/runtime/Library.h>
+
 #include <mordor/def.h>
 
 
-namespace mordor {
+namespace mdr {
 
 class Function;
 class BytecodeFunction;

@@ -7,7 +7,7 @@
 #include <coin/utils/time.h>
 
 #include <mordor/bytecode/BytecodeOperation.h>
-#include <mordor/bytecode/VariableType.h>
+#include <mordor/bytecode/Type.h>
 
 #include <internal/bytecode/compile.h>
 #include <internal/bytecode/BytecodeFunction.h>
@@ -28,18 +28,18 @@ using namespace boost;
 #define _S10(P0)        mdr_s16 P0; get_s10 (bc_op, P0);
 
 
-namespace mordor {
+namespace mdr {
 
 namespace {
 
 const mdr_u32 kPointerSize = sizeof (void*);
 
 struct StackEntry {
-    mdrVariableType type;
+    mdrType type;
     bool constant;
     mdr_u16 id; /* Variable address or if constant == true, constant table id. */
 
-    void Set (const mdrVariableType _type, const bool _constant, const mdr_u16 _id) {
+    void Set (const mdrType _type, const bool _constant, const mdr_u16 _id) {
         type = _type;
         constant = _constant;
         id = _id;
@@ -71,24 +71,24 @@ inline void get_s10 (const mdrBytecodeOperation* ptr, mdr_s16& param0) {
 }
 
 
-inline void get_type_info (const mdrVariableType type, mdr_u32& size, bool& is_pointer) {
-    if ((type & MDR_VARTYPE_P) > 0) {
+inline void get_type_info (const mdrType type, mdr_u32& size, bool& is_pointer) {
+    if (type == MDR_TYPE_PTR) {
         size = kPointerSize;
         is_pointer = true;
     }else {
-        size = ((type & MDR_VARTYPE_IS_LONG) > 0) ? 8 : 4;
+        size = mdrTypeGetSize (type) / 8;
         is_pointer = false;
     }
 }
 
-inline mdr_u32 get_type_size (const mdrVariableType type) {
+inline mdr_u32 get_type_size (const mdrType type) {
     mdr_u32 size;
     bool is_pointer;
     get_type_info (type, size, is_pointer);
     return size;
 }
 
-inline bool needs_l_operation (const mdrVariableType type) {
+inline bool needs_l_operation (const mdrType type) {
     return get_type_size (type) == 8;
 }
 
@@ -96,7 +96,7 @@ inline bool needs_l_operation (const mdrVariableType type) {
  * Returns an address on the stack for the given variable or pointer.
  * May or may not reserve stack space.
  */
-inline mdr_u16 get_stack_address_for_element (const mdr_u32 element, const mdrVariableType type, Array<mdr_u16>& element_to_stack, mdr_u32& stack_top) {
+inline mdr_u16 get_stack_address_for_element (const mdr_u32 element, const mdrType type, Array<mdr_u16>& element_to_stack, mdr_u32& stack_top) {
     mdr_u16 address = element_to_stack[element];
 
     /* Reserve address if needed. */
@@ -124,7 +124,7 @@ inline mdr_u16 get_stack_address_for_element (const mdr_u32 element, const mdrVa
     return address & 0xFFFF;
 }
 
-inline void load_element (const mdr_u16 element, const mdrVariableType type, Array<mdr_u16>& element_to_stack, StackEntry*& bc_stack_top, mdr_u32& stack_top) {
+inline void load_element (const mdr_u16 element, const mdrType type, Array<mdr_u16>& element_to_stack, StackEntry*& bc_stack_top, mdr_u32& stack_top) {
     /* Resolve address. */
     mdr_u16 address = get_stack_address_for_element (element, type, element_to_stack, stack_top);
     bc_stack_top->Set (type, false, address);
@@ -161,13 +161,46 @@ inline mdrOperation build_operation_PW (const mdr_u16 opcode, const mdr_u16 para
 }
 
 
+
+inline void build_call_parameters (const mdr_u32 parameter_count, const mdrOperationType kOpcode, const mdrOperationType kOpcodel, 
+                                    StackEntry*& bc_stack_top, mdr_u32& stack_top, vector<mdrOperation>& operation_buffer) {
+    StackEntry* end = bc_stack_top;
+    StackEntry* it = bc_stack_top - parameter_count;
+    mdr_u32 offset = 0;
+    for (; it != end; ++it) {
+        mdr_u32 size = get_type_size (it->type);
+        mdrOperationType opcode = (size == 8) ? kOpcodel : kOpcode;
+        if (kOpcode == OP_NPUSH) size = 8; /* Native stack is 8 byte aligned. */
+        if (it->constant) {
+            // TODO(Marco): Push constant properly.
+            add_operation (build_operation_PW (OP_kMOV, stack_top, it->id), operation_buffer);
+            stack_top += size;
+            add_operation (build_operation_PP (opcode, stack_top, offset), operation_buffer);
+        }else { /* Push variable. */
+            add_operation (build_operation_PP (opcode, it->id, offset), operation_buffer);
+        }
+        offset += size;
+    }
+    bc_stack_top -= parameter_count; /* Reverse stack. */
+}
+
+
+inline void fetch_return_value (const mdrType return_type, StackEntry*& bc_stack_top, mdr_u32& stack_top, vector<mdrOperation>& operation_buffer) {
+    mdr_u32 return_size = get_type_size (return_type);
+    mdrOperationType opcode = (return_size == 8) ? OP_RETMOVl : OP_RETMOV;
+    add_operation (build_operation_PP (opcode, stack_top, 0), operation_buffer);
+    bc_stack_top->Set (return_type, false, stack_top);
+    ++bc_stack_top;
+    stack_top += return_size;
+}
+
 }
 
 
 Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* environment, Program* program) {
     mdr_u64 time = coin::TimeNanoseconds ();
 
-    // TODO(Marco): Idea: Keep track of tmp stack variables and invalidate them
+    // TODO(Marco): Idea: Keep track of tmp stack variables and invalidate them.
 
     /* Holds the compiled code. */
     vector<mdrOperation> operation_buffer;
@@ -190,7 +223,7 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
 
     /* Local variables to keep the current bytecode operation.*/
     mdrBytecodeOperation* bc_op = func->code;
-    mdr_u32 bc_op_count = 0;
+    mdr_u32 bc_op_count = 0; /* Op count for jump translation. */
 
     /* The jump id map maps possible jump targets.
         0xFFFFFFFF -> Location not jumped to.
@@ -272,42 +305,42 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
 
             _START (iLOAD) {
                 _U10 (variable)
-                load_element (variable, MDR_VARTYPE_I, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, MDR_TYPE_I32, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (lLOAD) {
                 _U10 (variable)
-                load_element (variable, MDR_VARTYPE_I | MDR_VARTYPE_IS_LONG, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, MDR_TYPE_I64, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (uiLOAD) {
                 _U10 (variable)
-                load_element (variable, MDR_VARTYPE_U, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, MDR_TYPE_U32, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (ulLOAD) {
                 _U10 (variable)
-                load_element (variable, MDR_VARTYPE_U | MDR_VARTYPE_IS_LONG, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, MDR_TYPE_U64, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (fLOAD) {
                 _U10 (variable)
-                load_element (variable, MDR_VARTYPE_F, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, MDR_TYPE_F32, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (flLOAD) {
                 _U10 (variable)
-                load_element (variable, MDR_VARTYPE_F | MDR_VARTYPE_IS_LONG, variable_to_stack, bc_stack_top, stack_top);
+                load_element (variable, MDR_TYPE_F64, variable_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (pLOAD) {
                 _U10 (pointer)
-                load_element (pointer, MDR_VARTYPE_P, pointer_to_stack, bc_stack_top, stack_top);
+                load_element (pointer, MDR_TYPE_PTR, pointer_to_stack, bc_stack_top, stack_top);
             } _END
 
             _START (CONST) {
                 _U10 (constant)
-                bc_stack_top->Set (MDR_VARTYPE_U, true, constant);
+                bc_stack_top->Set (MDR_TYPE_U32, true, constant);
                 ++bc_stack_top;
             } _END
 
@@ -315,7 +348,7 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
                 _U10 (function_name_id)
                 /* Get function name and local id. */
                 BytecodeFunction* callee = NULL;
-                string& name = func->function_name_table[function_name_id];
+                string& name = func->name_table[function_name_id];
                 mdr_u32 id = program->GetFunctionId (name);
 
                 if (id != Program::INVALID_FUNCTION_ID) {
@@ -336,36 +369,42 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
                 }
 
                 /* Push variables in lowest to highest stack order. */
-                StackEntry* end = bc_stack_top;
-                StackEntry* it = bc_stack_top - callee->parameter_count;
-                mdr_u32 offset = 0;
-                for (; it != end; ++it) {
-                    mdr_u32 size = get_type_size (it->type);
-                    mdrOperationType opcode = (size == 8) ? OP_PUSHl : OP_PUSH;
-                    if (it->constant) {
-                        // TODO(Marco): Push constant properly.
-                        add_operation (build_operation_PW (OP_kMOV, stack_top, it->id), operation_buffer);
-                        add_operation (build_operation_PP (opcode, stack_top, offset), operation_buffer);
-                        stack_top += size;
-                        offset += size;
-                    }else { /* Push variable. */
-                        add_operation (build_operation_PP (opcode, it->id, offset), operation_buffer);
-                        offset += size;
-                    }
-                }
-                bc_stack_top -= callee->parameter_count; /* Reverse stack. */
-                
+                build_call_parameters (callee->parameter_count, OP_PUSH, OP_PUSHl, bc_stack_top, stack_top, operation_buffer);
+
                 /* Add CALL instruction. */
                 add_operation (build_operation_W (OP_CALL, id), operation_buffer);
 
                 /* If function returns something, put that on the stack and create a bc stack entry! */
-                if (callee->return_type != MDR_VARTYPE_V) {
-                    mdr_u32 return_size = get_type_size (callee->return_type);
-                    mdrOperationType opcode = (return_size == 8) ? OP_RETMOVl : OP_RETMOV;
-                    add_operation (build_operation_PP (opcode, stack_top, 0), operation_buffer);
-                    bc_stack_top->Set (callee->return_type, false, stack_top);
-                    ++bc_stack_top;
-                    stack_top += return_size;
+                if (callee->return_type != MDR_TYPE_VOID) {
+                    fetch_return_value (callee->return_type, bc_stack_top, stack_top, operation_buffer);
+                }
+            } _END
+
+            _START (NCALL) {
+                _U10 (function_name_id)
+                mdrType type = *(bc_op + 2);
+                mdrOperation op = OP_END;
+
+                switch (type) {
+                    case MDR_TYPE_U32:
+                        op = OP_CALL_NATIVE_U32;
+                        break;
+
+                    default:
+                        printf ("Error: Unexpected type when calling native function!\n");
+                        break;
+                }
+
+                if (op != OP_END) {
+                    mdr_u32 function_id = environment->library_manager ().GetNativeFunctionIndex (func->name_table[function_name_id]);
+                    NativeFunction* function = environment->library_manager ().GetNativeFunction (function_id);
+                    
+                    /* Similar to CALL. */
+                    build_call_parameters (function->parameter_count (), OP_NPUSH, OP_NPUSHl, bc_stack_top, stack_top, operation_buffer);
+                    add_operation (build_operation_W (OP_CALL, function_id), operation_buffer);
+                    if (function->return_type () != MDR_TYPE_VOID) {
+                        fetch_return_value (function->return_type (), bc_stack_top, stack_top, operation_buffer);
+                    }
                 }
             } _END
 
@@ -375,7 +414,7 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
                 StackEntry* var1 = bc_stack_top - 1;
                 add_operation (build_operation_PP (OP_MOV, stack_top, var0->id), operation_buffer);
                 add_operation (build_operation_PP (OP_ADD, stack_top, var1->id), operation_buffer);
-                var1->Set (MDR_VARTYPE_I, false, stack_top);
+                var1->Set (MDR_TYPE_I32, false, stack_top);
                 stack_top += 4;
             } _END
         }

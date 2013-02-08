@@ -7,7 +7,7 @@
 using namespace std;
 
 
-namespace mordor {
+namespace mdr {
 
 LibraryManager::~LibraryManager () {
     auto it = library_map_.begin ();
@@ -42,10 +42,22 @@ void LibraryManager::LoadRuntimeLibrary (const string& name) {
         if (image_export_directory != NULL) {
             DWORD* name_rvas = (DWORD*) ImageRvaToVa (loaded_image.FileHeader, loaded_image.MappedAddress, image_export_directory->AddressOfNames, NULL);
             for (size_t i = 0; i < image_export_directory->NumberOfNames; ++i) {
-                string name = (char*) ImageRvaToVa (loaded_image.FileHeader, loaded_image.MappedAddress, name_rvas[i], NULL);
-                FARPROC initializer = GetProcAddress (win_lib, name.c_str ());
+                string function_name = (char*) ImageRvaToVa (loaded_image.FileHeader, loaded_image.MappedAddress, name_rvas[i], NULL);
+                FARPROC initializer = GetProcAddress (win_lib, function_name.c_str ());
                 if (initializer != NULL) {
-                    library->AddFunction (name, (Library::func) initializer);
+                    NativeFunction* function = GetNativeFunction (GetNativeFunctionIndex (function_name));
+
+                    /* Function has not been registered and is not needed. */
+                    if (function == NULL) {
+                        continue;
+                    }
+
+                    if (function->function () != NULL) {
+                        printf ("Error: Function '%s' loaded from runtime library '%s' has already been loaded!\n", function_name.c_str (), path.c_str ());
+                    }else {
+                        /* Glue function pointer to NativeFunction. */
+                        function->function ((NativeFunction::function_t) initializer);
+                    }
                 }
             }
         }

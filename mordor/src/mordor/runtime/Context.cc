@@ -2,13 +2,13 @@
 
 #include <internal/runtime/Context.h>
 
-using namespace mordor;
+using namespace mdr;
 
 
 extern "C" {
 
-MDR_DECL mdrContext* mdrCtxCreate (const mdrEnvironment* env) {
-    return (mdrContext*) new Context ((const Environment*) env);
+MDR_DECL mdrContext* mdrCtxCreate (mdrEnvironment* env) {
+    return (mdrContext*) new Context ((Environment*) env);
 }
 
 MDR_DECL void mdrCtxDestroy (mdrContext* ctx) {
@@ -26,9 +26,9 @@ MDR_DECL mdr_u8* mdrCtxGetReturnValueAddress (mdrContext* ctx) {
 }
 
 
-namespace mordor {
+namespace mdr {
 
-Context::Context (const Environment* environment) {
+Context::Context (Environment* environment) {
     environment_ = environment;
     stack_.Create (1024 * 16);
     native_call_stack_.Create (4 * 8);

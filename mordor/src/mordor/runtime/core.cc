@@ -11,17 +11,18 @@
 #include <internal/runtime/Function.h>
 #include <internal/runtime/Program.h>
 #include <internal/runtime/Library.h>
+#include <internal/runtime/Environment.h>
 
-using namespace mordor;
+using namespace mdr;
 
 
 
 /* ASM externs. */
 
-extern "C" extern mdr_u32 CallNativeFunctionU32 (Library::func, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
-extern "C" extern mdr_u64 CallNativeFunctionU64 (Library::func, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
-extern "C" extern mdr_f32 CallNativeFunctionF32 (Library::func, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
-extern "C" extern mdr_f64 CallNativeFunctionF64 (Library::func, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
+extern "C" extern mdr_u32 CallNativeFunctionU32 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
+extern "C" extern mdr_u64 CallNativeFunctionU64 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
+extern "C" extern mdr_f32 CallNativeFunctionF32 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
+extern "C" extern mdr_f64 CallNativeFunctionF64 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
 
 
 
@@ -590,11 +591,10 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
             mdrExecute (context, function->program->GetFunctionFromCache (function_id), stack_top);
         _OP_END }
 
-        _OP_START (CALL_NATIVE) {
-
-
-
-
+        _OP_START (CALL_NATIVE_U32) { _OPC_W (function_id)
+            NativeFunction* function = context->environment ()->library_manager ().GetNativeFunction (function_id);
+            CallNativeFunctionU32 (function->function (), (mdr_u64*) context->native_call_stack_.array (), 
+                context->native_stack_size_, (mdr_u64*) (context->stack ().array () + stack_top));
             context->native_stack_size_ = 0;
         _OP_END }
 
@@ -606,22 +606,26 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
             fetch<mdr_u64> (context->stack ().array (), stack_top + offset) = fetch<mdr_u64> (stack, src);
         _OP_END }
 
-        _OP_START (NPUSH_REG) { _OPC_PP (src, offset)
-            ((mdr_u32*) (context->native_call_stack_.array ()))[offset] = fetch<mdr_u32> (stack, src);
+        _OP_START (NPUSH) { _OPC_PP (src, offset)
+            if (offset > 31) {
+                /* Push to stack. */
+                fetch<mdr_u32> (context->stack ().array (), stack_top + offset) = fetch<mdr_u32> (stack, src);
+                context->native_stack_size_ += 1; /* Stack is 8 byte aligned. */
+            }else {
+                /* Push to "register". */
+                *((mdr_u32*) (context->native_call_stack_.array () + offset)) = fetch<mdr_u32> (stack, src);
+            }
         _OP_END }
 
-        _OP_START (NPUSH_REGl) { _OPC_PP (src, offset)
-            context->native_call_stack_.array ()[offset] = fetch<mdr_u32> (stack, src);
-        _OP_END }
-
-        _OP_START (NPUSH_STACK) { _OPC_PP (src, offset)
-            fetch<mdr_u32> (context->stack ().array (), stack_top + offset) = fetch<mdr_u32> (stack, src);
-            context->native_stack_size_ += 1; /* Stack is 8 byte aligned. */
-        _OP_END }
-
-        _OP_START (NPUSH_STACKl) { _OPC_PP (src, offset)
-            fetch<mdr_u64> (context->stack ().array (), stack_top + offset) = fetch<mdr_u64> (stack, src);
-            context->native_stack_size_ += 1; /* Stack is 8 byte aligned. */
+        _OP_START (NPUSHl) { _OPC_PP (src, offset)
+            if (offset > 31) {
+                /* Push to stack. */
+                fetch<mdr_u64> (context->stack ().array (), stack_top + offset) = fetch<mdr_u64> (stack, src);
+                context->native_stack_size_ += 1; /* Stack is 8 byte aligned. */
+            }else {
+                /* Push to "register". */
+                *(context->native_call_stack_.array () + offset) = fetch<mdr_u32> (stack, src);
+            }
         _OP_END }
 
         default:

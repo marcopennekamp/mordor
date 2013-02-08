@@ -6,7 +6,7 @@
 #include <internal/runtime/Program.h>
 
 
-namespace mordor {
+namespace mdr {
 
 class Function {
 public:
@@ -25,6 +25,7 @@ public:
 };
 
 }
+
 
 #endif  /* MORDOR_INTERNAL_RUNTIME_FUNCTION_H_ */
 

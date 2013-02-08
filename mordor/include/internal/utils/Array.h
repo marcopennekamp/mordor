@@ -6,7 +6,7 @@
 #include <mordor/def.h>
 
 
-namespace mordor {
+namespace mdr {
 
 template<typename T, typename SIZE_T = size_t>
 class Array {

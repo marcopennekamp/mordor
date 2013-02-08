@@ -5,7 +5,7 @@
 #include <internal/runtime/Function.h>
 
 
-namespace mordor {
+namespace mdr {
 
 Function::Function (size_t operations_size, size_t constant_table_size) {
     operations = new mdrOperation[operations_size];

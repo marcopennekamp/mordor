@@ -4,18 +4,52 @@
 using namespace std;
 
 
-namespace mordor {
+namespace mdr {
 
 Library* LibraryManager::GetRuntimeLibrary (const std::string& name) {
-    auto iterator = library_map_.find (name);
-    if (iterator == library_map_.end ()) {
+    auto it = library_map_.find (name);
+    if (it == library_map_.end ()) {
         return NULL;
     }
-    return iterator->second;
+
+    return it->second;
 }
 
-Library::func LibraryManager::FindFunction (const std::string& name) {
+mdr_u32 LibraryManager::GetNativeFunctionIndex (const std::string& name) {
+    /* Search for already loaded native function. */
+    auto it = native_function_id_map_.find (name);
+    if (it != native_function_id_map_.end ()) {
+        return it->second;
+    }
+    
+    return NativeFunction::INVALID_ID;
+}
+    
+NativeFunction* LibraryManager::GetNativeFunction (const mdr_u32 index) {
+    return native_functions_[index];
+}
 
+NativeFunction* LibraryManager::GetNativeFunction (const string& name) {
+    mdr_u32 index = GetNativeFunctionIndex (name);
+
+    if (index == NativeFunction::INVALID_ID) {
+        return NULL;
+    }
+
+    return native_functions_[index];
+}
+
+void LibraryManager::AddNativeFunction (const std::string& name, const mdrType return_type, mdr_u8 parameter_count) {
+    NativeFunction* existing_function = GetNativeFunction (name);
+    if (existing_function != NULL) {
+        printf ("Info: Function '%s' already loaded.\n", name.c_str ());
+        return;
+    }
+
+    NativeFunction* function = new NativeFunction (NULL, return_type, parameter_count, false);
+    mdr_u32 id = (mdr_u32) native_functions_.size ();
+    native_function_id_map_[name] = id;
+    native_functions_.push_back (function);
 }
 
 void LibraryManager::AddRuntimeLibrary (Library* library) {

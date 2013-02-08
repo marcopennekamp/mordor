@@ -1,7 +1,7 @@
 #include <internal/bytecode/BytecodeFunction.h>
 
 
-namespace mordor {
+namespace mdr {
 
 BytecodeFunction::~BytecodeFunction () {
     delete[] code;

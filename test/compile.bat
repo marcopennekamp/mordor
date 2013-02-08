@@ -1,1 +1,1 @@
-"../Release/mordor-asm.exe" test.mdr tests/add.mda
+"../Release/mordor-asm.exe" test.mdr tests/add.mda tests/call.mda tests/call_native.mda

@@ -7,7 +7,7 @@
 #include <coin/utils/directory.h>
 
 #include <mordor/bytecode/BytecodeOperation.h>
-#include <mordor/bytecode/VariableType.h>
+#include <mordor/bytecode/Type.h>
 
 #include "main.h"
 
@@ -33,15 +33,15 @@ const char* kTypeNames [] = {
 };
 const size_t kTypeNamesLength = 8;
 
-const mdrVariableType kTypes [] = {
-    MDR_VARTYPE_I,
-    MDR_VARTYPE_U,
-    MDR_VARTYPE_F,
-    MDR_VARTYPE_I | MDR_VARTYPE_IS_LONG,
-    MDR_VARTYPE_U | MDR_VARTYPE_IS_LONG,
-    MDR_VARTYPE_F | MDR_VARTYPE_IS_LONG,
-    MDR_VARTYPE_P,
-    MDR_VARTYPE_V
+const mdrType kTypes [] = {
+    MDR_TYPE_I32,
+    MDR_TYPE_U32,
+    MDR_TYPE_F32,
+    MDR_TYPE_I64,
+    MDR_TYPE_U64,
+    MDR_TYPE_F64,
+    MDR_TYPE_PTR,
+    MDR_TYPE_VOID
 };
 
 
@@ -106,7 +106,7 @@ struct Operation {
 
 
 struct Variable {
-    mdrVariableType type;
+    mdrType type;
     string name;
     mdr_u16 index;
 };
@@ -120,7 +120,7 @@ struct Label {
 /* Holds all the data that is saved when compiling a function. */
 struct FunctionCompileData {
     string name;
-    mdrVariableType return_type;
+    mdrType return_type;
     mdr_u16 variable_table_next_index;
     mdr_u16 pointer_table_next_index;
     mdr_u16 current_stack_size;
@@ -132,7 +132,7 @@ struct FunctionCompileData {
     vector<Operation> operations;
 
     FunctionCompileData () {
-        return_type = MDR_VARTYPE_V;
+        return_type = MDR_TYPE_VOID;
         variable_table_next_index = 0;
         pointer_table_next_index = 0;
         current_stack_size = 0;
@@ -153,8 +153,8 @@ struct FunctionCompileData {
 };
 
 
-mdrVariableType getTypeFromString (const char* str) {
-    mdrVariableType type = MDR_VARTYPE_V;
+mdrType getTypeFromString (const char* str) {
+    mdrType type = MDR_TYPE_VOID;
     for (int i = 0; i < kTypeNamesLength; ++i) {
         if (strcmp (str, kTypeNames[i]) == 0) {
             type = kTypes[i];
@@ -174,11 +174,11 @@ OperationType getOperationTypeFromString (const char* str) {
 }
 
 void setVariableIndex (Variable& variable, FunctionCompileData& compile_data) {
-    if ((variable.type & MDR_VARTYPE_P) > 0) { /* Pointer. */
+    if (variable.type == MDR_TYPE_PTR) { /* Pointer. */
         variable.index = compile_data.pointer_table_next_index++;
     }else { /* "Normal" variable. */
         variable.index = compile_data.variable_table_next_index;
-        compile_data.variable_table_next_index += ((variable.type & MDR_VARTYPE_IS_LONG) > 0) ? 2 : 1;
+        compile_data.variable_table_next_index += (mdrTypeGetSize (variable.type) == 64) ? 2 : 1;
     }
 }
 
@@ -379,34 +379,33 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
                     printf ("Error: Variable '%s' is not declared.\n", next_token->string);
                     return -1;
                 }
-                mdrVariableType type = variable->type; 
+                mdrType type = variable->type; 
                 
-                /* Deduce operation type from variable type. */
-                if (type != MDR_VARTYPE_V) {
-                    if ((type & MDR_VARTYPE_IS_LONG) == 0) { /* Not long. */
-                        switch (type & ~MDR_VARTYPE_IS_LONG) {
-                            case MDR_VARTYPE_I:
+                /* Deduce operation type from variable type, Sherlock. */
+                if (type != MDR_TYPE_VOID) {
+                    if (type == MDR_TYPE_PTR) {
+                        operation.type = BCOP_pLOAD;
+                    }else if (mdrTypeGetSize (type) == 64) { /* Not long. */
+                        switch (type) {
+                            case MDR_TYPE_I32:
                                 operation.type = BCOP_iLOAD;
                                 break;
-                            case MDR_VARTYPE_U:
+                            case MDR_TYPE_U32:
                                 operation.type = BCOP_uiLOAD;
                                 break;
-                            case MDR_VARTYPE_F:
+                            case MDR_TYPE_F32:
                                 operation.type = BCOP_fLOAD;
-                                break;
-                            case MDR_VARTYPE_P:
-                                operation.type = BCOP_pLOAD;
                                 break;
                         }
                     }else { /* Long. */
-                        switch (type & ~MDR_VARTYPE_IS_LONG) {
-                            case MDR_VARTYPE_I:
+                        switch (type) {
+                            case MDR_TYPE_I64:
                                 operation.type = BCOP_lLOAD;
                                 break;
-                            case MDR_VARTYPE_U:
+                            case MDR_TYPE_U64:
                                 operation.type = BCOP_ulLOAD;
                                 break;
-                            case MDR_VARTYPE_F:
+                            case MDR_TYPE_F64:
                                 operation.type = BCOP_flLOAD;
                                 break;
                         }
@@ -508,8 +507,8 @@ size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) 
                 label->position = (mdr_u32) compile_data.operations.size ();
                 index += 2;
             }else {
-                mdrVariableType parsed_type = getTypeFromString (literal_token->string);
-                if (parsed_type == MDR_VARTYPE_V) { /* Operation. */
+                mdrType parsed_type = getTypeFromString (literal_token->string);
+                if (parsed_type == MDR_TYPE_VOID) { /* Operation. */
                     index = parseOperation (getOperationTypeFromString (literal_token->string), index, tokens, compile_data);
                     if (index == -1) { /* Error occured. */
                         printf ("Op: '%s'\n", literal_token->string);

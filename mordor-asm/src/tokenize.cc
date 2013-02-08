@@ -2,7 +2,7 @@
 
 #include <coin/utils/Stream.h>
 
-#include <mordor/bytecode/VariableType.h>
+#include <mordor/bytecode/Type.h>
 
 #include "main.h"
 
@@ -57,7 +57,7 @@ size_t addNumberToken (vector<Token*>& tokens, char* data, size_t length, size_t
 
     vector<char> buffer;
 
-    mdrVariableType type = MDR_VARTYPE_I;
+    mdrType type = MDR_TYPE_I32;
     bool has_dot = false;
 
     /* Find the number and determine the type. */
@@ -70,12 +70,12 @@ size_t addNumberToken (vector<Token*>& tokens, char* data, size_t length, size_t
             buffer.push_back (c);
         }else if (isNumber (c, index == start)) {
             buffer.push_back (c);
-        }else if (c == 'f' && (type & MDR_VARTYPE_F) == 0) {
-            type = MDR_VARTYPE_F;
-        }else if (c == 'u' && (type & MDR_VARTYPE_U) == 0) {
-            type = MDR_VARTYPE_U;
-        }else if (c == 'l' && (type & MDR_VARTYPE_IS_LONG) == 0) {
-            type |= MDR_VARTYPE_IS_LONG;
+        }else if (c == 'f') {
+            type = MDR_TYPE_F32;
+        }else if (c == 'u') {
+            type = MDR_TYPE_U32;
+        }else if (c == 'l') {
+            mdrTypeAddSize (type); // TODO(Marco): Add check to disallow size adding to already 64bit types.
         }else {
             break;
         }
@@ -86,28 +86,21 @@ size_t addNumberToken (vector<Token*>& tokens, char* data, size_t length, size_t
 
     /* Parse values according to the type. */
     // TODO(Marco): The strtoX or atoX have to do it for now, until I write a faster specialized library for that. Also note that some versions depend on Visual Studio.
-    if ((type & MDR_VARTYPE_I) > 0) {
-        if ((type & MDR_VARTYPE_IS_LONG) > 0) {
-            addToken (tokens, TOKEN_INT_64)->nInt64 = (mdr_s64) _strtoi64 (str, NULL, 10);
-        }else {
-            addToken (tokens, TOKEN_INT_32)->nInt32 = (mdr_s32) atoi (str);
-        }
-    }else if ((type & MDR_VARTYPE_U) > 0) {
-        if ((type & MDR_VARTYPE_IS_LONG) > 0) {
-            addToken (tokens, TOKEN_UINT_64)->nUInt64 = (mdr_u64) _strtoui64 (str, NULL, 10);
-        }else {
-            addToken (tokens, TOKEN_UINT_32)->nUInt32 = (mdr_u32) atoi (str);
-        }
-    }else if ((type & MDR_VARTYPE_F) > 0) {
-        if ((type & MDR_VARTYPE_IS_LONG) > 0) {
-            addToken (tokens, TOKEN_FLOAT_64)->nFloat64 = (mdr_f64) strtod (str, NULL);
-        }else {
-            addToken (tokens, TOKEN_FLOAT_32)->nFloat32 = (mdr_f32) strtod (str, NULL);
-        }
+    if (type == MDR_TYPE_I32) {
+        addToken (tokens, TOKEN_INT_32)->nInt32 = (mdr_s32) atoi (str);
+    }else if (type == MDR_TYPE_I64) {
+        addToken (tokens, TOKEN_INT_64)->nInt64 = (mdr_s64) _strtoi64 (str, NULL, 10);
+    }else if (type == MDR_TYPE_U32) {
+        addToken (tokens, TOKEN_UINT_32)->nUInt32 = (mdr_u32) atoi (str);
+    }else if (type == MDR_TYPE_U64) {
+        addToken (tokens, TOKEN_UINT_64)->nUInt64 = (mdr_u64) _strtoui64 (str, NULL, 10);
+    }else if (type == MDR_TYPE_F32) {
+        addToken (tokens, TOKEN_FLOAT_32)->nFloat32 = (mdr_f32) strtod (str, NULL);
+    }else if (type == MDR_TYPE_F64) {
+        addToken (tokens, TOKEN_FLOAT_64)->nFloat64 = (mdr_f64) strtod (str, NULL);
     }
 
     delete[] str;
-
     return index + 1;
 }
 

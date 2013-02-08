@@ -3,15 +3,11 @@
 using namespace std;
 
 
-namespace mordor {
+namespace mdr {
 
 Library::Library (const string& path, lib library) {
     path_ = path; /* Copy path. */
     library_ = library;
-}
-
-void Library::AddFunction (const std::string& name, func function) {
-    functions_[name] = function;
 }
 
 }

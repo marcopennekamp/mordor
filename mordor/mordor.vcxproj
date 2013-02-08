@@ -22,7 +22,8 @@
     <ClInclude Include="include\internal\bytecode\BytecodeFunction.h" />
     <ClInclude Include="include\internal\bytecode\compile.h" />
     <ClInclude Include="include\internal\bytecode\io.h" />
-    <ClInclude Include="include\mordor\bytecode\VariableType.h" />
+    <ClInclude Include="include\internal\runtime\NativeFunction.h" />
+    <ClInclude Include="include\mordor\bytecode\Type.h" />
     <ClInclude Include="include\internal\runtime\Context.h" />
     <ClInclude Include="include\internal\runtime\Environment.h" />
     <ClInclude Include="include\internal\runtime\Function.h" />
@@ -44,18 +45,20 @@
     <ClCompile Include="src\mordor\bytecode\BytecodeFunction.cc" />
     <ClCompile Include="src\mordor\bytecode\compile.cc" />
     <ClCompile Include="src\mordor\bytecode\io.cc" />
+    <ClCompile Include="src\mordor\bytecode\Type.cc" />
     <ClCompile Include="src\mordor\runtime\core.cc" />
     <ClCompile Include="src\mordor\runtime\Context.cc" />
     <ClCompile Include="src\mordor\runtime\Environment.cc" />
     <ClCompile Include="src\mordor\runtime\Function.cc" />
     <ClCompile Include="src\mordor\runtime\Library.cc" />
     <ClCompile Include="src\mordor\runtime\LibraryManager.cc" />
+    <ClCompile Include="src\mordor\runtime\NativeFunction.cc" />
     <ClCompile Include="src\mordor\runtime\Program.cc" />
     <ClCompile Include="src\mordor\utils\zip.cc" />
     <ClCompile Include="src\windows\runtime\LibraryManager_windows.cc" />
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="src\mordor\runtime\core_native.asm">
+    <MASM Include="src\windows\runtime\core_native.asm">
       <FileType>Document</FileType>
     </MASM>
   </ItemGroup>
