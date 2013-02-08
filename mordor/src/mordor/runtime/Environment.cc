@@ -9,39 +9,13 @@
 #include <mordor/runtime/Environment.h>
 #include <mordor/runtime/Program.h>
 
-#include <internal/bytecode/BytecodeFunction.h>
-#include <internal/bytecode/compile.h>
+#include <mordor/load/BytecodeFunction.h>
+#include <mordor/load/Loader.h>
 #include <internal/bytecode/io.h>
 #include <internal/runtime/Environment.h>
 #include <internal/utils/zip.h>
 
 using namespace std;
-using namespace mdr;
-
-
-extern "C" {
-
-MDR_DECL mdrEnvironment* mdrEnvCreate () {
-    return (mdrEnvironment*) new Environment ();
-}
-
-MDR_DECL void mdrEnvDestroy (mdrEnvironment* env) {
-    delete (Environment*) env;
-}
-
-MDR_DECL void mdrEnvInitialize (mdrEnvironment* env) {
-    ((Environment*) env)->Initialize ();
-}
-
-MDR_DECL mdrProgram* mdrEnvLoadProgram (mdrEnvironment* env, const char* path) {
-    return (mdrProgram*) ((Environment*) env)->LoadProgram (path);
-}
-
-MDR_DECL mdrFunction* mdrEnvFindFunction (mdrEnvironment* env, const char* name) {
-    return (mdrFunction*) ((Environment*) env)->FindFunction (name);
-}
-
-}
 
 
 namespace mdr {

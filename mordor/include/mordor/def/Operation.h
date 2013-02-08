@@ -1,7 +1,7 @@
-#ifndef MORDOR_RUNTIME_OPERATION_H_
-#define	MORDOR_RUNTIME_OPERATION_H_
+#ifndef MORDOR_DEF_OPERATION_H_
+#define	MORDOR_DEF_OPERATION_H_
 
-#include <mordor/def.h>
+#include <mordor/def/Mordor.h>
 
 #ifdef	__cplusplus
 extern "C" {
@@ -9,7 +9,6 @@ extern "C" {
 
 
 typedef mdr_u64       mdrOperation;
-
 
 enum mdrOperationType {
     /* BASIC. */
@@ -159,4 +158,4 @@ enum mdrOperationType {
 }
 #endif
 
-#endif  /* MORDOR_RUNTIME_OPERATION_H_ */
+#endif  /* MORDOR_DEF_OPERATION_H_ */

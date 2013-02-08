@@ -1,4 +1,4 @@
-#include <mordor/def.h>
+#include <mordor/def/Mordor.h>
 
 #include <stdio.h>
 

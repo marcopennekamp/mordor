@@ -1,19 +1,11 @@
-#include <internal/runtime/LibraryManager.h>
-#include <internal/runtime/Library.h>
+#include <mordor/runtime/LibraryManager.h>
+#include <mordor/runtime/Library.h>
+#include <mordor/runtime/NativeFunction.h>
 
 using namespace std;
 
 
 namespace mdr {
-
-Library* LibraryManager::GetRuntimeLibrary (const std::string& name) {
-    auto it = library_map_.find (name);
-    if (it == library_map_.end ()) {
-        return NULL;
-    }
-
-    return it->second;
-}
 
 mdr_u32 LibraryManager::GetNativeFunctionIndex (const std::string& name) {
     /* Search for already loaded native function. */
@@ -22,7 +14,7 @@ mdr_u32 LibraryManager::GetNativeFunctionIndex (const std::string& name) {
         return it->second;
     }
     
-    return NativeFunction::INVALID_ID;
+    return NativeFunction::kInvalidId;
 }
     
 NativeFunction* LibraryManager::GetNativeFunction (const mdr_u32 index) {
@@ -32,7 +24,7 @@ NativeFunction* LibraryManager::GetNativeFunction (const mdr_u32 index) {
 NativeFunction* LibraryManager::GetNativeFunction (const string& name) {
     mdr_u32 index = GetNativeFunctionIndex (name);
 
-    if (index == NativeFunction::INVALID_ID) {
+    if (index == NativeFunction::kInvalidId) {
         return NULL;
     }
 
@@ -46,18 +38,10 @@ void LibraryManager::AddNativeFunction (const std::string& name, const mdrType r
         return;
     }
 
-    NativeFunction* function = new NativeFunction (NULL, return_type, parameter_count, false);
+    NativeFunction* function = new NativeFunction (NULL, return_type, parameter_count);
     mdr_u32 id = (mdr_u32) native_functions_.size ();
     native_function_id_map_[name] = id;
     native_functions_.push_back (function);
-}
-
-void LibraryManager::AddRuntimeLibrary (Library* library) {
-    library_map_[library->path ()] = library;
-}
-
-void LibraryManager::RemoveRuntimeLibrary (const string& path) {
-    library_map_.erase (path);
 }
 
 }

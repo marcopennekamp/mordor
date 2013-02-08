@@ -1,35 +1,62 @@
-/* 
- * Module:  Environment
- * Short:   Env
- *
- */
-
-
 #ifndef MORDOR_RUNTIME_ENVIRONMENT_H_
 #define	MORDOR_RUNTIME_ENVIRONMENT_H_
 
-#include <mordor/def.h>
+#include <string>
+#include <vector>
 
-#include <mordor/runtime/Program.h>
-#include <mordor/runtime/Function.h>
+#include <zlib/unzip.h>
 
-#ifdef	__cplusplus
-extern "C" {
-#endif
+#include <mordor/def/Mordor.h>
+#include <mordor/runtime/LibraryManager.h>
 
 
-typedef void mdrEnvironment;
+namespace mdr {
 
-MDR_DECL mdrEnvironment* mdrEnvCreate ();
-MDR_DECL void mdrEnvDestroy (mdrEnvironment* env);
+class BytecodeFunction;
+class Program;
 
-MDR_DECL void mdrEnvInitialize (mdrEnvironment* env);
+class Environment {
+private:
+    std::vector<Program*> programs_;
+    std::vector<Library*> libraries_;
+    
+    std::map<const std::string, mdr_u32> native_function_id_map_;
+    std::vector<NativeFunction*> native_functions_;
 
-MDR_DECL mdrProgram* mdrEnvLoadProgram (mdrEnvironment* env, const char* path);
-MDR_DECL mdrFunction* mdrEnvFindFunction (mdrEnvironment* env, const char* name);
+public:
+    ~Environment ();
 
-#ifdef	__cplusplus
+    void Initialize ();
+
+
+    void LoadProgram (const std::string path);
+    void LoadRuntimeLibrary (const std::string& name);
+
+
+
+
+    /* 
+     * If the name has not been registered yet, it searches the runtime libraries for the function.
+     * Should the function not be found, a NativeFunction object is created regardless. 
+     * This allows for two possibilities:
+     *  - The NativeFunction can be given an alternative function pointer.
+     *  - Another runtime library can be loaded.
+     */
+    mdr_u32 GetNativeFunctionIndex (const std::string& name);
+    
+    NativeFunction* GetNativeFunction (const mdr_u32 index);
+    NativeFunction* GetNativeFunction (const std::string& name);
+
+    void AddNativeFunction (const std::string& name, const mdrType return_type, mdr_u8 parameter_count);
+
+    Function* FindFunction (const std::string& name);
+    BytecodeFunction* FindBytecodeFunction (const std::string& name);
+
+private:
+    bool _EvaluateProgramConfig (unzFile archive);
+};
+
 }
-#endif
+
 
 #endif  /* MORDOR_RUNTIME_ENVIRONMENT_H_ */

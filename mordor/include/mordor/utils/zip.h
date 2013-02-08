@@ -3,7 +3,7 @@
 
 #include <zlib/unzip.h>
 
-#include <mordor/def.h>
+#include <mordor/def/Mordor.h>
 
 
 namespace mdr {

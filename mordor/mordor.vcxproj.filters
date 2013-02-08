@@ -48,80 +48,68 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\internal\bytecode\BytecodeFunction.h">
-      <Filter>Header Files\internal\bytecode</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\bytecode\compile.h">
-      <Filter>Header Files\internal\bytecode</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\bytecode\io.h">
-      <Filter>Header Files\internal\bytecode</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\utils\Array.h">
-      <Filter>Header Files\internal\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\utils\zip.h">
-      <Filter>Header Files\internal\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\runtime\Context.h">
+    <ClInclude Include="include\mordor\runtime\Context.h">
       <Filter>Header Files\internal\runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\runtime\Environment.h">
-      <Filter>Header Files\internal\runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\runtime\Function.h">
-      <Filter>Header Files\internal\runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\runtime\Library.h">
-      <Filter>Header Files\internal\runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\runtime\LibraryManager.h">
-      <Filter>Header Files\internal\runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="include\internal\runtime\Program.h">
-      <Filter>Header Files\internal\runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="include\mordor\bytecode\BytecodeOperation.h">
-      <Filter>Header Files\mordor\bytecode</Filter>
-    </ClInclude>
-    <ClInclude Include="include\mordor\runtime\Operation.h">
-      <Filter>Header Files\mordor\runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="include\mordor\def.h">
-      <Filter>Header Files\mordor</Filter>
     </ClInclude>
     <ClInclude Include="include\mordor\runtime\Environment.h">
-      <Filter>Header Files\mordor\runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="include\mordor\runtime\Context.h">
-      <Filter>Header Files\mordor\runtime</Filter>
+      <Filter>Header Files\internal\runtime</Filter>
     </ClInclude>
     <ClInclude Include="include\mordor\runtime\Function.h">
-      <Filter>Header Files\mordor\runtime</Filter>
+      <Filter>Header Files\internal\runtime</Filter>
     </ClInclude>
-    <ClInclude Include="include\mordor\runtime\Program.h">
-      <Filter>Header Files\mordor\runtime</Filter>
+    <ClInclude Include="include\mordor\runtime\Library.h">
+      <Filter>Header Files\internal\runtime</Filter>
     </ClInclude>
-    <ClInclude Include="include\mordor\runtime\core.h">
-      <Filter>Header Files\mordor\runtime</Filter>
+    <ClInclude Include="include\mordor\runtime\LibraryManager.h">
+      <Filter>Header Files\internal\runtime</Filter>
     </ClInclude>
-    <ClInclude Include="include\internal\runtime\NativeFunction.h">
+    <ClInclude Include="include\mordor\runtime\NativeFunction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\mordor\bytecode\Type.h">
+    <ClInclude Include="include\mordor\runtime\Program.h">
+      <Filter>Header Files\internal\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\utils\Array.h">
+      <Filter>Header Files\internal\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\utils\zip.h">
+      <Filter>Header Files\internal\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\def\BytecodeOperation.h">
+      <Filter>Header Files\mordor\bytecode</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\def\Type.h">
       <Filter>Header Files\internal\bytecode</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\def\Mordor.h">
+      <Filter>Header Files\mordor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\api\Context.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\api\Environment.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\api\Function.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\api\Program.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\def\Operation.h">
+      <Filter>Header Files\mordor\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\load\BytecodeFunction.h">
+      <Filter>Header Files\internal\bytecode</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\load\Loader.h">
+      <Filter>Header Files\internal\bytecode</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\api\Type.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\mordor\bytecode\BytecodeFunction.cc">
-      <Filter>Source Files\bytecode</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mordor\bytecode\compile.cc">
-      <Filter>Source Files\bytecode</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mordor\bytecode\io.cc">
-      <Filter>Source Files\bytecode</Filter>
-    </ClCompile>
     <ClCompile Include="src\mordor\runtime\Context.cc">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
@@ -143,17 +131,35 @@
     <ClCompile Include="src\windows\runtime\LibraryManager_windows.cc">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
-    <ClCompile Include="src\mordor\runtime\core.cc">
-      <Filter>Source Files\interpreter</Filter>
-    </ClCompile>
     <ClCompile Include="src\mordor\runtime\Function.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mordor\bytecode\Type.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\mordor\runtime\NativeFunction.cc">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\load\BytecodeFunction.cc">
+      <Filter>Source Files\bytecode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\api\Type.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\load\Loader.cc">
+      <Filter>Source Files\bytecode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\api\Context.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\runtime\Context.Execute.cc">
+      <Filter>Source Files\interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\api\Environment.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\api\Program.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\load\Loader.Compile.cc">
+      <Filter>Source Files\bytecode</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,12 +1,9 @@
-#include <internal/runtime/Library.h>
-
-using namespace std;
+#include <mordor/runtime/Library.h>
 
 
 namespace mdr {
 
-Library::Library (const string& path, lib library) {
-    path_ = path; /* Copy path. */
+Library::Library (lib library) {
     library_ = library;
 }
 

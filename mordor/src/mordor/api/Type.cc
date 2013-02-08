@@ -1,4 +1,4 @@
-#include <mordor/bytecode/Type.h>
+#include <mordor/api/Type.h>
 
 
 MDR_DECL mdr_bool mdrTypeHasSize (mdrType type, mdr_u8 size) {

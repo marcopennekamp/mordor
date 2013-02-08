@@ -1,22 +1,20 @@
 #include <vector>
 #include <map>
 
-#include <boost/scoped_ptr.hpp>
-#include <internal/utils/Array.h>
-
 #include <coin/utils/time.h>
 
-#include <mordor/bytecode/BytecodeOperation.h>
-#include <mordor/bytecode/Type.h>
-
-#include <internal/bytecode/compile.h>
-#include <internal/bytecode/BytecodeFunction.h>
-#include <internal/runtime/Function.h>
-#include <internal/runtime/Environment.h>
-#include <internal/runtime/Program.h>
+#include <mordor/def/BytecodeOperation.h>
+#include <mordor/def/Type.h>
+#include <mordor/api/Type.h>
+#include <mordor/utils/Array.h>
+#include <mordor/load/BytecodeFunction.h>
+#include <mordor/load/Loader.h>
+#include <mordor/runtime/Function.h>
+#include <mordor/runtime/Environment.h>
+#include <mordor/runtime/Program.h>
+#include <mordor/runtime/NativeFunction.h>
 
 using namespace std;
-using namespace boost;
 
 
 #define _START(NAME)    case BCOP_ ## NAME :
@@ -197,7 +195,7 @@ inline void fetch_return_value (const mdrType return_type, StackEntry*& bc_stack
 }
 
 
-Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* environment, Program* program) {
+Function* Loader::CompileBytecodeFunction (const BytecodeFunction* func, Program* program) {
     mdr_u64 time = coin::TimeNanoseconds ();
 
     // TODO(Marco): Idea: Keep track of tmp stack variables and invalidate them.
@@ -351,7 +349,7 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
                 string& name = func->name_table[function_name_id];
                 mdr_u32 id = program->GetFunctionId (name);
 
-                if (id != Program::INVALID_FUNCTION_ID) {
+                if (id != Function::kInvalidId) {
                     callee = program->bytecode_function_cache ()[id];
                 }else { 
                     /* Not found in normal functions, get from function resolve cache. */
@@ -399,6 +397,8 @@ Function* CompileBytecodeFunction (const BytecodeFunction* func, Environment* en
                     mdr_u32 function_id = environment->library_manager ().GetNativeFunctionIndex (func->name_table[function_name_id]);
                     NativeFunction* function = environment->library_manager ().GetNativeFunction (function_id);
                     
+                    // TODO(Marco): Check for NULL?
+
                     /* Similar to CALL. */
                     build_call_parameters (function->parameter_count (), OP_NPUSH, OP_NPUSHl, bc_stack_top, stack_top, operation_buffer);
                     add_operation (build_operation_W (OP_CALL, function_id), operation_buffer);

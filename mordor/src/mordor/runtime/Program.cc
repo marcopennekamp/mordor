@@ -10,20 +10,6 @@
 #include <internal/runtime/Program.h>
 
 using namespace std;
-using namespace mdr;
-
-
-extern "C" {
-
-mdrProgram* mdrProgCreate () {
-    return (mdrProgram*) new Program ();
-}
-
-void mdrProgDestroy (mdrProgram* prog) {
-    delete (Program*) prog;
-}
-
-}
 
 
 namespace mdr {

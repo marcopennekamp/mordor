@@ -19,34 +19,36 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\internal\bytecode\BytecodeFunction.h" />
-    <ClInclude Include="include\internal\bytecode\compile.h" />
-    <ClInclude Include="include\internal\bytecode\io.h" />
-    <ClInclude Include="include\internal\runtime\NativeFunction.h" />
-    <ClInclude Include="include\mordor\bytecode\Type.h" />
-    <ClInclude Include="include\internal\runtime\Context.h" />
-    <ClInclude Include="include\internal\runtime\Environment.h" />
-    <ClInclude Include="include\internal\runtime\Function.h" />
-    <ClInclude Include="include\internal\runtime\Library.h" />
-    <ClInclude Include="include\internal\runtime\LibraryManager.h" />
-    <ClInclude Include="include\internal\runtime\Program.h" />
-    <ClInclude Include="include\internal\utils\Array.h" />
-    <ClInclude Include="include\internal\utils\zip.h" />
-    <ClInclude Include="include\mordor\bytecode\BytecodeOperation.h" />
-    <ClInclude Include="include\mordor\def.h" />
+    <ClInclude Include="include\mordor\api\Type.h" />
+    <ClInclude Include="include\mordor\load\BytecodeFunction.h" />
+    <ClInclude Include="include\mordor\load\Loader.h" />
+    <ClInclude Include="include\mordor\runtime\NativeFunction.h" />
+    <ClInclude Include="include\mordor\def\Type.h" />
     <ClInclude Include="include\mordor\runtime\Context.h" />
-    <ClInclude Include="include\mordor\runtime\core.h" />
     <ClInclude Include="include\mordor\runtime\Environment.h" />
     <ClInclude Include="include\mordor\runtime\Function.h" />
-    <ClInclude Include="include\mordor\runtime\Operation.h" />
+    <ClInclude Include="include\mordor\runtime\Library.h" />
+    <ClInclude Include="include\mordor\runtime\LibraryManager.h" />
     <ClInclude Include="include\mordor\runtime\Program.h" />
+    <ClInclude Include="include\mordor\utils\Array.h" />
+    <ClInclude Include="include\mordor\utils\zip.h" />
+    <ClInclude Include="include\mordor\def\BytecodeOperation.h" />
+    <ClInclude Include="include\mordor\def\Mordor.h" />
+    <ClInclude Include="include\mordor\api\Context.h" />
+    <ClInclude Include="include\mordor\api\Environment.h" />
+    <ClInclude Include="include\mordor\api\Function.h" />
+    <ClInclude Include="include\mordor\def\Operation.h" />
+    <ClInclude Include="include\mordor\api\Program.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\mordor\bytecode\BytecodeFunction.cc" />
-    <ClCompile Include="src\mordor\bytecode\compile.cc" />
-    <ClCompile Include="src\mordor\bytecode\io.cc" />
-    <ClCompile Include="src\mordor\bytecode\Type.cc" />
-    <ClCompile Include="src\mordor\runtime\core.cc" />
+    <ClCompile Include="src\mordor\api\Context.cc" />
+    <ClCompile Include="src\mordor\api\Environment.cc" />
+    <ClCompile Include="src\mordor\api\Program.cc" />
+    <ClCompile Include="src\mordor\load\BytecodeFunction.cc" />
+    <ClCompile Include="src\mordor\load\Loader.Compile.cc" />
+    <ClCompile Include="src\mordor\load\Loader.cc" />
+    <ClCompile Include="src\mordor\api\Type.cc" />
+    <ClCompile Include="src\mordor\runtime\Context.Execute.cc" />
     <ClCompile Include="src\mordor\runtime\Context.cc" />
     <ClCompile Include="src\mordor\runtime\Environment.cc" />
     <ClCompile Include="src\mordor\runtime\Function.cc" />
@@ -163,6 +165,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PreprocessorDefinitions>MDR_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>

@@ -4,17 +4,16 @@
 
 #include <coin/utils/time.h>
 
-#include <mordor/runtime/core.h>
-#include <mordor/runtime/Operation.h>
-
-#include <internal/runtime/Context.h>
-#include <internal/runtime/Function.h>
-#include <internal/runtime/Program.h>
-#include <internal/runtime/Library.h>
-#include <internal/runtime/Environment.h>
+#include <mordor/def/Operation.h>
+#include <mordor/runtime/Context.h>
+#include <mordor/runtime/Context.h>
+#include <mordor/runtime/Function.h>
+#include <mordor/runtime/NativeFunction.h>
+#include <mordor/runtime/Program.h>
+#include <mordor/runtime/Library.h>
+#include <mordor/runtime/Environment.h>
 
 using namespace mdr;
-
 
 
 /* ASM externs. */
@@ -25,16 +24,12 @@ extern "C" extern mdr_f32 CallNativeFunctionF32 (NativeFunction::function_t, mdr
 extern "C" extern mdr_f64 CallNativeFunctionF64 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
 
 
-
-
 /* Operation definition macros. */
 
 #define _OP_START(NAME)  case OP_ ## NAME :
 #define _OP_END          goto LExecEnd;
 #define _OP_RESTART      goto LExec;
 #define _OP_RETURN       goto LReturn;
-
-
 
 
 /* Class parameter parsing. */
@@ -55,9 +50,6 @@ extern "C" extern mdr_f64 CallNativeFunctionF64 (NativeFunction::function_t, mdr
 
 #define _OPC_L(P0)               mdr_u64 P0; \
                                   extract_L (op, P0);
-
-
-
 
 /* Class extraction functions. */
 
@@ -106,8 +98,6 @@ inline void extract_M (mdrOperation op, mdr_u8& param0, mdr_u8& param1, mdr_u8& 
 }
 
 
-
-
 /*
  * Fetches the address of a stack variable with the type T at offset 'id'.
  */
@@ -119,23 +109,19 @@ inline T& fetch (mdr_u8* stack, mdr_u16 id) {
 }
 
 
-
-
-extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32 caller_stack_top) {
+void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
     /* General stuff. */
-    Function* function       = (Function*) func;
-    Context* context         = (Context*) ctx;
     mdrOperation* op_pointer = function->operations;
     mdr_u32 stack_top        = caller_stack_top + function->stack_size;
 
-    // TODO: This is a security check! May be slow.
-    if (stack_top > context->stack ().size ()) {
+    // TODO: This is a "security check"! May be slow.
+    if (stack_top > stack_.size ()) {
         printf ("Error: Requested stack size exceeds Context stack limit.");
         return;
     }
 
     /* Stacks. */
-    mdr_u8* stack = ((mdr_u8*) context->stack ().array () + caller_stack_top);
+    mdr_u8* stack = ((mdr_u8*) stack_.array () + caller_stack_top);
 
     /* Current op. */
     mdr_u64 op;
@@ -158,12 +144,12 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
         _OP_RESTART }
 
         _OP_START (RET) { _OPC_P (src)
-            context->return_value_address () = stack + src;
+            return_value_address_ = stack + src;
             _OP_RETURN
         }
 
         _OP_START (RETl) { _OPC_P (src)
-            context->return_value_address () = stack + src;
+            return_value_address_ = stack + src;
             _OP_RETURN
         }
 
@@ -171,11 +157,11 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
     /* MEM. */
 
         _OP_START (RETMOV) { _OPC_P (dest)
-            fetch<mdr_u32> (stack, dest) = *((mdr_u32*) context->return_value_address ());
+            fetch<mdr_u32> (stack, dest) = *((mdr_u32*) return_value_address ());
         _OP_END }
 
         _OP_START (RETMOVl) { _OPC_P (dest)
-            fetch<mdr_u64> (stack, dest) = *((mdr_u64*) context->return_value_address ());
+            fetch<mdr_u64> (stack, dest) = *((mdr_u64*) return_value_address ());
         _OP_END }
 
         _OP_START (MOV) { _OPC_PP (dest, src)
@@ -588,43 +574,43 @@ extern "C" MDR_DECL void mdrExecute (mdrContext* ctx, mdrFunction* func, mdr_u32
     /* CALL. */
 
         _OP_START (CALL) { _OPC_W (function_id)
-            mdrExecute (context, function->program->GetFunctionFromCache (function_id), stack_top);
+            Execute (function->program->GetFunctionFromCache (function_id), stack_top);
         _OP_END }
 
         _OP_START (CALL_NATIVE_U32) { _OPC_W (function_id)
-            NativeFunction* function = context->environment ()->library_manager ().GetNativeFunction (function_id);
-            CallNativeFunctionU32 (function->function (), (mdr_u64*) context->native_call_stack_.array (), 
-                context->native_stack_size_, (mdr_u64*) (context->stack ().array () + stack_top));
-            context->native_stack_size_ = 0;
+            NativeFunction* function = environment_->library_manager ().GetNativeFunction (function_id);
+            CallNativeFunctionU32 (function->function (), (mdr_u64*) native_call_stack_.data.array (), 
+                native_call_stack_.size, (mdr_u64*) (stack_.array () + stack_top));
+            native_call_stack_.size = 0;
         _OP_END }
 
         _OP_START (PUSH) { _OPC_PP (src, offset)
-            fetch<mdr_u32> (context->stack ().array (), stack_top + offset) = fetch<mdr_u32> (stack, src);
+            fetch<mdr_u32> (stack_.array (), stack_top + offset) = fetch<mdr_u32> (stack, src);
         _OP_END }
 
         _OP_START (PUSHl) { _OPC_PP (src, offset)
-            fetch<mdr_u64> (context->stack ().array (), stack_top + offset) = fetch<mdr_u64> (stack, src);
+            fetch<mdr_u64> (stack_.array (), stack_top + offset) = fetch<mdr_u64> (stack, src);
         _OP_END }
 
         _OP_START (NPUSH) { _OPC_PP (src, offset)
             if (offset > 31) {
                 /* Push to stack. */
-                fetch<mdr_u32> (context->stack ().array (), stack_top + offset) = fetch<mdr_u32> (stack, src);
-                context->native_stack_size_ += 1; /* Stack is 8 byte aligned. */
+                fetch<mdr_u32> (stack_.array (), stack_top + offset) = fetch<mdr_u32> (stack, src);
+                native_call_stack_.size += 1; /* Stack is 8 byte aligned. */
             }else {
                 /* Push to "register". */
-                *((mdr_u32*) (context->native_call_stack_.array () + offset)) = fetch<mdr_u32> (stack, src);
+                *((mdr_u32*) (native_call_stack_.data.array () + offset)) = fetch<mdr_u32> (stack, src);
             }
         _OP_END }
 
         _OP_START (NPUSHl) { _OPC_PP (src, offset)
             if (offset > 31) {
                 /* Push to stack. */
-                fetch<mdr_u64> (context->stack ().array (), stack_top + offset) = fetch<mdr_u64> (stack, src);
-                context->native_stack_size_ += 1; /* Stack is 8 byte aligned. */
+                fetch<mdr_u64> (stack_.array (), stack_top + offset) = fetch<mdr_u64> (stack, src);
+                native_call_stack_.size += 1; /* Stack is 8 byte aligned. */
             }else {
                 /* Push to "register". */
-                *(context->native_call_stack_.array () + offset) = fetch<mdr_u32> (stack, src);
+                *(native_call_stack_.data.array () + offset) = fetch<mdr_u32> (stack, src);
             }
         _OP_END }
 

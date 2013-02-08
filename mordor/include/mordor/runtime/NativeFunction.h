@@ -1,25 +1,24 @@
-#ifndef MORDOR_INTERNAL_RUNTIME_NATIVEFUNCTION_H_
-#define MORDOR_INTERNAL_RUNTIME_NATIVEFUNCTION_H_
+#ifndef MORDOR_RUNTIME_NATIVEFUNCTION_H_
+#define MORDOR_RUNTIME_NATIVEFUNCTION_H_
 
-#include <mordor/def.h>
-#include <mordor/bytecode/Type.h>
+#include <mordor/def/Mordor.h>
+#include <mordor/def/Type.h>
 
 
 namespace mdr {
 
 class NativeFunction {
 public:
-    static const mdr_u32 INVALID_ID = 0xFFFFFFFF;
+    static const mdr_u32 kInvalidId = 0xFFFFFFFF;
     typedef void (MDRI_CALL *function_t) ();
 
 private:
     function_t function_;
     mdrType return_type_;
     mdr_u8 parameter_count_;
-    bool is_in_runtime_library_;
 
 public:
-    NativeFunction (function_t function_, mdrType return_type, mdr_u8 parameter_count, bool is_in_runtime_library);
+    NativeFunction (function_t function_, mdrType return_type, mdr_u8 parameter_count);
 
     inline function_t function () const { return function_; }
     inline void function (function_t function) { function_ = function; }
@@ -29,12 +28,9 @@ public:
 
     inline mdr_u8 parameter_count () const { return parameter_count_; }
     inline void parameter_count (mdr_u8 parameter_count) { parameter_count_ = parameter_count; }
-
-    inline bool is_in_runtime_library () const { return is_in_runtime_library_; }
-    inline void is_in_runtime_library (bool flag) { is_in_runtime_library_ = flag; }
 };
 
 }
 
 
-#endif  /* MORDOR_INTERNAL_RUNTIME_NATIVEFUNCTION_H_ */
+#endif  /* MORDOR_RUNTIME_NATIVEFUNCTION_H_ */

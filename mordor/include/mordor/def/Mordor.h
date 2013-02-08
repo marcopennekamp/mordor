@@ -1,11 +1,5 @@
-/* 
- * The mordor prefix is mdr.
- *
- */
-
-
-#ifndef MORDOR_DEF_H_
-#define MORDOR_DEF_H_
+#ifndef MORDOR_DEF_MORDOR_H_
+#define MORDOR_DEF_MORDOR_H_
 
 #ifdef	__cplusplus
 extern "C" {
@@ -17,7 +11,6 @@ extern "C" {
  */
 #define MDR_OS windows
 
-
 /*
  * DLL Exports.
  */
@@ -27,13 +20,11 @@ extern "C" {
 #define MDR_DECL __declspec (dllimport)
 #endif
 
-
 /* 
  * This is the calling convention used for functions that are called by mordor.
  * Note: Uses the standard x64 calling convention, but specifies __stdcall to have a convention.
  */
 #define MDRI_CALL __stdcall
-
 
 /* 
  * Used to export or import functions that are called by mordor.
@@ -43,7 +34,6 @@ extern "C" {
 #else
 #define MDRI_DECL __declspec (dllimport)
 #endif
-
 
 /*
  * General typedefs.
@@ -62,7 +52,6 @@ typedef double                      mdr_f64;
 
 typedef mdr_u8                      mdr_bool;
 
-
 /*
  * Constants.
  */
@@ -74,4 +63,4 @@ typedef mdr_u8                      mdr_bool;
 }
 #endif
 
-#endif  /* MORDOR_DEF_H_ */
+#endif  /* MORDOR_DEF_MORDOR_H_ */
