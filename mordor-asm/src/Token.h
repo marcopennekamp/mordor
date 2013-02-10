@@ -1,7 +1,7 @@
 #ifndef MORDOR_ASSEMBLER_TOKEN_H_
 #define MORDOR_ASSEMBLER_TOKEN_H_
 
-#include <mordor/def.h>
+#include <mordor/def/Mordor.h>
 
 
 namespace mordor {

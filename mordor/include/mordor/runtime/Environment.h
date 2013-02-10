@@ -3,11 +3,16 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include <zlib/unzip.h>
 
+#include <coin/utils/Stream.h>
+
 #include <mordor/def/Mordor.h>
-#include <mordor/runtime/LibraryManager.h>
+#include <mordor/def/Library.h>
+#include <mordor/runtime/Function.h>
+#include <mordor/runtime/NativeFunction.h>
 
 
 namespace mdr {
@@ -16,44 +21,62 @@ class BytecodeFunction;
 class Program;
 
 class Environment {
+public:
+    typedef std::map<const std::string, mdr_u32> IdMap;
+
 private:
-    std::vector<Program*> programs_;
-    std::vector<Library*> libraries_;
+    std::map<const std::string, Library> libraries_;
     
-    std::map<const std::string, mdr_u32> native_function_id_map_;
+    IdMap native_function_id_map_;
     std::vector<NativeFunction*> native_functions_;
+
+
+    /*
+     * Holds all Function IDs.
+     */
+    IdMap function_id_map_;
+
+    /*
+     * Saves all functions that are already loaded.
+     */
+    std::vector<Function*> functions_;
+
+
+    BytecodeFunction* LoadBytecodeFunction (coin::Stream* stream, const std::string name, Function::CompilationInformation& cpinfo);
+    void ReadProgramFile (unzFile archive, std::vector<std::string>& programs, std::vector<std::string>& native_libraries);
+    void ReadNativeFile (unzFile archive);
+
+    /* return true on success. */
+    bool CompileBytecodeFunction (BytecodeFunction* function);
+
+    void UnloadRuntimeLibraries ();
+
+
+    void LoadProgramElements (unzFile archive, std::vector<BytecodeFunction*>& bytecode_function_cache);
+
 
 public:
     ~Environment ();
 
-    void Initialize ();
+    void LoadProgram (const std::string& path);
+    void LoadRuntimeLibrary (const std::string& path);
 
 
-    void LoadProgram (const std::string path);
-    void LoadRuntimeLibrary (const std::string& name);
-
-
-
-
-    /* 
-     * If the name has not been registered yet, it searches the runtime libraries for the function.
-     * Should the function not be found, a NativeFunction object is created regardless. 
-     * This allows for two possibilities:
-     *  - The NativeFunction can be given an alternative function pointer.
-     *  - Another runtime library can be loaded.
-     */
-    mdr_u32 GetNativeFunctionIndex (const std::string& name);
-    
-    NativeFunction* GetNativeFunction (const mdr_u32 index);
+    mdr_u32 GetNativeFunctionId (const std::string& name);
+    NativeFunction* GetNativeFunction (const mdr_u32 id);
     NativeFunction* GetNativeFunction (const std::string& name);
+    void AddNativeFunction (const std::string& name, const mdrType return_type, mdr_u8 parameter_count, NativeFunction::function_t function);
 
-    void AddNativeFunction (const std::string& name, const mdrType return_type, mdr_u8 parameter_count);
 
-    Function* FindFunction (const std::string& name);
-    BytecodeFunction* FindBytecodeFunction (const std::string& name);
+    mdr_u32 GetFunctionId (const std::string& name);
+    Function* GetFunction (const mdr_u32 id);
+    Function* GetFunction (const std::string& name);
 
-private:
-    bool _EvaluateProgramConfig (unzFile archive);
+    /*
+     * Whether adding was successful.
+     */
+    bool AddFunction (const std::string& name, Function::CompilationInformation& cpinfo);
+
 };
 
 }

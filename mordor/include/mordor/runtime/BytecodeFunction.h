@@ -1,11 +1,11 @@
-#ifndef MORDOR_BYTECODE_BYTECODEFUNCTION_H_
-#define MORDOR_BYTECODE_BYTECODEFUNCTION_H_
+#ifndef MORDOR_RUNTIME_BYTECODEFUNCTION_H_
+#define MORDOR_RUNTIME_BYTECODEFUNCTION_H_
 
 #include <string>
 
 #include <mordor/def/Mordor.h>
 #include <mordor/def/Type.h>
-
+#include <mordor/runtime/Function.h>
 #include <mordor/utils/Array.h>
 
 
@@ -27,8 +27,9 @@ public:
     typedef Array<std::string, mdr_u16> NameTable;
 
 private:
-    mdrType return_type_;
-    mdr_u8 parameter_count_;
+    std::string name_;
+
+    /* Return type and parameter count are directly saved in the IR function type. */
 
     mdr_u16 variable_table_size_;
     mdr_u16 pointer_table_size_;
@@ -42,7 +43,7 @@ private:
     mdr_u8* code_;
 
 public:
-    BytecodeFunction (mdrType return_type, mdr_u8 parameter_count);
+    BytecodeFunction (const std::string& name);
     ~BytecodeFunction ();
 
     /*
@@ -50,8 +51,7 @@ public:
      */
     void Allocate (mdr_u32 code_size);
 
-    inline mdrType return_type () const { return return_type_; }
-    inline mdr_u8 parameter_count () const { return parameter_count_; }
+    inline const std::string& name () const { return name_; }
 
     inline mdr_u16 variable_table_size () const { return variable_table_size_; }
     inline void variable_table_size (mdr_u16 size) { variable_table_size_ = size; }
@@ -76,4 +76,4 @@ public:
 }
 
 
-#endif /* MORDOR_BYTECODE_BYTECODEFUNCTION_H_ */
+#endif /* MORDOR_RUNTIME_BYTECODEFUNCTION_H_ */

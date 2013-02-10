@@ -4,8 +4,9 @@
 
 #include <coin/utils/time.h>
 
-#include <mordor/runtime/core.h>
-#include <mordor/runtime/Environment.h>
+#include <mordor/api/Environment.h>
+#include <mordor/api/Context.h>
+#include <mordor/api/Function.h>
 
 using namespace std;
 
@@ -20,13 +21,12 @@ int main (int argc, char** argv) {
 
     /* Load Program in argv[1]. */
     mdrEnvironment* env = mdrEnvCreate ();
-    mdrProgram* prog = mdrEnvLoadProgram (env, argv[1]);
-    mdrEnvInitialize (env);
-
+    mdrEnvLoadProgram (env, argv[1]);
     mdrContext* ctx = mdrCtxCreate (env);
 
     /* Get add function. */
-    mdrFunction* test_function = mdrEnvFindFunction (env, "test.add");
+    mdrFunction* test_function = mdrEnvGetFunction (env, "test.add");
+    mdrFunction* call_native = mdrEnvGetFunction (env, "test.call_native");
 
     /* Set Parameters and invoke add function. */
     mdr_s64* stack = (mdr_s64*) mdrCtxGetStack (ctx);
@@ -35,11 +35,14 @@ int main (int argc, char** argv) {
 
     mdr_u64 time = coin::TimeNanoseconds ();
 
-    mdrExecute (ctx, test_function, 0);
+    mdrCtxExecute (ctx, test_function);
 
     printf ("Execution took %lluns\n", coin::TimeNanoseconds () - time);
     printf ("The function returned '%u'\n", *((mdr_s64*) mdrCtxGetReturnValueAddress (ctx)));
 
-    mdrEnvDestroy (env);
+    mdrCtxExecute (ctx, call_native);
+    printf ("The function returned '%u'\n", *((mdr_s64*) mdrCtxGetReturnValueAddress (ctx)));
+
     mdrCtxDestroy (ctx);
+    mdrEnvDestroy (env);
 }

@@ -6,8 +6,9 @@
 #include <coin/utils/Stream.h>
 #include <coin/utils/directory.h>
 
-#include <mordor/bytecode/BytecodeOperation.h>
-#include <mordor/bytecode/Type.h>
+#include <mordor/def/BytecodeOperation.h>
+#include <mordor/def/Type.h>
+#include <mordor/api/Type.h>
 
 #include "main.h"
 
@@ -309,13 +310,12 @@ void writeOperation (Operation& operation, Stream& out) {
         param0, /* ADR_GLOBAL */
         param0, /* ADR_FIELD */
 
-        NULL,   /* Free slot. */
-
         param0, /* NEW */
         param0, /* ANEW */
         NULL,   /* INEW */ // TODO(Marco): Create operation write class for two params
 
         param0, /* CALL */
+        param1, /* NCALL */
         param0, /* ICALL */
         simple, /* VCALL */
 
@@ -589,9 +589,9 @@ size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) 
     FileStream stream (file_path.c_str (), StreamMode::write);
 
     /* Write function info. */
-    stream.WriteU8 (0x00 /* Exist flags. */);
-    stream.WriteU8  ((mdr_u8) compile_data.parameter_list.size ());
+    stream.WriteU8  (0x00 /* Exist flags. */);
     stream.WriteU8  (compile_data.return_type);
+    stream.WriteU8  ((mdr_u8) compile_data.parameter_list.size ());
     stream.WriteU16 (compile_data.variable_table_next_index);
     stream.WriteU16 (compile_data.pointer_table_next_index);
     stream.WriteU16 (compile_data.max_stack_size);

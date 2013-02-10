@@ -2,7 +2,7 @@
 #define	MORDOR_RUNTIME_FUNCTION_H_
 
 #include <mordor/def/Operation.h>
-#include <mordor/runtime/Program.h>
+#include <mordor/def/Type.h>
 
 
 namespace mdr {
@@ -11,10 +11,17 @@ class Function {
 public:
     static const mdr_u32 kInvalidId = 0xFFFFFFFF;
 
-private:
-    Program* program_;
+    /*
+     * Information for later compilation, since the compiler needs the return type and
+     *   parameter count for any function.
+     */
+    struct CompilationInformation {
+        mdrType return_type_;
+        mdr_u8 parameter_count_;
+    };
 
-    mdr_u32  stack_size_;
+private:
+    mdr_u32 stack_size_;
     mdrOperation* operations_;
 
     /*
@@ -22,15 +29,21 @@ private:
      */
     mdr_u8* constant_table_;
 
+    CompilationInformation cpinfo_;
+
 public:
-    Function (size_t operations_size, size_t constant_table_size);
+    Function (CompilationInformation& cpinfo);
     ~Function ();
 
-    inline Program* program () { return program_; }
+    void Allocate (size_t operations_size, size_t constant_table_size);
 
     inline mdr_u32 stack_size () const { return stack_size_; }
+    inline void stack_size (mdr_u32 stack_size) { stack_size_ = stack_size; }
+
     inline mdrOperation* operations () { return operations_; }
     inline mdr_u8* constant_table () { return constant_table_; }
+
+    inline CompilationInformation& cpinfo () { return cpinfo_; }
 };
 
 }

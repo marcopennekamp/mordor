@@ -57,17 +57,8 @@
     <ClInclude Include="include\mordor\runtime\Function.h">
       <Filter>Header Files\internal\runtime</Filter>
     </ClInclude>
-    <ClInclude Include="include\mordor\runtime\Library.h">
-      <Filter>Header Files\internal\runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="include\mordor\runtime\LibraryManager.h">
-      <Filter>Header Files\internal\runtime</Filter>
-    </ClInclude>
     <ClInclude Include="include\mordor\runtime\NativeFunction.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\mordor\runtime\Program.h">
-      <Filter>Header Files\internal\runtime</Filter>
     </ClInclude>
     <ClInclude Include="include\mordor\utils\Array.h">
       <Filter>Header Files\internal\utils</Filter>
@@ -93,20 +84,17 @@
     <ClInclude Include="include\mordor\api\Function.h">
       <Filter>Header Files\mordor\runtime</Filter>
     </ClInclude>
-    <ClInclude Include="include\mordor\api\Program.h">
-      <Filter>Header Files\mordor\runtime</Filter>
-    </ClInclude>
     <ClInclude Include="include\mordor\def\Operation.h">
       <Filter>Header Files\mordor\runtime</Filter>
     </ClInclude>
-    <ClInclude Include="include\mordor\load\BytecodeFunction.h">
-      <Filter>Header Files\internal\bytecode</Filter>
-    </ClInclude>
-    <ClInclude Include="include\mordor\load\Loader.h">
-      <Filter>Header Files\internal\bytecode</Filter>
-    </ClInclude>
     <ClInclude Include="include\mordor\api\Type.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\runtime\BytecodeFunction.h">
+      <Filter>Header Files\internal\bytecode</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mordor\def\Library.h">
+      <Filter>Header Files\internal\runtime</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -116,20 +104,8 @@
     <ClCompile Include="src\mordor\runtime\Environment.cc">
       <Filter>Source Files\runtime</Filter>
     </ClCompile>
-    <ClCompile Include="src\mordor\runtime\Library.cc">
-      <Filter>Source Files\runtime</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mordor\runtime\LibraryManager.cc">
-      <Filter>Source Files\runtime</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mordor\runtime\Program.cc">
-      <Filter>Source Files\runtime</Filter>
-    </ClCompile>
     <ClCompile Include="src\mordor\utils\zip.cc">
       <Filter>Source Files\utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src\windows\runtime\LibraryManager_windows.cc">
-      <Filter>Source Files\runtime</Filter>
     </ClCompile>
     <ClCompile Include="src\mordor\runtime\Function.cc">
       <Filter>Source Files</Filter>
@@ -137,14 +113,8 @@
     <ClCompile Include="src\mordor\runtime\NativeFunction.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\mordor\load\BytecodeFunction.cc">
-      <Filter>Source Files\bytecode</Filter>
-    </ClCompile>
     <ClCompile Include="src\mordor\api\Type.cc">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mordor\load\Loader.cc">
-      <Filter>Source Files\bytecode</Filter>
     </ClCompile>
     <ClCompile Include="src\mordor\api\Context.cc">
       <Filter>Source Files</Filter>
@@ -155,11 +125,17 @@
     <ClCompile Include="src\mordor\api\Environment.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\mordor\api\Program.cc">
+    <ClCompile Include="src\mordor\runtime\BytecodeFunction.cc">
+      <Filter>Source Files\bytecode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\runtime\Environment.Compile.cc">
+      <Filter>Source Files\bytecode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mordor\runtime\Environment.Load.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\mordor\load\Loader.Compile.cc">
-      <Filter>Source Files\bytecode</Filter>
+    <ClCompile Include="src\windows\runtime\Environment.cc">
+      <Filter>Source Files\runtime</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

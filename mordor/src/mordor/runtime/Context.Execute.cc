@@ -9,8 +9,6 @@
 #include <mordor/runtime/Context.h>
 #include <mordor/runtime/Function.h>
 #include <mordor/runtime/NativeFunction.h>
-#include <mordor/runtime/Program.h>
-#include <mordor/runtime/Library.h>
 #include <mordor/runtime/Environment.h>
 
 using namespace mdr;
@@ -111,8 +109,8 @@ inline T& fetch (mdr_u8* stack, mdr_u16 id) {
 
 void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
     /* General stuff. */
-    mdrOperation* op_pointer = function->operations;
-    mdr_u32 stack_top        = caller_stack_top + function->stack_size;
+    mdrOperation* op_pointer = function->operations ();
+    mdr_u32 stack_top        = caller_stack_top + function->stack_size ();
 
     // TODO: This is a "security check"! May be slow.
     if (stack_top > stack_.size ()) {
@@ -574,11 +572,11 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
     /* CALL. */
 
         _OP_START (CALL) { _OPC_W (function_id)
-            Execute (function->program->GetFunctionFromCache (function_id), stack_top);
+            Execute (environment_->GetFunction (function_id), stack_top);
         _OP_END }
 
         _OP_START (CALL_NATIVE_U32) { _OPC_W (function_id)
-            NativeFunction* function = environment_->library_manager ().GetNativeFunction (function_id);
+            NativeFunction* function = environment_->GetNativeFunction (function_id);
             CallNativeFunctionU32 (function->function (), (mdr_u64*) native_call_stack_.data.array (), 
                 native_call_stack_.size, (mdr_u64*) (stack_.array () + stack_top));
             native_call_stack_.size = 0;

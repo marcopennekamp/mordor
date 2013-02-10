@@ -2,7 +2,8 @@
 
 #include <coin/utils/Stream.h>
 
-#include <mordor/bytecode/Type.h>
+#include <mordor/def/Type.h>
+#include <mordor/api/Type.h>
 
 #include "main.h"
 

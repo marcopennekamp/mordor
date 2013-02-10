@@ -1,11 +1,10 @@
-#include <mordor/load/BytecodeFunction.h>
+#include <mordor/runtime/BytecodeFunction.h>
 
 
 namespace mdr {
 
-BytecodeFunction::BytecodeFunction (mdrType return_type, mdr_u8 parameter_count) {
-    return_type_ = return_type;
-    parameter_count_ = parameter_count;
+BytecodeFunction::BytecodeFunction (const std::string& name) {
+    name_ = name;
 }
 
 BytecodeFunction::~BytecodeFunction () {

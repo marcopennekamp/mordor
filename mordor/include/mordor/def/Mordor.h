@@ -9,7 +9,7 @@ extern "C" {
 /*
  * OS target.
  */
-#define MDR_OS windows
+#define MDR_OS   windows
 
 /*
  * DLL Exports.
@@ -55,8 +55,8 @@ typedef mdr_u8                      mdr_bool;
 /*
  * Constants.
  */
-#define mdr_false 0
-#define mdr_true 1
+#define mdr_false   (0)
+#define mdr_true    (1)
 
 
 #ifdef	__cplusplus

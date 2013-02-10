@@ -7,6 +7,12 @@ struct T {
     mdr_u64 b;
 };
 
+extern "C" {
+    
+MDRI_DECL void MDRI_CALL say () {
+    printf ("Hello World!\n");
+}
+
 MDRI_DECL mdr_u32 MDRI_CALL power (mdr_u32 a) {
     mdr_u32 result = a * a;
     printf ("%lli\n", result);
@@ -38,4 +44,6 @@ MDRI_DECL mdr_u64 MDRI_CALL immediate_return () {
     mdr_u64 d = 100;
     mdr_u64 e = a + b + c + d;
     return test (e);
+}
+
 }

@@ -156,7 +156,7 @@ static const int BCOP_SIZE [] = {
     3, /* BCOP_INEW */
 
     2, /* BCOP_CALL */
-    3, /* BCOP_NCALL */
+    2, /* BCOP_NCALL */
     2, /* BCOP_ICALL */
     1, /* BCOP_VCALL */
 

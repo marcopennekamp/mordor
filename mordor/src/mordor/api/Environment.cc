@@ -2,6 +2,7 @@
 
 #include <mordor/runtime/Environment.h>
 
+using namespace std;
 using namespace mdr;
 
 
@@ -15,16 +16,12 @@ MDR_DECL void mdrEnvDestroy (mdrEnvironment* env) {
     delete (Environment*) env;
 }
 
-MDR_DECL void mdrEnvInitialize (mdrEnvironment* env) {
-    ((Environment*) env)->Initialize ();
+MDR_DECL void mdrEnvLoadProgram (mdrEnvironment* env, const char* path) {
+    ((Environment*) env)->LoadProgram (path);
 }
 
-MDR_DECL mdrProgram* mdrEnvLoadProgram (mdrEnvironment* env, const char* path) {
-    return (mdrProgram*) ((Environment*) env)->LoadProgram (path);
-}
-
-MDR_DECL mdrFunction* mdrEnvFindFunction (mdrEnvironment* env, const char* name) {
-    return (mdrFunction*) ((Environment*) env)->FindFunction (name);
+MDR_DECL mdrFunction* mdrEnvGetFunction (mdrEnvironment* env, const char* name) {
+    return ((Environment*) env)->GetFunction (name);
 }
 
 }

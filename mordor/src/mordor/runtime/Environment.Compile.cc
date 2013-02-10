@@ -7,12 +7,11 @@
 #include <mordor/def/Type.h>
 #include <mordor/api/Type.h>
 #include <mordor/utils/Array.h>
-#include <mordor/load/BytecodeFunction.h>
-#include <mordor/load/Loader.h>
+#include <mordor/runtime/BytecodeFunction.h>
 #include <mordor/runtime/Function.h>
 #include <mordor/runtime/Environment.h>
-#include <mordor/runtime/Program.h>
 #include <mordor/runtime/NativeFunction.h>
+#include <mordor/runtime/Function.h>
 
 using namespace std;
 
@@ -195,32 +194,32 @@ inline void fetch_return_value (const mdrType return_type, StackEntry*& bc_stack
 }
 
 
-Function* Loader::CompileBytecodeFunction (const BytecodeFunction* func, Program* program) {
+bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
     mdr_u64 time = coin::TimeNanoseconds ();
 
     // TODO(Marco): Idea: Keep track of tmp stack variables and invalidate them.
 
     /* Holds the compiled code. */
     vector<mdrOperation> operation_buffer;
-    operation_buffer.reserve (func->operation_count);
+    operation_buffer.reserve (func->operation_count ());
 
     /* The top of the internal stack. */
     mdr_u32 stack_top = 0;
 
     /* Maps bytecode variable ids to stack addresses. */
-    Array<mdr_u16> variable_to_stack (func->variable_table_size);
+    Array<mdr_u16> variable_to_stack (func->variable_table_size ());
     variable_to_stack.SetMemory (0xFF); /* Results in 0xFFFF. */
 
     /* Maps bytecode pointer ids to stack addresses. */
-    Array<mdr_u16> pointer_to_stack (func->pointer_table_size);
+    Array<mdr_u16> pointer_to_stack (func->pointer_table_size ());
     pointer_to_stack.SetMemory (0xFF); /* Results in 0xFFFF. */
 
     /* The typed Stack that is used to deduce types of variables. */
-    Array<StackEntry> bc_stack (func->maximum_stack_size);
+    Array<StackEntry> bc_stack (func->maximum_stack_size ());
     StackEntry* bc_stack_top = bc_stack.array ();
 
     /* Local variables to keep the current bytecode operation.*/
-    mdrBytecodeOperation* bc_op = func->code;
+    mdrBytecodeOperation* bc_op = func->code ();
     mdr_u32 bc_op_count = 0; /* Op count for jump translation. */
 
     /* The jump id map maps possible jump targets.
@@ -229,7 +228,7 @@ Function* Loader::CompileBytecodeFunction (const BytecodeFunction* func, Program
 
        Future use: When multiple bc operations are packed, they may not be involved in a jump instruction.
     */
-    Array<mdr_u32> jump_id_map (func->operation_count);
+    Array<mdr_u32> jump_id_map (func->operation_count ());
     jump_id_map.SetMemory (0xFF); /* Results in 0xFFFFFFFF. */
 
     /* Build jump id map. */
@@ -255,11 +254,10 @@ Function* Loader::CompileBytecodeFunction (const BytecodeFunction* func, Program
         ++bc_op_count;
     }
 
-
   LJumpIdMapLoopEnd:
     /* Reset bytecode operation local variables. */
     mdr_u32 bc_op_number = bc_op_count;
-    bc_op = func->code;
+    bc_op = func->code ();
     bc_op_count = 0;
 
     /* Compile all the code! */
@@ -345,45 +343,35 @@ Function* Loader::CompileBytecodeFunction (const BytecodeFunction* func, Program
             _START (CALL) {
                 _U10 (function_name_id)
                 /* Get function name and local id. */
-                BytecodeFunction* callee = NULL;
-                string& name = func->name_table[function_name_id];
-                mdr_u32 id = program->GetFunctionId (name);
-
-                if (id != Function::kInvalidId) {
-                    callee = program->bytecode_function_cache ()[id];
-                }else { 
-                    /* Not found in normal functions, get from function resolve cache. */
-                    id = program->GetFunctionIdFromResolveCache (name);
-
-                    /* Get the BytecodeFunction elsewhere. */
-                    callee = environment->FindBytecodeFunction (name);
-
-                    // TODO(Marco): Cache BytecodeFunction!
-                }
-
-                if (callee == NULL) {
+                string& name = func->name_table ()[function_name_id];
+                mdr_u32 id = GetFunctionId (name);
+                if (id == Function::kInvalidId) {
                     printf ("Error: Called function '%s' could not be found! Missing dependency?", name.c_str ());
-                    return NULL;
+                    return false;
                 }
+
+                Function* callee = GetFunction (id);
 
                 /* Push variables in lowest to highest stack order. */
-                build_call_parameters (callee->parameter_count, OP_PUSH, OP_PUSHl, bc_stack_top, stack_top, operation_buffer);
+                build_call_parameters (callee->cpinfo ().parameter_count_, OP_PUSH, OP_PUSHl, bc_stack_top, stack_top, operation_buffer);
 
                 /* Add CALL instruction. */
                 add_operation (build_operation_W (OP_CALL, id), operation_buffer);
 
                 /* If function returns something, put that on the stack and create a bc stack entry! */
-                if (callee->return_type != MDR_TYPE_VOID) {
-                    fetch_return_value (callee->return_type, bc_stack_top, stack_top, operation_buffer);
+                if (callee->cpinfo ().return_type_ != MDR_TYPE_VOID) {
+                    fetch_return_value (callee->cpinfo ().return_type_, bc_stack_top, stack_top, operation_buffer);
                 }
             } _END
 
             _START (NCALL) {
                 _U10 (function_name_id)
-                mdrType type = *(bc_op + 2);
-                mdrOperation op = OP_END;
-
-                switch (type) {
+                mdr_u32 function_id = GetNativeFunctionId (func->name_table ()[function_name_id]);
+                NativeFunction* function = GetNativeFunction (function_id);
+                
+                mdrOperationType op = OP_END;
+                switch (function->return_type ()) {
+                    case MDR_TYPE_VOID:
                     case MDR_TYPE_U32:
                         op = OP_CALL_NATIVE_U32;
                         break;
@@ -394,14 +382,11 @@ Function* Loader::CompileBytecodeFunction (const BytecodeFunction* func, Program
                 }
 
                 if (op != OP_END) {
-                    mdr_u32 function_id = environment->library_manager ().GetNativeFunctionIndex (func->name_table[function_name_id]);
-                    NativeFunction* function = environment->library_manager ().GetNativeFunction (function_id);
-                    
                     // TODO(Marco): Check for NULL?
 
                     /* Similar to CALL. */
                     build_call_parameters (function->parameter_count (), OP_NPUSH, OP_NPUSHl, bc_stack_top, stack_top, operation_buffer);
-                    add_operation (build_operation_W (OP_CALL, function_id), operation_buffer);
+                    add_operation (build_operation_W (op, function_id), operation_buffer);
                     if (function->return_type () != MDR_TYPE_VOID) {
                         fetch_return_value (function->return_type (), bc_stack_top, stack_top, operation_buffer);
                     }
@@ -441,10 +426,10 @@ Function* Loader::CompileBytecodeFunction (const BytecodeFunction* func, Program
             mdr_u32 position = jump_id_map[(op >> 16) & 0xFFFFFFFF];
             if (position == 0xFFFFFFFF) {
                 printf ("Error: Jump location invalid!\n");
-                return NULL;
+                return false;
             }else if (position == 0xFFFFFFFE) {
                 printf ("Error: Possible jump location not set!\n");
-                return NULL;
+                return false;
             }else {
                 // printf ("New Jump location found! %i jumps to %u! by %i\n", i, position, (mordor_s32) ((((mordor_s64) position) - i) * sizeof(Operation)));
                 operation_buffer[i] = build_operation_W (OP_kJMP, (mdr_s32) ((((mdr_s64) position) - (mdr_s64) i) * sizeof(mdrOperation)));
@@ -455,17 +440,17 @@ Function* Loader::CompileBytecodeFunction (const BytecodeFunction* func, Program
     }
 
   LJumpResolveLoopEnd:
-    /* Create function. */
-    size_t size = operation_buffer.size ();
-    Function* function = new Function (size, 0);
-    function->stack_size = stack_top;
-    function->program = program;
-    memcpy (function->operations, &operation_buffer[0], size * sizeof (mdrOperation));
+    /* Allocate function. */
+    Function* function = GetFunction (func->name ());
+    mdr_u32 size = (mdr_u32) operation_buffer.size ();
+    function->Allocate (size, 0);
+    function->stack_size (stack_top);
+    memcpy (function->operations (), &operation_buffer[0], size * sizeof (mdrOperation));
 
     time = coin::TimeNanoseconds () - time;
     printf ("Compilation took %lluns!\n", time);
-    
-    return function;
+
+    return true;
 }
 
 }

@@ -3,7 +3,6 @@
 
 #include <mordor/def/Mordor.h>
 
-#include <mordor/api/Program.h>
 #include <mordor/api/Function.h>
 
 #ifdef	__cplusplus
@@ -16,10 +15,8 @@ typedef void mdrEnvironment;
 MDR_DECL mdrEnvironment* mdrEnvCreate ();
 MDR_DECL void mdrEnvDestroy (mdrEnvironment* env);
 
-MDR_DECL void mdrEnvInitialize (mdrEnvironment* env);
-
-MDR_DECL mdrProgram* mdrEnvLoadProgram (mdrEnvironment* env, const char* path);
-MDR_DECL mdrFunction* mdrEnvFindFunction (mdrEnvironment* env, const char* name);
+MDR_DECL void mdrEnvLoadProgram (mdrEnvironment* env, const char* path);
+MDR_DECL mdrFunction* mdrEnvGetFunction (mdrEnvironment* env, const char* name);
 
 
 #ifdef	__cplusplus
