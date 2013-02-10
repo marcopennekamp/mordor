@@ -4,8 +4,6 @@
 using namespace mdr;
 
 
-extern "C" {
-
 MDR_DECL mdrContext* mdrCtxCreate (mdrEnvironment* env) {
     return (mdrContext*) new Context ((Environment*) env);
 }
@@ -24,6 +22,4 @@ MDR_DECL mdr_u8* mdrCtxGetStack (mdrContext* ctx) {
 
 MDR_DECL mdr_u8* mdrCtxGetReturnValueAddress (mdrContext* ctx) {
     return ((Context*) ctx)->return_value_address ();
-}
-
 }

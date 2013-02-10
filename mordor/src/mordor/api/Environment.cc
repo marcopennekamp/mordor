@@ -6,8 +6,6 @@ using namespace std;
 using namespace mdr;
 
 
-extern "C" {
-
 MDR_DECL mdrEnvironment* mdrEnvCreate () {
     return (mdrEnvironment*) new Environment ();
 }
@@ -22,6 +20,4 @@ MDR_DECL void mdrEnvLoadProgram (mdrEnvironment* env, const char* path) {
 
 MDR_DECL mdrFunction* mdrEnvGetFunction (mdrEnvironment* env, const char* name) {
     return ((Environment*) env)->GetFunction (name);
-}
-
 }
