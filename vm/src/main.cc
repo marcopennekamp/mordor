@@ -4,9 +4,9 @@
 
 #include <coin/utils/time.h>
 
-#include <mordor/api/Environment.h>
-#include <mordor/api/Context.h>
-#include <mordor/api/Function.h>
+#include <mdr/api/Environment.h>
+#include <mdr/api/Context.h>
+#include <mdr/api/Function.h>
 
 using namespace std;
 

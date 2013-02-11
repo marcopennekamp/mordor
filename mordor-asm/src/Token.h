@@ -1,10 +1,10 @@
 #ifndef MORDOR_ASSEMBLER_TOKEN_H_
 #define MORDOR_ASSEMBLER_TOKEN_H_
 
-#include <mordor/def/Mordor.h>
+#include <mdr/def/Mdr.h>
 
 
-namespace mordor {
+namespace mdr {
 namespace assembler {
 
 const int TOKEN_LITERAL = 0x00;

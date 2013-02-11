@@ -7,7 +7,7 @@
 using namespace std;
 
 
-namespace mordor {
+namespace mdr {
 namespace assembler {
 
 void start (int argc, char** argv) {

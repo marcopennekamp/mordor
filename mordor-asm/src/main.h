@@ -6,7 +6,7 @@
 #include "Token.h"
 
 
-namespace mordor {
+namespace mdr {
 namespace assembler {
 
 void TokenizeFile (const char* file_path, std::vector<Token*>& tokens);

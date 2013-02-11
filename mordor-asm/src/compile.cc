@@ -6,9 +6,8 @@
 #include <coin/utils/Stream.h>
 #include <coin/utils/directory.h>
 
-#include <mordor/def/BytecodeOperation.h>
-#include <mordor/def/Type.h>
-#include <mordor/api/Type.h>
+#include <mdr/def/BytecodeOperation.h>
+#include <mdr/api/Type.h>
 
 #include "main.h"
 
@@ -17,7 +16,7 @@ using namespace std;
 using namespace coin;
 
 
-namespace mordor {
+namespace mdr {
 namespace assembler {
 
 namespace {

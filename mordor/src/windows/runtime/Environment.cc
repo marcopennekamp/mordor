@@ -1,8 +1,8 @@
 #include <windows.h>
 #include <imagehlp.h>
 
-#include <mordor/runtime/Environment.h>
-#include <mordor/runtime/NativeFunction.h>
+#include <mdr/runtime/Environment.h>
+#include <mdr/runtime/NativeFunction.h>
 
 using namespace std;
 

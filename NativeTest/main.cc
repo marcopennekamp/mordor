@@ -1,4 +1,4 @@
-#include <mordor/def/Mordor.h>
+#include <mdr/def/Mdr.h>
 
 #include <stdio.h>
 
