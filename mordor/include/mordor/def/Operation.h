@@ -133,13 +133,30 @@ enum mdrOperationType {
     OP_kSHR             = 0x82,
     OP_kSHRl            = 0x83,
 
-    OP_ASHR             = 0x84,
-    OP_ASHRl            = 0x85,
-    OP_kASHR            = 0x86,
-    OP_kASHRl           = 0x87,
+    OP_ASHL             = 0x84,
+    OP_ASHLl            = 0x85,
+    OP_kASHL            = 0x86,
+    OP_kASHLl           = 0x87,
 
-    OP_NOT              = 0x88,
-    OP_NOTl             = 0x89,
+    OP_ASHR             = 0x88,
+    OP_ASHRl            = 0x89,
+    OP_kASHR            = 0x8A,
+    OP_kASHRl           = 0x8B,
+
+    OP_NOT              = 0x8C,
+    OP_NOTl             = 0x8D,
+
+    /* LOGICAL. */
+    OP_LAND             = 0x90,
+    OP_kLAND            = 0x91,
+
+    OP_LOR              = 0x92,
+    OP_kLOR             = 0x93,
+
+    OP_LXOR             = 0x94,
+    OP_kLXOR            = 0x95,
+
+    OP_LNOT             = 0x96,
 
     /* CALL.*/
     OP_CALL             = 0xA0,

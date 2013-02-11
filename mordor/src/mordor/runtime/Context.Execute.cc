@@ -6,7 +6,6 @@
 
 #include <mordor/def/Operation.h>
 #include <mordor/runtime/Context.h>
-#include <mordor/runtime/Context.h>
 #include <mordor/runtime/Function.h>
 #include <mordor/runtime/NativeFunction.h>
 #include <mordor/runtime/Environment.h>
@@ -16,10 +15,12 @@ using namespace mdr;
 
 /* ASM externs. */
 
-extern "C" extern mdr_u32 CallNativeFunctionU32 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
-extern "C" extern mdr_u64 CallNativeFunctionU64 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
-extern "C" extern mdr_f32 CallNativeFunctionF32 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
-extern "C" extern mdr_f64 CallNativeFunctionF64 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
+extern "C" {
+    extern mdr_u32 CallNativeFunctionU32 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
+    extern mdr_u64 CallNativeFunctionU64 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
+    extern mdr_f32 CallNativeFunctionF32 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
+    extern mdr_f64 CallNativeFunctionF64 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
+}
 
 
 /* Operation definition macros. */
@@ -48,6 +49,14 @@ extern "C" extern mdr_f64 CallNativeFunctionF64 (NativeFunction::function_t, mdr
 
 #define _OPC_L(P0)               mdr_u64 P0; \
                                   extract_L (op, P0);
+
+/* */
+
+#define _CALL_NATIVE(TYPE, FUNC) \
+    NativeFunction* function = environment_->GetNativeFunction (function_id); \
+    *((mdr_ ## TYPE *) (stack_.array () + stack_top)) = CallNativeFunction ## FUNC (function->function (), (mdr_u64*) native_call_stack_.data.array (), \
+    native_call_stack_.size, (mdr_u64*) (stack_.array () + stack_top)); \
+    native_call_stack_.size = 0; 
 
 /* Class extraction functions. */
 
@@ -137,7 +146,6 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         }
 
         _OP_START (kJMP) { _OPC_W (offset)
-            // printf ("JMP from %p, base %p, by %i (%llX)\n", op_pointer, function->operations, (mordor_s32) offset, op);
             op_pointer = (mdrOperation*) ((mdr_u8*) op_pointer + (mdr_s32) offset);
         _OP_RESTART }
 
@@ -270,11 +278,11 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         _OP_END }
 
         _OP_START (fADD) { _OPC_PP (dest, src)
-
+            fetch<mdr_f32> (stack, dest) += fetch<mdr_f32> (stack, src);
         _OP_END }
 
         _OP_START (fADDl) { _OPC_PP (dest, src)
-
+            fetch<mdr_f64> (stack, dest) += fetch<mdr_f64> (stack, src);
         _OP_END }
 
         _OP_START (kADD) { _OPC_PW (dest, value)
@@ -282,15 +290,15 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         _OP_END }
 
         _OP_START (kADDl) { _OPC_PW (dest, constant_id)
-
+            fetch<mdr_u64> (stack, dest) += fetch<mdr_u64> (function->constant_table (), constant_id);
         _OP_END }
 
         _OP_START (fkADD) { _OPC_PW (dest, value)
-
+            fetch<mdr_f32> (stack, dest) += *((mdr_f32*) &value);
         _OP_END }
 
         _OP_START (fkADDl) { _OPC_PW (dest, constant_id)
-
+            fetch<mdr_f64> (stack, dest) += fetch<mdr_f64> (function->constant_table (), constant_id);
         _OP_END }
 
         _OP_START (SUB) { _OPC_PP (dest, src)
@@ -302,27 +310,27 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         _OP_END }
 
         _OP_START (fSUB) { _OPC_PP (dest, src)
-
+            fetch<mdr_f32> (stack, dest) -= fetch<mdr_f32> (stack, src);
         _OP_END }
 
         _OP_START (fSUBl) { _OPC_PP (dest, src)
-
+            fetch<mdr_f64> (stack, dest) -= fetch<mdr_f64> (stack, src);
         _OP_END }
 
         _OP_START (kSUB) { _OPC_PW (dest, value)
-            fetch<mdr_s32> (stack, dest) = value;
+            fetch<mdr_u32> (stack, dest) -= value;
         _OP_END }
 
         _OP_START (kSUBl) { _OPC_PW (dest, constant_id)
-
+            fetch<mdr_u64> (stack, dest) -= fetch<mdr_u64> (function->constant_table (), constant_id);
         _OP_END }
 
         _OP_START (fkSUB) { _OPC_PW (dest, value)
-
+            fetch<mdr_f32> (stack, dest) -= *((mdr_f32*) &value);
         _OP_END }
 
         _OP_START (fkSUBl) { _OPC_PW (dest, constant_id)
-
+            fetch<mdr_f64> (stack, dest) -= fetch<mdr_f64> (function->constant_table (), constant_id);
         _OP_END }
 
         _OP_START (sMUL) { _OPC_PP (dest, src)
@@ -341,231 +349,289 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
             fetch<mdr_u64> (stack, dest) *= fetch<mdr_u64> (stack, src);
         _OP_END }
 
-        _OP_START (fMUL) {
-
+        _OP_START (fMUL) { _OPC_PP (dest, src)
+            fetch<mdr_f32> (stack, dest) *= fetch<mdr_f32> (stack, src);
         _OP_END }
 
-        _OP_START (fMULl) {
-
+        _OP_START (fMULl) { _OPC_PP (dest, src)
+            fetch<mdr_f64> (stack, dest) *= fetch<mdr_f64> (stack, src);
         _OP_END }
 
-        _OP_START (skMUL) {
-
+        _OP_START (skMUL) { _OPC_PW (dest, value)
+            fetch<mdr_s32> (stack, dest) *= value;
         _OP_END }
 
-        _OP_START (skMULl) {
-
+        _OP_START (skMULl) { _OPC_PW (dest, constant_id)
+            fetch<mdr_s64> (stack, dest) *= fetch<mdr_s64> (function->constant_table (), constant_id);
         _OP_END }
 
-        _OP_START (ukMUL) {
-
+        _OP_START (ukMUL) { _OPC_PW (dest, value)
+            fetch<mdr_u32> (stack, dest) *= value;
         _OP_END }
 
-        _OP_START (ukMULl) {
-
+        _OP_START (ukMULl) { _OPC_PW (dest, constant_id)
+            fetch<mdr_u64> (stack, dest) *= fetch<mdr_u64> (function->constant_table (), constant_id);
         _OP_END }
 
-        _OP_START (fkMUL) {
-
+        _OP_START (fkMUL) { _OPC_PW (dest, value)
+            fetch<mdr_f32> (stack, dest) *= value;
         _OP_END }
 
-        _OP_START (fkMULl) {
-
+        _OP_START (fkMULl) { _OPC_PW (dest, constant_id)
+            fetch<mdr_f64> (stack, dest) *= fetch<mdr_f64> (function->constant_table (), constant_id);
         _OP_END }
 
-        _OP_START (sDIV) {
-
+        _OP_START (sDIV) { _OPC_PP (dest, src)
+            fetch<mdr_s32> (stack, dest) /= fetch<mdr_s32> (stack, src);
         _OP_END }
 
-        _OP_START (sDIVl) {
-
+        _OP_START (sDIVl) { _OPC_PP (dest, src)
+            fetch<mdr_s64> (stack, dest) /= fetch<mdr_s64> (stack, src);
         _OP_END }
 
-        _OP_START (uDIV) {
-
+        _OP_START (uDIV) { _OPC_PP (dest, src)
+            fetch<mdr_u32> (stack, dest) /= fetch<mdr_u32> (stack, src);
         _OP_END }
 
-        _OP_START (uDIVl) {
-
+        _OP_START (uDIVl) { _OPC_PP (dest, src)
+             fetch<mdr_u64> (stack, dest) /= fetch<mdr_u64> (stack, src);
         _OP_END }
 
-        _OP_START (fDIV) {
-
+        _OP_START (fDIV) { _OPC_PP (dest, src)
+             fetch<mdr_f32> (stack, dest) /= fetch<mdr_f32> (stack, src);
         _OP_END }
 
-        _OP_START (fDIVl) {
-
+        _OP_START (fDIVl) { _OPC_PP (dest, src)
+            fetch<mdr_f64> (stack, dest) /= fetch<mdr_f64> (stack, src);
         _OP_END }
 
-        _OP_START (skDIV) {
-
+        _OP_START (skDIV) { _OPC_PW (dest, value)
+            fetch<mdr_s32> (stack, dest) /= value;
         _OP_END }
 
-        _OP_START (skDIVl) {
-
+        _OP_START (skDIVl) { _OPC_PW (dest, constant_id)
+            fetch<mdr_s64> (stack, dest) /= fetch<mdr_s64> (function->constant_table (), constant_id);
         _OP_END }
 
-        _OP_START (ukDIV) {
-
+        _OP_START (ukDIV) { _OPC_PW (dest, value)
+            fetch<mdr_u32> (stack, dest) /= value;
         _OP_END }
 
-        _OP_START (ukDIVl) {
-
+        _OP_START (ukDIVl) { _OPC_PW (dest, constant_id)
+            fetch<mdr_u64> (stack, dest) /= fetch<mdr_u64> (function->constant_table (), constant_id);
         _OP_END }
 
-        _OP_START (fkDIV) {
-
+        _OP_START (fkDIV) { _OPC_PW (dest, value)
+            fetch<mdr_f32> (stack, dest) /= value;
         _OP_END }
 
-        _OP_START (fkDIVl) {
-
+        _OP_START (fkDIVl) { _OPC_PW (dest, constant_id)
+            fetch<mdr_f64> (stack, dest) /= fetch<mdr_f64> (function->constant_table (), constant_id);
         _OP_END }
 
-        _OP_START (sREM) {
-
+        _OP_START (sREM) { _OPC_PP (dest, src)
+            fetch<mdr_s32> (stack, dest) %= fetch<mdr_s32> (stack, src);
         _OP_END }
 
-        _OP_START (sREMl) {
-
+        _OP_START (sREMl) { _OPC_PP (dest, src)
+            fetch<mdr_s64> (stack, dest) %= fetch<mdr_s64> (stack, src);
         _OP_END }
 
-        _OP_START (uREM) {
-
+        _OP_START (uREM) { _OPC_PP (dest, src)
+            fetch<mdr_u32> (stack, dest) %= fetch<mdr_u32> (stack, src);
         _OP_END }
 
-        _OP_START (uREMl) {
-
+        _OP_START (uREMl) { _OPC_PP (dest, src)
+            fetch<mdr_u64> (stack, dest) %= fetch<mdr_u64> (stack, src);
         _OP_END }
 
-        _OP_START (skREM) {
-
+        _OP_START (skREM) { _OPC_PW (dest, value)
+            fetch<mdr_s32> (stack, dest) %= value;
         _OP_END }
 
-        _OP_START (skREMl) {
-
+        _OP_START (skREMl) { _OPC_PW (dest, constant_id)
+            fetch<mdr_s64> (stack, dest) %= fetch<mdr_s64> (function->constant_table (), constant_id);
         _OP_END }
 
-        _OP_START (ukREM) {
-
+        _OP_START (ukREM) { _OPC_PW (dest, value)
+            fetch<mdr_u32> (stack, dest) %= value;
         _OP_END }
 
-        _OP_START (ukREMl) {
-
+        _OP_START (ukREMl) { _OPC_PW (dest, constant_id)
+            fetch<mdr_u64> (stack, dest) %= fetch<mdr_u64> (function->constant_table (), constant_id);
         _OP_END }
 
-        _OP_START (NEG) {
-
+        _OP_START (NEG) { _OPC_P (dest)
+            mdr_s32& ptr = fetch<mdr_s32> (stack, dest);
+            ptr = -ptr;
         _OP_END }
 
-        _OP_START (NEGl) {
-
+        _OP_START (NEGl) { _OPC_P (dest)
+            mdr_s64& ptr = fetch<mdr_s64> (stack, dest);
+            ptr = -ptr;
         _OP_END }
 
 
     /* BITWISE. */
 
-        _OP_START (AND) {
+        _OP_START (AND) { _OPC_PP (dest, src)
+            fetch<mdr_u32> (stack, dest) &= fetch<mdr_u32> (stack, src);
+        _OP_END }
+
+        _OP_START (ANDl) { _OPC_PP (dest, src)
+            fetch<mdr_u64> (stack, dest) &= fetch<mdr_u64> (stack, src);
+        _OP_END }
+
+        _OP_START (kAND) { _OPC_PW (dest, value)
+            fetch<mdr_u32> (stack, dest) &= value;
+        _OP_END }
+
+        _OP_START (kANDl) { _OPC_PW (dest, constant_id)
+            fetch<mdr_u64> (stack, dest) &= fetch<mdr_u64> (function->constant_table (), constant_id);
+        _OP_END }
+
+        _OP_START (OR) { _OPC_PP (dest, src)
+            fetch<mdr_u32> (stack, dest) |= fetch<mdr_u32> (stack, src);
+        _OP_END }
+
+        _OP_START (ORl) { _OPC_PP (dest, src)
+            fetch<mdr_u64> (stack, dest) |= fetch<mdr_u64> (stack, src);
+        _OP_END }
+
+        _OP_START (kOR) { _OPC_PW (dest, value)
+            fetch<mdr_u32> (stack, dest) |= value;
+        _OP_END }
+
+        _OP_START (kORl) { _OPC_PW (dest, constant_id)
+            fetch<mdr_u64> (stack, dest) |= fetch<mdr_u64> (function->constant_table (), constant_id);
+        _OP_END }
+
+        _OP_START (XOR) { _OPC_PP (dest, src)
+            fetch<mdr_u32> (stack, dest) ^= fetch<mdr_u32> (stack, src);
+        _OP_END }
+
+        _OP_START (XORl) { _OPC_PP (dest, src)
+            fetch<mdr_u64> (stack, dest) ^= fetch<mdr_u64> (stack, src);
+        _OP_END }
+
+        _OP_START (kXOR) { _OPC_PW (dest, value)
+            fetch<mdr_u32> (stack, dest) ^= value;
+        _OP_END }
+
+        _OP_START (kXORl) { _OPC_PW (dest, constant_id)
+            fetch<mdr_u64> (stack, dest) ^= fetch<mdr_u64> (function->constant_table (), constant_id);
+        _OP_END }
+
+        _OP_START (SHL) { _OPC_PP (dest, src)
+            fetch<mdr_u32> (stack, dest) <<= fetch<mdr_u32> (stack, src);
+        _OP_END }
+
+        _OP_START (SHLl) { _OPC_PP (dest, src)
+            fetch<mdr_u64> (stack, dest) <<= fetch<mdr_u32> (stack, src);
+        _OP_END }
+
+        _OP_START (kSHL) { _OPC_PW (dest, value)
+            fetch<mdr_u32> (stack, dest) <<= value;
+        _OP_END }
+
+        _OP_START (kSHLl) { _OPC_PW (dest, value)
+             fetch<mdr_u64> (stack, dest) <<= value;
+        _OP_END }
+
+        _OP_START (SHR) { _OPC_PP (dest, src)
+            fetch<mdr_u32> (stack, dest) >>= fetch<mdr_u32> (stack, src);
+        _OP_END }
+
+        _OP_START (SHRl) { _OPC_PP (dest, src)
+            fetch<mdr_u64> (stack, dest) >>= fetch<mdr_u32> (stack, src);
+        _OP_END }
+
+        _OP_START (kSHR) { _OPC_PW (dest, value)
+            fetch<mdr_u32> (stack, dest) >>= value;
+        _OP_END }
+
+        _OP_START (kSHRl) { _OPC_PW (dest, value)
+            fetch<mdr_u64> (stack, dest) >>= value;
+        _OP_END }
+        
+        _OP_START (ASHL) { _OPC_PP (dest, src)
 
         _OP_END }
 
-        _OP_START (ANDl) {
+        _OP_START (ASHLl) { _OPC_PP (dest, src)
 
         _OP_END }
 
-        _OP_START (kAND) {
+        _OP_START (kASHL) { _OPC_PW (dest, value)
 
         _OP_END }
 
-        _OP_START (kANDl) {
+        _OP_START (kASHLl) { _OPC_PW (dest, value)
 
         _OP_END }
 
-        _OP_START (OR) {
+        _OP_START (ASHR) { _OPC_PP (dest, src)
 
         _OP_END }
 
-        _OP_START (ORl) {
+        _OP_START (ASHRl) { _OPC_PP (dest, src)
 
         _OP_END }
 
-        _OP_START (kOR) {
+        _OP_START (kASHR) { _OPC_PW (dest, value)
 
         _OP_END }
 
-        _OP_START (kORl) {
+        _OP_START (kASHRl) { _OPC_PW (dest, value)
 
         _OP_END }
 
-        _OP_START (XOR) {
-
+        _OP_START (NOT) { _OPC_P (dest)
+            mdr_u32& ptr = fetch<mdr_u32> (stack, dest);
+            ptr = ~ptr;
         _OP_END }
 
-        _OP_START (XORl) {
-
+        _OP_START (NOTl) { _OPC_P (dest)
+            mdr_u64& ptr = fetch<mdr_u64> (stack, dest);
+            ptr = ~ptr;
         _OP_END }
 
-        _OP_START (kXOR) {
 
+    /* LOGICAL. */
+
+        _OP_START (LAND) { _OPC_PP (dest, src)
+            mdr_u32& ptr = fetch<mdr_u32> (stack, dest);
+            ptr = ptr && fetch<mdr_u32> (stack, src);
         _OP_END }
 
-        _OP_START (kXORl) {
-
+        _OP_START (kLAND) { _OPC_PP (dest, value)
+            mdr_u32& ptr = fetch<mdr_u32> (stack, dest);
+            ptr = ptr && value;
         _OP_END }
 
-        _OP_START (SHL) {
-
+        _OP_START (LOR) { _OPC_PP (dest, src)
+            mdr_u32& ptr = fetch<mdr_u32> (stack, dest);
+            ptr = ptr || fetch<mdr_u32> (stack, src);
         _OP_END }
 
-        _OP_START (SHLl) {
-
+        _OP_START (kLOR) { _OPC_PW (dest, value)
+            mdr_u32& ptr = fetch<mdr_u32> (stack, dest);
+            ptr = ptr || value;
         _OP_END }
 
-        _OP_START (kSHL) {
-
+        _OP_START (LXOR) { _OPC_PP (dest, src)
+            mdr_u32& ptr = fetch<mdr_u32> (stack, dest);
+            ptr = (ptr & 0x1) != (fetch<mdr_u32> (stack, src) & 0x1); /* Eventually the values need to be normalized. */
         _OP_END }
 
-        _OP_START (kSHLl) {
-
+        _OP_START (kLXOR) { _OPC_PP (dest, value)
+            mdr_u32& ptr = fetch<mdr_u32> (stack, dest);
+            ptr = (ptr & 0x1) != value;
         _OP_END }
 
-        _OP_START (SHR) {
-
-        _OP_END }
-
-        _OP_START (SHRl) {
-
-        _OP_END }
-
-        _OP_START (kSHR) {
-
-        _OP_END }
-
-        _OP_START (kSHRl) {
-
-        _OP_END }
-
-        _OP_START (ASHR) {
-
-        _OP_END }
-
-        _OP_START (ASHRl) {
-
-        _OP_END }
-
-        _OP_START (kASHR) {
-
-        _OP_END }
-
-        _OP_START (kASHRl) {
-
-        _OP_END }
-
-        _OP_START (NOT) {
-
-        _OP_END }
-
-        _OP_START (NOTl) {
-
+        _OP_START (LNOT) { _OPC_P (dest)
+            mdr_u32& ptr = fetch<mdr_u32> (stack, dest);
+            ptr = !ptr;
         _OP_END }
 
 
@@ -576,10 +642,19 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         _OP_END }
 
         _OP_START (CALL_NATIVE_U32) { _OPC_W (function_id)
-            NativeFunction* function = environment_->GetNativeFunction (function_id);
-            CallNativeFunctionU32 (function->function (), (mdr_u64*) native_call_stack_.data.array (), 
-                native_call_stack_.size, (mdr_u64*) (stack_.array () + stack_top));
-            native_call_stack_.size = 0;
+            _CALL_NATIVE (u32, U32)
+        _OP_END }
+
+        _OP_START (CALL_NATIVE_U64) { _OPC_W (function_id)
+            _CALL_NATIVE (u64, U64)
+        _OP_END }
+
+        _OP_START (CALL_NATIVE_F32) { _OPC_W (function_id)
+            _CALL_NATIVE (f32, F32)
+        _OP_END }
+
+        _OP_START (CALL_NATIVE_F64) { _OPC_W (function_id)
+            _CALL_NATIVE (f64, F64)
         _OP_END }
 
         _OP_START (PUSH) { _OPC_PP (src, offset)
