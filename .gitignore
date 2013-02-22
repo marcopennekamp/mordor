@@ -8,6 +8,9 @@
 # Programs
 *.mdr
 
+# Log files
+log.txt
+
 
 #################
 ## Eclipse
