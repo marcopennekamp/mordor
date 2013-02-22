@@ -219,6 +219,12 @@ void TokenizeFile (const char* file_path, vector<Token*>& tokens) {
         ++i;
     }
 
+    /* Add '\n' as last token if not already an '\n' is the last token. */
+    Token* last_token = tokens[tokens.size () - 1];
+    if (last_token->tag != TOKEN_CHARACTER || last_token->character != '\n') {
+        addToken (tokens, TOKEN_CHARACTER)->character = '\n';
+    }
+
 }
 
 }
