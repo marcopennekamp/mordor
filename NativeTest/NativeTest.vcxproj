@@ -115,6 +115,7 @@
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <CreateHotpatchableImage>false</CreateHotpatchableImage>
       <OmitFramePointers>false</OmitFramePointers>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>

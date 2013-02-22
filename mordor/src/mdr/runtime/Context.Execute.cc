@@ -121,6 +121,8 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
     mdrOperation* op_pointer = function->operations ();
     mdr_u32 stack_top        = caller_stack_top + function->stack_size ();
 
+    printf ("stack: %p, stack bottom: %u, stack top: %u\n", (mdr_u8*) stack_.array (), caller_stack_top, stack_top);
+
     // TODO: This is a "security check"! May be slow.
     if (stack_top > stack_.size ()) {
         printf ("Error: Requested stack size exceeds Context stack limit.");
@@ -151,6 +153,7 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
 
         _OP_START (RET) { _OPC_P (src)
             return_value_address_ = stack + src;
+        printf ("%p, %u, %u\n", return_value_address_, src, fetch<mdr_u32> (stack, src));
             _OP_RETURN
         }
 
@@ -164,6 +167,7 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
 
         _OP_START (RETMOV) { _OPC_P (dest)
             fetch<mdr_u32> (stack, dest) = *((mdr_u32*) return_value_address ());
+            printf ("%u, %u\n", dest, *((mdr_u32*) return_value_address ()));
         _OP_END }
 
         _OP_START (RETMOVl) { _OPC_P (dest)

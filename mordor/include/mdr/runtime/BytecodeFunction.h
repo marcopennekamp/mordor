@@ -3,10 +3,11 @@
 
 #include <string>
 
+#include <coin/utils/Array.h>
+
 #include <mdr/def/Mdr.h>
 #include <mdr/def/Type.h>
 #include <mdr/runtime/Function.h>
-#include <mdr/utils/Array.h>
 
 
 namespace mdr {
@@ -15,7 +16,19 @@ class BytecodeFunction {
 public:
     struct Constant {
         mdrType type;
-        mdr_u64 value;
+        union {
+            mdr_s8  _s8;
+            mdr_s16 _s16;
+            mdr_s32 _s32;
+            mdr_s64 _s64;
+            mdr_u8  _u8;
+            mdr_u16 _u16;
+            mdr_u32 _u32;
+            mdr_u64 _u64;
+            mdr_f32 _f32;
+            mdr_f64 _f64;
+        } value;
+        
     };
 
     const static mdr_u8 kConstantTableExists    = 0x80;
@@ -23,8 +36,8 @@ public:
     const static mdr_u8 kNameTableExists        = 0x20;
     const static mdr_u8 kNameTableWide          = 0x10;
 
-    typedef Array<Constant, mdr_u16> ConstantTable;
-    typedef Array<std::string, mdr_u16> NameTable;
+    typedef coin::Array<Constant, mdr_u16> ConstantTable;
+    typedef coin::Array<std::string, mdr_u16> NameTable;
 
 private:
     std::string name_;

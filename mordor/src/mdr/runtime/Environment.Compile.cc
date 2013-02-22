@@ -2,10 +2,10 @@
 #include <map>
 
 #include <coin/utils/time.h>
+#include <coin/utils/Array.h>
 
 #include <mdr/def/BytecodeOperation.h>
 #include <mdr/api/Type.h>
-#include <mdr/utils/Array.h>
 #include <mdr/runtime/BytecodeFunction.h>
 #include <mdr/runtime/Function.h>
 #include <mdr/runtime/Environment.h>
@@ -92,7 +92,7 @@ inline bool needs_l_operation (const mdrType type) {
  * Returns an address on the stack for the given variable or pointer.
  * May or may not reserve stack space.
  */
-inline mdr_u16 get_stack_address_for_element (const mdr_u32 element, const mdrType type, Array<mdr_u16>& element_to_stack, mdr_u32& stack_top) {
+inline mdr_u16 get_stack_address_for_element (const mdr_u32 element, const mdrType type, coin::Array<mdr_u16>& element_to_stack, mdr_u32& stack_top) {
     mdr_u16 address = element_to_stack[element];
 
     /* Reserve address if needed. */
@@ -120,7 +120,7 @@ inline mdr_u16 get_stack_address_for_element (const mdr_u32 element, const mdrTy
     return address & 0xFFFF;
 }
 
-inline void load_element (const mdr_u16 element, const mdrType type, Array<mdr_u16>& element_to_stack, StackEntry*& bc_stack_top, mdr_u32& stack_top) {
+inline void load_element (const mdr_u16 element, const mdrType type, coin::Array<mdr_u16>& element_to_stack, StackEntry*& bc_stack_top, mdr_u32& stack_top) {
     /* Resolve address. */
     mdr_u16 address = get_stack_address_for_element (element, type, element_to_stack, stack_top);
     bc_stack_top->Set (type, false, address);
@@ -167,11 +167,13 @@ inline void build_call_parameters (const mdr_u32 parameter_count, const mdrOpera
         mdr_u32 size = get_type_size (it->type);
         mdrOperationType opcode = (size == 8) ? kOpcodel : kOpcode;
         if (kOpcode == OP_NPUSH) size = 8; /* Native stack is 8 byte aligned. */
+
+        printf ("%u, %u, %u\n", it->type, size, offset);
         if (it->constant) {
             // TODO(Marco): Push constant properly.
             add_operation (build_operation_PW (OP_kMOV, stack_top, it->id), operation_buffer);
+            add_operation (build_operation_PP (opcode, offset, stack_top), operation_buffer);
             stack_top += size;
-            add_operation (build_operation_PP (opcode, stack_top, offset), operation_buffer);
         }else { /* Push variable. */
             add_operation (build_operation_PP (opcode, it->id, offset), operation_buffer);
         }
@@ -206,15 +208,15 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
     mdr_u32 stack_top = 0;
 
     /* Maps bytecode variable ids to stack addresses. */
-    Array<mdr_u16> variable_to_stack (func->variable_table_size ());
+    coin::Array<mdr_u16> variable_to_stack (func->variable_table_size ());
     variable_to_stack.SetMemory (0xFF); /* Results in 0xFFFF. */
 
     /* Maps bytecode pointer ids to stack addresses. */
-    Array<mdr_u16> pointer_to_stack (func->pointer_table_size ());
+    coin::Array<mdr_u16> pointer_to_stack (func->pointer_table_size ());
     pointer_to_stack.SetMemory (0xFF); /* Results in 0xFFFF. */
 
     /* The typed Stack that is used to deduce types of variables. */
-    Array<StackEntry> bc_stack (func->maximum_stack_size ());
+    coin::Array<StackEntry> bc_stack (func->maximum_stack_size ());
     StackEntry* bc_stack_top = bc_stack.array ();
 
     /* Local variables to keep the current bytecode operation.*/
@@ -227,7 +229,7 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
 
        Future use: When multiple bc operations are packed, they may not be involved in a jump instruction.
     */
-    Array<mdr_u32> jump_id_map (func->operation_count ());
+    coin::Array<mdr_u32> jump_id_map (func->operation_count ());
     jump_id_map.SetMemory (0xFF); /* Results in 0xFFFFFFFF. */
 
     /* Build jump id map. */
@@ -334,8 +336,8 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
             } _END
 
             _START (CONST) {
-                _U10 (constant)
-                bc_stack_top->Set (MDR_TYPE_U32, true, constant);
+                _U10 (constant_id)
+                bc_stack_top->Set (MDR_TYPE_U32, true, func->constant_table ().array ()[constant_id].value._u32);
                 ++bc_stack_top;
             } _END
 
@@ -435,6 +437,9 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
             }
             break;
         }
+
+        printf ("%llX\n", op);
+
         ++i;
     }
 

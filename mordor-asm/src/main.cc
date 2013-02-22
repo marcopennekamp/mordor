@@ -18,7 +18,7 @@ void start (int argc, char** argv) {
     }
 
     /* Came into handy again. */
-    /*
+    
     for (int i = 0; i < tokens.size (); ++i) {
         Token& token = *tokens[i];
 
@@ -32,27 +32,13 @@ void start (int argc, char** argv) {
           case TOKEN_CHARACTER:
             printf ("Character: %c\n", token.character);
             break;
-          case TOKEN_UINT_32:
-            printf ("U32: %u\n", token.nUInt32);
-            break;
-          case TOKEN_UINT_64:
-            printf ("U64: %llu\n", token.nUInt64);
-            break;
-          case TOKEN_INT_32:
-            printf ("I32: %i\n", token.nInt32);
-            break;
-          case TOKEN_INT_64:
-            printf ("I64: %lli\n", token.nInt64);
-            break;
-          case TOKEN_FLOAT_32:
-            printf ("F32: %f\n", token.nFloat32);
-            break;
-          case TOKEN_FLOAT_64:
-            printf ("F64: %llf\n", token.nFloat64);
+          case TOKEN_CONSTANT:
+            printf ("Constant: %u, %llX\n", token.constant.type, token.constant.value._u64);
             break;
         }
     }
-    */
+    
+    fflush (stdout);
 
     Compile (argv[1], tokens);
 }
@@ -66,7 +52,7 @@ int main (int argc, char** argv) {
         printf ("Output file and at least one input file not specified!\nUsage: mordor-asm <output> <input> <input> ...");
     }
 
-    mordor::assembler::start (argc, argv);
+    mdr::assembler::start (argc, argv);
 
     return 0;
 }

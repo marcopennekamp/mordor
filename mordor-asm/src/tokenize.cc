@@ -86,19 +86,32 @@ size_t addNumberToken (vector<Token*>& tokens, char* data, size_t length, size_t
     createStringForToken (buffer, &str);
 
     /* Parse values according to the type. */
-    // TODO(Marco): The strtoX or atoX have to do it for now, until I write a faster specialized library for that. Also note that some versions depend on Visual Studio.
-    if (type == MDR_TYPE_I32) {
-        addToken (tokens, TOKEN_INT_32)->nInt32 = (mdr_s32) atoi (str);
-    }else if (type == MDR_TYPE_I64) {
-        addToken (tokens, TOKEN_INT_64)->nInt64 = (mdr_s64) _strtoi64 (str, NULL, 10);
-    }else if (type == MDR_TYPE_U32) {
-        addToken (tokens, TOKEN_UINT_32)->nUInt32 = (mdr_u32) atoi (str);
-    }else if (type == MDR_TYPE_U64) {
-        addToken (tokens, TOKEN_UINT_64)->nUInt64 = (mdr_u64) _strtoui64 (str, NULL, 10);
-    }else if (type == MDR_TYPE_F32) {
-        addToken (tokens, TOKEN_FLOAT_32)->nFloat32 = (mdr_f32) strtod (str, NULL);
-    }else if (type == MDR_TYPE_F64) {
-        addToken (tokens, TOKEN_FLOAT_64)->nFloat64 = (mdr_f64) strtod (str, NULL);
+    // TODO(Marco): The strtoX or atoX have to do it for now, until I write a faster specialized library for that. Also note that some functions depend on Visual Studio.
+
+    Token* token = addToken (tokens, TOKEN_CONSTANT);
+    token->constant.type = type;
+
+    switch (type) {
+        case MDR_TYPE_I32:
+            token->constant.value._s32 = (mdr_s32) atoi (str);
+            break;
+        case MDR_TYPE_I64:
+            token->constant.value._s64 = (mdr_s64) _strtoi64 (str, NULL, 10);
+            break;
+        case MDR_TYPE_U32:
+            token->constant.value._u32 = (mdr_u32) atoi (str);
+            break;
+        case MDR_TYPE_U64:
+            token->constant.value._u64 = (mdr_u64) _strtoui64 (str, NULL, 10);
+            break;
+        case MDR_TYPE_F32:
+            token->constant.value._f32 = (mdr_f32) strtod (str, NULL);
+            break;
+        case MDR_TYPE_F64:
+            token->constant.value._f64 = (mdr_f64) strtod (str, NULL);
+            break;
+        default:
+            break;
     }
 
     delete[] str;
@@ -162,7 +175,7 @@ void TokenizeFile (const char* file_path, vector<Token*>& tokens) {
             continue;
         }
 
-        if (c == '\n' || c == '!' || c == ':') {
+        if (c == '\n' || c == ':') {
             bool add_token = true;
             if (c == '\n') { /* Skip adding a character token if last token was '\n'. */
                 if (tokens.size () > 0) {

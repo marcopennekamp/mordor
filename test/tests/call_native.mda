@@ -1,6 +1,5 @@
+native say
 
-
-
-
-!call_native
+function test.call_native
+    ncall say
     return 

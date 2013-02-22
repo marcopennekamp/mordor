@@ -1,8 +1,9 @@
 #ifndef MDR_RUNTIME_CONTEXT_H_
 #define	MDR_RUNTIME_CONTEXT_H_
 
+#include <coin/utils/Array.h>
+
 #include <mdr/def/Mdr.h>
-#include <mdr/utils/Array.h>
 
 
 namespace mdr {
@@ -22,14 +23,14 @@ public:
      *   array indices 0, 2, 4 or 6 with a 32bit pointer in mind.
      */
     struct NativeCallStack {
-        Array<mdr_u8> data;
+        coin::Array<mdr_u8> data;
         mdr_u32 size;
     };
 
 private:
     Environment* environment_;
 
-    Array<mdr_u8> stack_;
+    coin::Array<mdr_u8> stack_;
     mdr_u8* return_value_address_;
     NativeCallStack native_call_stack_;
 
@@ -40,7 +41,7 @@ public:
 
     inline Environment* environment () { return environment_; }
 
-    inline Array<mdr_u8>& stack () { return stack_; }
+    inline coin::Array<mdr_u8>& stack () { return stack_; }
     inline mdr_u8*& return_value_address () { return return_value_address_; } // TODO(Marco): Why the reference here?
     inline NativeCallStack& native_call_stack () { return native_call_stack_; }
 };

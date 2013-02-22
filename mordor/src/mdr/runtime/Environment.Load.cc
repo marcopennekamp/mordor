@@ -122,6 +122,23 @@ BytecodeFunction* Environment::LoadBytecodeFunction (coin::Stream* stream, const
     stream->ReadU16 (operation_count);
     function->operation_count (operation_count);
     
+    /* Read name table. */
+    if (flags & BytecodeFunction::kNameTableExists) {
+        mdr_u16 size;
+        if (flags & BytecodeFunction::kNameTableWide) {
+            stream->ReadU16 (size);
+        }else {
+            mdr_u8 _size;
+            stream->ReadU8 (_size);
+            size = _size;
+        }
+
+        function->name_table ().Create (size);
+        for (mdr_u16 i = 0; i < size; ++i) {
+            stream->ReadString (function->name_table ()[i]);
+        }
+    }
+
     /* Read constant table. */
     if (flags & BytecodeFunction::kConstantTableExists) {
         mdr_u16 size;
@@ -139,56 +156,40 @@ BytecodeFunction* Environment::LoadBytecodeFunction (coin::Stream* stream, const
             stream->ReadU8 (type);
             BytecodeFunction::Constant& constant = function->constant_table ()[i];
             constant.type = type;
+            constant.value._u64 = 0;
             switch (mdrTypeGetSize (type)) {
             case 8: {
                 mdr_u8 value;
                 stream->ReadU8 (value);
-                constant.value = value;
+                constant.value._u8 = value;
                 break;
             }
 
             case 16: {
                 mdr_u16 value;
                 stream->ReadU16 (value);
-                constant.value = value;
+                constant.value._u16 = value;
                 break;
             }
 
             case 32: {
                 mdr_u32 value;
                 stream->ReadU32 (value);
-                constant.value = value;
+                constant.value._u32 = value;
                 break;
             }
 
             case 64: {
                 mdr_u64 value;
                 stream->ReadU64 (value);
-                constant.value = value;
+                constant.value._u64 = value;
                 break;
             }
 
             default:
-                printf ("Error: Invalid constant size!");
+                printf ("Error: Invalid constant size!\n");
                 return NULL;
             }
-        }
-    }
-
-    /* Read name table. */
-    if (flags & BytecodeFunction::kNameTableExists) {
-        mdr_u16 size;
-        if (flags & BytecodeFunction::kNameTableWide) {
-            stream->ReadU16 (size);
-        }else {
-            mdr_u8 _size;
-            stream->ReadU8 (_size);
-            size = _size;
-        }
-
-        function->name_table ().Create (size);
-        for (mdr_u16 i = 0; i < size; ++i) {
-            stream->ReadString (function->name_table ()[i]);
         }
     }
 

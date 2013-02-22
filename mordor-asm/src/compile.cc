@@ -8,6 +8,7 @@
 
 #include <mdr/def/BytecodeOperation.h>
 #include <mdr/api/Type.h>
+#include <mdr/runtime/BytecodeFunction.h>
 
 #include "main.h"
 
@@ -68,6 +69,7 @@ enum OperationType {
     kOp_not,
 
     kOp_call,
+    kOp_ncall,
 
     kOp_INVALID
 };
@@ -94,9 +96,10 @@ const char* kOperationTypeNames [] = {
     "xor",
     "not",
 
-    "call"
+    "call",
+    "ncall"
 };
-const size_t kOperationTypeNamesLength = 19;
+const size_t kOperationTypeNamesLength = 20;
 
 struct Operation {
     mdrBytecodeOperationType type;
@@ -116,10 +119,10 @@ struct Label {
     mdr_u32 position;
 };
 
-
 /* Holds all the data that is saved when compiling a function. */
 struct FunctionCompileData {
     string name;
+    size_t token_position;
     mdrType return_type;
     mdr_u16 variable_table_next_index;
     mdr_u16 pointer_table_next_index;
@@ -130,6 +133,9 @@ struct FunctionCompileData {
     map<string, Variable*> variables;
     vector<Variable*> parameter_list;
     vector<Operation> operations;
+
+    vector<BytecodeFunction::Constant> constant_table;
+    vector<string> name_table;
 
     FunctionCompileData () {
         return_type = MDR_TYPE_VOID;
@@ -206,10 +212,6 @@ Token* nextToken (size_t index, vector<Token*>& tokens) {
     return token;
 }
 
-void writeOperationPP (Operation& operation, Stream& out) {
-    // TODO(Marco): Implement.
-}
-
 /* Note: Since the size of the number is 10bit, it is not saved in two's complement but a negated version of the positive number if negative. */
 void writeOperationSignedP (Operation& operation, Stream& out) {
     mdr_s16 param0s = operation.param0;
@@ -231,6 +233,12 @@ void writeOperationP (Operation& operation, Stream& out) {
 
 void writeOperationS (Operation& operation, Stream& out) {
     out.WriteU8 (operation.type << 2);
+}
+
+void writeOperationPP (Operation& operation, Stream& out) {
+    // TODO(Marco): Implement.
+    writeOperationP (operation, out);
+    out.WriteU8 ((mdr_u8) operation.param1);
 }
 
 void writeOperation (Operation& operation, Stream& out) {
@@ -311,10 +319,10 @@ void writeOperation (Operation& operation, Stream& out) {
 
         param0, /* NEW */
         param0, /* ANEW */
-        NULL,   /* INEW */ // TODO(Marco): Create operation write class for two params
+        param1, /* INEW */
 
         param0, /* CALL */
-        param1, /* NCALL */
+        param0, /* NCALL */
         param0, /* ICALL */
         simple, /* VCALL */
 
@@ -335,12 +343,26 @@ void toFolderString (string& str) {
     }
 }
 
-size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, FunctionCompileData& compile_data) {
+FunctionCompileData* SearchFunction (const std::string name, vector<FunctionCompileData*>& compile_data_list) {
+    for (size_t i = 0; i < compile_data_list.size (); ++i) {
+        if (compile_data_list[i]->name == name) {
+            return compile_data_list[i];
+        }
+    }
+
+    return NULL;
+}
+
+
+
+size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, FunctionCompileData& compile_data, 
+                       vector<FunctionCompileData*>& compile_data_list, vector<FunctionCompileData*>& native_functions) {
     size_t tokens_size = tokens.size ();
     Operation operation;
 
     switch (op) {
         case kOp_jmp: {
+
             Token* next_token = nextToken (index++, tokens);
             if (next_token != NULL && next_token->tag == TOKEN_LITERAL) {
                 string name (next_token->string);
@@ -373,18 +395,21 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
             }
 
             if (next_token->tag == TOKEN_LITERAL) { /* Variable. */
-                Variable* variable = compile_data.variables[next_token->string];
-                if (variable == NULL) {
+                auto variable_entry = compile_data.variables.find (next_token->string);
+                if (variable_entry == compile_data.variables.end ()) {
                     printf ("Error: Variable '%s' is not declared.\n", next_token->string);
                     return -1;
                 }
-                mdrType type = variable->type; 
-                
+
+                Variable* variable = variable_entry->second;
+                mdrType  type = variable->type; 
+                operation.param0 = variable->index;
+
                 /* Deduce operation type from variable type, Sherlock. */
                 if (type != MDR_TYPE_VOID) {
                     if (type == MDR_TYPE_PTR) {
                         operation.type = BCOP_pLOAD;
-                    }else if (mdrTypeGetSize (type) == 64) { /* Not long. */
+                    }else if (mdrTypeGetSize (type) == 32) { /* Not long. */
                         switch (type) {
                             case MDR_TYPE_I32:
                                 operation.type = BCOP_iLOAD;
@@ -409,11 +434,13 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
                                 break;
                         }
                     }
-
-                    operation.param0 = variable->index;
                 }
-            }else { /* Constant. */
-                printf ("Error: Constants are not supported yet.\n");
+            }else if (next_token->tag = TOKEN_CONSTANT) { /* Constant. */
+                operation.param0 = (mdr_u16) compile_data.constant_table.size ();
+                compile_data.constant_table.push_back (next_token->constant);
+                operation.type = BCOP_CONST;
+            }else {
+                printf ("Error: Load parameter token not supported.\n");
                 return -1;
             }
 
@@ -421,15 +448,122 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
         }
         break;
 
+        case kOp_inc: {
+            operation.type = BCOP_INC;
+        }
+        break;
+
         case kOp_add: {
             operation.type = BCOP_ADD;
-            compile_data.stack_size (-2);
+            compile_data.stack_size (-1);
         }
         break;
 
         case kOp_sub: {
             operation.type = BCOP_SUB;
-            compile_data.stack_size (-2);
+            compile_data.stack_size (-1);
+        }
+        break;
+
+        case kOp_mul: {
+            operation.type = BCOP_MUL;
+            compile_data.stack_size (-1);
+        }
+        break;
+
+        case kOp_div: {
+            operation.type = BCOP_DIV;
+            compile_data.stack_size (-1);
+        }
+        break;
+
+        case kOp_rem: {
+            operation.type = BCOP_REM;
+            compile_data.stack_size (-1);
+        }
+        break;
+
+        case kOp_neg: {
+            operation.type = BCOP_NEG;
+        }
+        break;
+
+        case kOp_shl: {
+            operation.type = BCOP_SHL;
+            compile_data.stack_size (-1);
+        }
+        break;
+
+        case kOp_shr: {
+            operation.type = BCOP_SHR;
+            compile_data.stack_size (-1);
+        }
+        break;
+
+        case kOp_and: {
+            operation.type = BCOP_AND;
+            compile_data.stack_size (-1);
+        }
+        break;
+
+        case kOp_or: {
+            operation.type = BCOP_OR;
+            compile_data.stack_size (-1);
+        }
+        break;
+
+        case kOp_xor: {
+            operation.type = BCOP_XOR;
+            compile_data.stack_size (-1);
+        }
+        break;
+
+        case kOp_not: {
+            operation.type = BCOP_NOT;
+        }
+        break;
+
+        case kOp_call: {
+            Token* next_token = nextToken (index++, tokens);
+            if (next_token == NULL || next_token->tag != TOKEN_LITERAL) {
+                printf ("Error: There must be a literal after 'call'.\n");
+                return -1;
+            }
+
+            string function_name = next_token->string;
+
+            operation.type = BCOP_CALL;
+            FunctionCompileData* callee = SearchFunction (function_name, compile_data_list);
+            
+            compile_data.stack_size (-((mdr_s16) callee->parameter_list.size ()));
+            if (callee->return_type != MDR_TYPE_VOID) {
+                compile_data.stack_size (1);
+            }
+
+            operation.param0 = (mdr_u16) compile_data.name_table.size ();
+            compile_data.name_table.push_back (function_name);
+        }
+        break;
+
+        case kOp_ncall: {
+            Token* next_token = nextToken (index++, tokens);
+            if (next_token == NULL || next_token->tag != TOKEN_LITERAL) {
+                printf ("Error: There must be a literal after 'ncall'.\n");
+                return -1;
+            }
+
+            string function_name = next_token->string;
+
+            operation.type = BCOP_NCALL;
+            FunctionCompileData* callee = SearchFunction (function_name, native_functions);
+            
+            compile_data.stack_size (-((mdr_s16) callee->parameter_list.size ()));
+            if (callee->return_type != MDR_TYPE_VOID) {
+                compile_data.stack_size (1);
+            }
+
+            operation.param0 = (mdr_u16) compile_data.name_table.size ();
+            compile_data.name_table.push_back (function_name);
         }
         break;
 
@@ -443,10 +577,8 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
     return index + 1; /* Skip newline. */
 }
 
-size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) {
+size_t parseFunctionHeader (const string& root, FunctionCompileData& compile_data, vector<Token*>& tokens, size_t index) {
     size_t size = tokens.size ();
-
-    FunctionCompileData compile_data;
 
     /* Parse header. */
     {
@@ -481,7 +613,26 @@ size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) 
         }
     }
 
-    printf ("Parsing function '%s' with the return type '%X'.\n", compile_data.name, compile_data.return_type);
+    compile_data.token_position = index;
+
+    /* Skip function body. */
+    while (index < size) {
+        Token* token = nextToken (index++, tokens);
+        if (token != NULL /* newline. */ && token->tag == TOKEN_LITERAL 
+            && (strcmp (token->string, "function") == 0 || strcmp (token->string, "native") == 0)) {
+            return index - 1;
+        }
+    }
+
+    return size;
+}
+
+void parseFunction (const string& root, FunctionCompileData& compile_data, vector<Token*>& tokens, 
+                    vector<FunctionCompileData*>& compile_data_list, vector<FunctionCompileData*>& native_functions) {
+    size_t size = tokens.size ();
+    size_t index = compile_data.token_position;
+
+    printf ("Parsing function '%s' with the return type '%X'.\n", compile_data.name.c_str (), compile_data.return_type);
     for (int i = 0; i < compile_data.parameter_list.size ();  ++i) {
         Variable* parameter = compile_data.parameter_list[i];
         printf ("\tParameter '%s' with the type '%X'.\n", parameter->name, parameter->type);
@@ -490,7 +641,8 @@ size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) 
     /* Parse OperationTypes and variable declarations. */
     while (index < size) {
         Token* literal_token = nextToken (index++, tokens); /* A newline token HAS to be skipped before! */
-        if (literal_token == NULL || literal_token->tag != TOKEN_LITERAL) {
+        if (literal_token == NULL || literal_token->tag != TOKEN_LITERAL || 
+            (literal_token->tag == TOKEN_LITERAL && (strcmp (literal_token->string, "function") == 0 || strcmp (literal_token->string, "native") == 0))) {
             break;
         }
 
@@ -501,17 +653,17 @@ size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) 
                 Label* label = getLabel (label_name, compile_data);
                 if (label->position != -1) {
                     printf ("Error: Label '%s' already exists!\n", literal_token->string);
-                    return -1;
+                    return;
                 }
                 label->position = (mdr_u32) compile_data.operations.size ();
                 index += 2;
             }else {
                 mdrType parsed_type = getTypeFromString (literal_token->string);
                 if (parsed_type == MDR_TYPE_VOID) { /* Operation. */
-                    index = parseOperation (getOperationTypeFromString (literal_token->string), index, tokens, compile_data);
+                    index = parseOperation (getOperationTypeFromString (literal_token->string), index, tokens, compile_data, compile_data_list, native_functions);
                     if (index == -1) { /* Error occured. */
                         printf ("Op: '%s'\n", literal_token->string);
-                        return -1; 
+                        return; 
                     }
                 }else if (next_token->tag == TOKEN_LITERAL) { /* Variable declaration. */
                     Variable* variable = new Variable ();
@@ -522,14 +674,14 @@ size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) 
                     index += 2;
                 }else {
                     printf ("Error: Unknown Token combination on line X\n"); // TODO(Marco): Print line!
-                    return -1;
+                    return;
                 }
             }
         }else { /* Can be a single operation or an invalid line. */
-            index = parseOperation (getOperationTypeFromString (literal_token->string), index, tokens, compile_data);
+            index = parseOperation (getOperationTypeFromString (literal_token->string), index, tokens, compile_data, compile_data_list, native_functions);
             if (index == -1) { /* Error occured. */
                 printf ("Op: '%s'\n", literal_token->string);
-                return -1; 
+                return; 
             }
         }
     }
@@ -558,12 +710,12 @@ size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) 
                 mdr_u16 jump_distance = (mdr_u16) (((mdr_s32) label->position) - i);
                 if (jump_distance == 0) {
                     printf ("Error: Can not jump to the label '%s', because it is at the location of this operation.\n", name.c_str ());
-                    return -1;
+                    return;
                 }
                 operation.param0 = jump_distance;
             }else {
                 printf ("Error: A label does not exist. This should not have happened!\n");
-                return -1;
+                return;
             }
         }
 
@@ -588,41 +740,135 @@ size_t parseFunction (const string& root, vector<Token*>& tokens, size_t index) 
     FileStream stream (file_path.c_str (), StreamMode::write);
 
     /* Write function info. */
-    stream.WriteU8  (0x00 /* Exist flags. */);
-    stream.WriteU8  (compile_data.return_type);
+    mdr_u8 flags = 0x00;
+
+    mdr_u16 name_table_size = (mdr_u16) compile_data.name_table.size ();
+    if (name_table_size > 0) {
+        if (name_table_size > 0xFF) {
+            flags |= 0x30; /* exists + wide */
+        }else {
+            flags |= 0x20; /* exists */
+        }
+    }
+
+    mdr_u16 constant_table_size = (mdr_u16) compile_data.constant_table.size ();
+    if (constant_table_size > 0) {
+        if (constant_table_size > 0xFF) {
+            flags |= 0xC0; /* exists + wide */
+        }else {
+            flags |= 0x80; /* exists */
+        }
+    }
+
+    stream.WriteU8  (flags /* Exist flags. */ | compile_data.return_type);
     stream.WriteU8  ((mdr_u8) compile_data.parameter_list.size ());
-    stream.WriteU16 (compile_data.variable_table_next_index);
-    stream.WriteU16 (compile_data.pointer_table_next_index);
-    stream.WriteU16 (compile_data.max_stack_size);
+    stream.WriteU32 (((compile_data.variable_table_next_index << 21) & 0xFFE00000)
+        | ((compile_data.pointer_table_next_index << 10) & 0x1FFC00)
+        | (compile_data.max_stack_size & 0x3FF));
     stream.WriteU16 ((mdr_u16) compile_data.operations.size ());
+
+    /* Write name table. */
+    if (name_table_size > 0) {
+        if (name_table_size > 0xFF) {
+            stream.WriteU16 (name_table_size);
+        }else {
+            stream.WriteU8 ((mdr_u8) name_table_size);
+        }
+
+        for (size_t i = 0; i < name_table_size; ++i) {
+            stream.WriteString (compile_data.name_table[i]);
+        }
+    }
+
+    /* Write constant table. */
+    if (constant_table_size > 0) {
+        if (constant_table_size > 0xFF) {
+            stream.WriteU16 (constant_table_size);
+        }else {
+            stream.WriteU8 ((mdr_u8) constant_table_size);
+        }
+
+        for (size_t i = 0; i < constant_table_size; ++i) {
+            BytecodeFunction::Constant& constant = compile_data.constant_table[i];
+            switch (mdrTypeGetSize (constant.type)) {
+                case 32: {
+                    mdr_u32 value = constant.value._u32;
+                    if (value <= 0xFF) {
+                        stream.WriteU8 (constant.type - 2);
+                        stream.WriteU8 (constant.value._u8);
+                    }else if (value <= 0xFFFF) {
+                        stream.WriteU8 (constant.type - 1);
+                        stream.WriteU16 (constant.value._u16);
+                    }else {
+                        stream.WriteU8 (constant.type);
+                        stream.WriteU32 (constant.value._u32);
+                    }
+                }
+                    break;
+                case 64:
+                    stream.WriteU8 (constant.type);
+                    stream.WriteU64 (constant.value._u64);
+                    break;
+                default:
+                    stream.WriteU8 (constant.type);
+                    printf ("Error: Constant lacks a valid type! Not writing value (Type has been written).\n");
+                    break;
+            }
+        }
+    }
 
     /* Write Operations. */
     for (size_t i = 0, size = compile_data.operations.size (); i < size; ++i) {
         writeOperation (compile_data.operations[i], stream);
     }
-
-    return index;
 }
 
 }
-
-
 
 
 void Compile (const char* target_path, vector<Token*>& tokens) {
     size_t size = tokens.size ();
+
+    vector<FunctionCompileData*> compile_data_list;
+    vector<FunctionCompileData*> native_functions;
+
+    /* Parse declarations. */
     for (size_t i = 0; i < size;) {
         Token* token = tokens[i];
 
-        if (token->tag == TOKEN_CHARACTER) {
-            switch (token->character) {
-              case '!':
-                i = parseFunction (target_path, tokens, i);
+        if (token->tag == TOKEN_LITERAL) {
+
+            if (strcmp (token->string, "function") == 0) {
+                FunctionCompileData* compile_data = new FunctionCompileData ();
+                i = parseFunctionHeader (target_path, *compile_data, tokens, i);
+                compile_data_list.push_back (compile_data);
+                continue;
+            }else if (strcmp (token->string, "native") == 0) {
+                FunctionCompileData* compile_data = new FunctionCompileData ();
+                i = parseFunctionHeader (target_path, *compile_data, tokens, i);
+                native_functions.push_back (compile_data);
                 continue;
             }
         }
 
         ++i;
+    }
+
+    /* Parse bodies. */
+    for (size_t i = 0; i < compile_data_list.size (); ++i) {
+        parseFunction (target_path, *compile_data_list[i], tokens, compile_data_list, native_functions);
+    }
+
+    /* Write native functions. */
+    string file_path = string (target_path) + "/native";
+    FileStream stream (file_path.c_str (), StreamMode::write);
+
+    stream.WriteU32 ((mdr_u32) native_functions.size ());
+    for (size_t i = 0; i < native_functions.size (); ++i) {
+        FunctionCompileData* data = native_functions[i];
+        stream.WriteString (data->name);
+        stream.WriteU8 (data->return_type);
+        stream.WriteU8 ((mdr_u32) data->parameter_list.size ());
     }
 }
 

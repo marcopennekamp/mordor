@@ -27,7 +27,6 @@
     <ClInclude Include="include\mdr\runtime\Environment.h" />
     <ClInclude Include="include\mdr\runtime\Function.h" />
     <ClInclude Include="include\mdr\def\Library.h" />
-    <ClInclude Include="include\mdr\utils\Array.h" />
     <ClInclude Include="include\mdr\utils\zip.h" />
     <ClInclude Include="include\mdr\def\BytecodeOperation.h" />
     <ClInclude Include="include\mdr\def\Mdr.h" />
@@ -156,14 +155,13 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PreprocessorDefinitions>MDR_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>utils.lib;imagehlp.lib;zlibwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>coin-utils.lib;imagehlp.lib;zlibwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <MASM />
   </ItemDefinitionGroup>

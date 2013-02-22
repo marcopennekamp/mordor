@@ -20,7 +20,8 @@ Types:  (Functions, additional to Runtime)
 
 
 Function Declaration:
-    "!", <name>, (Parameter: <type>, <name>)*, <(return)type>
+    "function", <name>, (Parameter: <type>, <name>)*, <(return)type>
+    "native", ...
 
 Variable Declaration (reserves a name for a variable/pointer list space):
     <type>, <name>

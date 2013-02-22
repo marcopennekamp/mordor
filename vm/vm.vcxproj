@@ -132,12 +132,13 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <PreprocessToFile>false</PreprocessToFile>
       <OmitFramePointers>true</OmitFramePointers>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>utils.lib;mordor.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>coin-utils.lib;mordor.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>

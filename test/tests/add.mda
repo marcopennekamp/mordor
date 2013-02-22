@@ -1,13 +1,13 @@
 # This program tests all possible add combinations and checks their results.
 
 
-!add_long (i64 a, i64 b) i64
+function test.add_long (i64 a, i64 b) i64
     load    a
     load    b
     add
     return
 
-!add_int (i32 a, i32 b) i32
+function test.add_int (i32 a, i32 b) i32
     load    a
     load    b
     add
@@ -16,6 +16,6 @@
 # And so on...
 
 
-!test u8
+function test.test u8
     load    1
     return

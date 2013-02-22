@@ -87,9 +87,6 @@
     <ClInclude Include="include\mdr\runtime\NativeFunction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\mdr\utils\Array.h">
-      <Filter>Header Files\internal\utils</Filter>
-    </ClInclude>
     <ClInclude Include="include\mdr\utils\zip.h">
       <Filter>Header Files\internal\utils</Filter>
     </ClInclude>
