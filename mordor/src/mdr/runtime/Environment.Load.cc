@@ -101,6 +101,8 @@ void Environment::LoadProgramElements (unzFile archive, vector<BytecodeFunction*
             bytecode_function_cache.push_back (bytecode_function);
         }
     }
+
+    printf ("\n");
 }
 
 BytecodeFunction* Environment::LoadBytecodeFunction (coin::Stream* stream, const std::string name, Function::CompilationInformation& cpinfo) {
@@ -158,28 +160,28 @@ BytecodeFunction* Environment::LoadBytecodeFunction (coin::Stream* stream, const
             constant.type = type;
             constant.value._u64 = 0;
             switch (mdrTypeGetSize (type)) {
-            case 8: {
+            case 1: {
                 mdr_u8 value;
                 stream->ReadU8 (value);
                 constant.value._u8 = value;
                 break;
             }
 
-            case 16: {
+            case 2: {
                 mdr_u16 value;
                 stream->ReadU16 (value);
                 constant.value._u16 = value;
                 break;
             }
 
-            case 32: {
+            case 4: {
                 mdr_u32 value;
                 stream->ReadU32 (value);
                 constant.value._u32 = value;
                 break;
             }
 
-            case 64: {
+            case 8: {
                 mdr_u64 value;
                 stream->ReadU64 (value);
                 constant.value._u64 = value;

@@ -12,12 +12,3 @@ function test.add_int (i32 a, i32 b) i32
     load    b
     add
     return
-
-# And so on...
-
-
-function test.test u64
-    load    21l
-    load    21l
-    add
-    return

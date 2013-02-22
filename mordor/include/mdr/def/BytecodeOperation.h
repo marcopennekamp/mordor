@@ -25,7 +25,7 @@ enum mdrBytecodeOperationType {
     BCOP_flLOAD         = 0x0A,
     BCOP_pLOAD          = 0x0B,
     BCOP_STORE          = 0x0C,
-    BCOP_CONST          = 0x0D,
+    BCOP_kLOAD          = 0x0D,
 
     /* 0E - 0F free slot. */
 
@@ -101,7 +101,7 @@ static const mdr_u32 BCOP_SIZE [] = {
     2, /* BCOP_flLOAD */
     2, /* BCOP_pLOAD */
     2, /* BCOP_STORE */
-    2, /* BCOP_CONST */
+    2, /* BCOP_kLOAD */
 
     0, 
     0, 

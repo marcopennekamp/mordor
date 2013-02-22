@@ -1,6 +1,8 @@
 #ifndef MDR_RUNTIME_FUNCTION_H_
 #define	MDR_RUNTIME_FUNCTION_H_
 
+#include <coin/utils/Array.h>
+
 #include <mdr/def/Operation.h>
 #include <mdr/def/Type.h>
 
@@ -20,6 +22,8 @@ public:
         mdr_u8 parameter_count_;
     };
 
+    typedef coin::Array<mdr_u64> ConstantTable;
+
 private:
     mdr_u32 stack_size_;
     mdrOperation* operations_;
@@ -27,7 +31,7 @@ private:
     /*
      * A constant table for 64 bit values.
      */
-    mdr_u8* constant_table_;
+    ConstantTable constant_table_;
 
     CompilationInformation cpinfo_;
 
@@ -41,7 +45,8 @@ public:
     inline void stack_size (mdr_u32 stack_size) { stack_size_ = stack_size; }
 
     inline mdrOperation* operations () { return operations_; }
-    inline mdr_u8* constant_table () { return constant_table_; }
+    inline mdr_u8* constant_table () { return (mdr_u8*) constant_table_.array (); }
+    inline ConstantTable& constant_table_object () { return constant_table_; }
 
     inline CompilationInformation& cpinfo () { return cpinfo_; }
 };

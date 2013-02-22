@@ -12,7 +12,7 @@ using namespace std;
 
 
 int main (int argc, char** argv) {
-    if (argc < 2) {
+    if (argc < 3) {
         printf ("Error: You must provide a program that should be executed as well as a function to start the execution.\n");
         return 1;
     }
@@ -24,30 +24,13 @@ int main (int argc, char** argv) {
     mdrEnvLoadProgram (env, argv[1]);
     mdrContext* ctx = mdrCtxCreate (env);
 
-    /* Get add function. */
-    mdrFunction* test_function = mdrEnvGetFunction (env, "test.add_int");
-    mdrFunction* call = mdrEnvGetFunction (env, "test.call");
-    mdrFunction* call_native = mdrEnvGetFunction (env, "test.call_native");
-
-    /* Set Parameters and invoke add function. */
-    mdr_s32* stack = (mdr_s32*) mdrCtxGetStack (ctx);
-    stack[0] = 42;
-    stack[1] = 42;
+    /* Get function. */
+    mdrFunction* main_function = mdrEnvGetFunction (env, argv[2]);
 
     mdr_u64 time = coin::TimeNanoseconds ();
-
-    //mdrCtxExecute (ctx, test_function);
-
+    mdrCtxExecute (ctx, main_function);
     printf ("Execution took %lluns\n", coin::TimeNanoseconds () - time);
-    printf ("The function returned '%i'\n", *((mdr_s32*) mdrCtxGetReturnValueAddress (ctx)));
-
-    stack = (mdr_s32*) mdrCtxGetStack (ctx);
-    stack[0] = 53252;
-    stack[1] = 23242;
-
-    //mdrCtxExecute (ctx, call);
-    mdrCtxExecute (ctx, call_native);
-    printf ("The function returned '%i'\n", *((mdr_s32*) mdrCtxGetReturnValueAddress (ctx)));
+    printf ("The function returned '%llu'\n", *((mdr_u64*) mdrCtxGetReturnValueAddress (ctx)));
 
     mdrCtxDestroy (ctx);
     mdrEnvDestroy (env);

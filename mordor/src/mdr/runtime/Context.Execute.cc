@@ -109,7 +109,7 @@ inline void extract_M (mdrOperation op, mdr_u8& param0, mdr_u8& param1, mdr_u8& 
  * Fetches the address of a stack variable with the type T at offset 'id'.
  */
 template <typename T>
-inline T& fetch (mdr_u8* stack, mdr_u16 id) {
+inline T& fetch (mdr_u8* stack, mdr_u32 id) {
     return *(T*) (stack + id);
 }
 
@@ -121,7 +121,7 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
     mdrOperation* op_pointer = function->operations ();
     mdr_u32 stack_top        = caller_stack_top + function->stack_size ();
 
-    printf ("stack: %p, stack bottom: %u, stack top: %u\n", (mdr_u8*) stack_.array (), caller_stack_top, stack_top);
+    // printf ("stack: %p, stack bottom: %u, stack top: %u\n", (mdr_u8*) stack_.array (), caller_stack_top, stack_top);
 
     // TODO: This is a "security check"! May be slow.
     if (stack_top > stack_.size ()) {
@@ -153,7 +153,6 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
 
         _OP_START (RET) { _OPC_P (src)
             return_value_address_ = stack + src;
-        printf ("%p, %u, %u\n", return_value_address_, src, fetch<mdr_u32> (stack, src));
             _OP_RETURN
         }
 
@@ -167,7 +166,6 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
 
         _OP_START (RETMOV) { _OPC_P (dest)
             fetch<mdr_u32> (stack, dest) = *((mdr_u32*) return_value_address ());
-            printf ("%u, %u\n", dest, *((mdr_u32*) return_value_address ()));
         _OP_END }
 
         _OP_START (RETMOVl) { _OPC_P (dest)
@@ -186,8 +184,8 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
             fetch<mdr_u32> (stack, dest) = value;
         _OP_END }
 
-        _OP_START (kMOVl) {
-
+        _OP_START (kMOVl) { _OPC_PW (dest, constant_id)
+            fetch<mdr_u64> (stack, dest) = fetch<mdr_u64> (function->constant_table (), constant_id);
         _OP_END }
 
         _OP_START (kMOVM) {

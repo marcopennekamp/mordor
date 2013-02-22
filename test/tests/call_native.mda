@@ -2,4 +2,16 @@ native say
 
 function test.call_native
     ncall say
-    return 
+    return void
+
+function test.test2 (u64 a, u64 b) u64
+    load    a
+    load    b
+    add
+    return
+
+function test.test u64
+    load    21l
+    load    21l
+    call    test.test2
+    return

@@ -184,7 +184,7 @@ void setVariableIndex (Variable& variable, FunctionCompileData& compile_data) {
         variable.index = compile_data.pointer_table_next_index++;
     }else { /* "Normal" variable. */
         variable.index = compile_data.variable_table_next_index;
-        compile_data.variable_table_next_index += (mdrTypeGetSize (variable.type) == 64) ? 2 : 1;
+        compile_data.variable_table_next_index += (mdrTypeGetSize (variable.type) == 8) ? 2 : 1;
     }
 }
 
@@ -409,7 +409,7 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
                 if (type != MDR_TYPE_VOID) {
                     if (type == MDR_TYPE_PTR) {
                         operation.type = BCOP_pLOAD;
-                    }else if (mdrTypeGetSize (type) == 32) { /* Not long. */
+                    }else if (mdrTypeGetSize (type) == 4) { /* Not long. */
                         switch (type) {
                             case MDR_TYPE_I32:
                                 operation.type = BCOP_iLOAD;
@@ -438,7 +438,7 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
             }else if (next_token->tag = TOKEN_CONSTANT) { /* Constant. */
                 operation.param0 = (mdr_u16) compile_data.constant_table.size ();
                 compile_data.constant_table.push_back (next_token->constant);
-                operation.type = BCOP_CONST;
+                operation.type = BCOP_kLOAD;
             }else {
                 printf ("Error: Load parameter token not supported.\n");
                 return -1;
@@ -531,15 +531,18 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
             }
 
             string function_name = next_token->string;
-
-            operation.type = BCOP_CALL;
             FunctionCompileData* callee = SearchFunction (function_name, compile_data_list);
+            if (callee == NULL) {
+                printf ("Error: Function '%s' not found!\n", function_name.c_str ());
+                return -1;
+            }
             
             compile_data.stack_size (-((mdr_s16) callee->parameter_list.size ()));
             if (callee->return_type != MDR_TYPE_VOID) {
                 compile_data.stack_size (1);
             }
 
+            operation.type = BCOP_CALL;
             operation.param0 = (mdr_u16) compile_data.name_table.size ();
             compile_data.name_table.push_back (function_name);
         }
@@ -791,7 +794,7 @@ void parseFunction (const string& root, FunctionCompileData& compile_data, vecto
         for (size_t i = 0; i < constant_table_size; ++i) {
             BytecodeFunction::Constant& constant = compile_data.constant_table[i];
             switch (mdrTypeGetSize (constant.type)) {
-                case 32: {
+                case 4: {
                     mdr_u32 value = constant.value._u32;
                     if (value <= 0xFF) {
                         stream.WriteU8 (constant.type - 2);
@@ -805,7 +808,7 @@ void parseFunction (const string& root, FunctionCompileData& compile_data, vecto
                     }
                 }
                     break;
-                case 64:
+                case 8:
                     stream.WriteU8 (constant.type);
                     stream.WriteU64 (constant.value._u64);
                     break;
