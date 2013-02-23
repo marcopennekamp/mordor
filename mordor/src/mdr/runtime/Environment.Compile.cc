@@ -196,7 +196,7 @@ inline void build_call_parameters (const mdr_u32 parameter_count, const mdrOpera
             }else {
                 add_operation (build_operation_PW (OP_kMOVl, stack_top, add_constant_u64 (constants_u64, it->constant_)), operation_buffer);
             }
-            add_operation (build_operation_PP (opcode, offset, stack_top), operation_buffer);
+            add_operation (build_operation_PP (opcode, stack_top, offset), operation_buffer);
             stack_top += size;
         }else { /* Push variable. */
             add_operation (build_operation_PP (opcode, it->id_, offset), operation_buffer);
@@ -260,6 +260,20 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
 
     /* The constants for the u64 constant table of the IR function. */
     vector<BytecodeFunction::Constant> constants_u64;
+
+    Function* function = GetFunction (func->name ());
+    if (function == NULL) {
+        printf ("Error: Function '%s' seems to have not been pre loaded.\n", func->name ().c_str ());
+        return false;
+    }
+
+    /* Reserves variable and pointer stack locations for parameters. */
+    // TODO(Marco): Do for pointers. / Parameter info needed.
+    for (size_t i = 0; i < function->cpinfo ().parameter_count_ * 2 /* x * 2 for 64 bit. */; ++i) {
+        variable_to_stack[i] = stack_top;
+        stack_top += 4;
+    }
+
 
     /* The jump id map maps possible jump targets.
         0xFFFFFFFF -> Location not jumped to.
@@ -420,7 +434,13 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
                 switch (function->return_type ()) {
                     case MDR_TYPE_VOID:
                     case MDR_TYPE_U32:
+                    case MDR_TYPE_I32:
                         op = OP_CALL_NATIVE_U32;
+                        break;
+
+                    case MDR_TYPE_U64:
+                    case MDR_TYPE_I64:
+                        op = OP_CALL_NATIVE_U64;
                         break;
 
                     default:
@@ -568,7 +588,6 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
 
   LJumpResolveLoopEnd:
     /* Allocate function. */
-    Function* function = GetFunction (func->name ());
     mdr_u32 size = (mdr_u32) operation_buffer.size ();
     function->Allocate (size, constants_u64.size ());
     function->stack_size (stack_top);

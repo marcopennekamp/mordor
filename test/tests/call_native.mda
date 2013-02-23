@@ -1,17 +1,19 @@
 native say
+native power (u64 a) u64
 
 function test.call_native
     ncall say
     return void
 
 function test.test2 (u64 a, u64 b) u64
-    load    a
     load    b
+    load    a
+    ncall   power
     add
     return
 
 function test.test u64
-    load    21l
-    load    21l
+    load    2l
+    load    38l
     call    test.test2
     return

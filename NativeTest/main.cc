@@ -13,10 +13,8 @@ MDRI_DECL void MDRI_CALL say () {
     printf ("Hello World!\n");
 }
 
-MDRI_DECL mdr_u32 MDRI_CALL power (mdr_u32 a) {
-    mdr_u32 result = a * a;
-    printf ("%lli\n", result);
-    return result;
+MDRI_DECL mdr_u64 MDRI_CALL power (mdr_u64 a) {
+    return a * a;
 }
 
 MDRI_DECL mdr_u64 MDRI_CALL negate (mdr_u64 a) {

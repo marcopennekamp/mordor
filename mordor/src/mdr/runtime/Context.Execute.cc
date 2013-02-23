@@ -54,9 +54,10 @@ extern "C" {
 
 #define _CALL_NATIVE(TYPE, FUNC) \
     NativeFunction* function = environment_->GetNativeFunction (function_id); \
-    *((mdr_ ## TYPE *) (stack_.array () + stack_top)) = CallNativeFunction ## FUNC (function->function (), (mdr_u64*) native_call_stack_.data.array (), \
-    native_call_stack_.size, (mdr_u64*) (stack_.array () + stack_top)); \
-    native_call_stack_.size = 0; 
+    return_value_address_ = stack_.array () + stack_top; \
+    *((mdr_ ## TYPE *) (return_value_address_)) = CallNativeFunction ## FUNC (function->function (), (mdr_u64*) native_call_stack_.data.array (), \
+    native_call_stack_.size, (mdr_u64*) (return_value_address_)); \
+    native_call_stack_.size = 0;
 
 /* Class extraction functions. */
 
@@ -685,7 +686,7 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
                 native_call_stack_.size += 1; /* Stack is 8 byte aligned. */
             }else {
                 /* Push to "register". */
-                *(native_call_stack_.data.array () + offset) = fetch<mdr_u32> (stack, src);
+                *((mdr_u64*) (native_call_stack_.data.array () + offset)) = fetch<mdr_u64> (stack, src);
             }
         _OP_END }
 
