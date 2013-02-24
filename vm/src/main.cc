@@ -74,9 +74,6 @@ int main (int argc, char** argv) {
         return 1;
     }
 
-    mdrCtxPushU64 (ctx, 16);
-    mdrCtxPushU64 (ctx, 6);
-
     mdr_u64 time = coin::TimeNanoseconds ();
     mdrCtxExecute (ctx, main_function);
     printf ("Execution took %lluns\n", coin::TimeNanoseconds () - time);
