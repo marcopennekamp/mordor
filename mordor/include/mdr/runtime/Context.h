@@ -34,16 +34,23 @@ private:
     mdr_u8* return_value_address_;
     NativeCallStack native_call_stack_;
 
+    mdr_u16 push_stack_top_;
+
 public:
     Context (Environment* environment);
 
     void Execute (Function* function, mdr_u32 caller_stack_top);
+
+    void Push (mdr_u16 offset);
 
     inline Environment* environment () { return environment_; }
 
     inline coin::Array<mdr_u8>& stack () { return stack_; }
     inline mdr_u8*& return_value_address () { return return_value_address_; } // TODO(Marco): Why the reference here?
     inline NativeCallStack& native_call_stack () { return native_call_stack_; }
+
+    inline mdr_u16 push_stack_top () const { return push_stack_top_; }
+    inline void push_stack_top (mdr_u16 top) { push_stack_top_ = top; }
 };
 
 }

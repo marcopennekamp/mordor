@@ -1,6 +1,8 @@
 #ifndef MDR_RUNTIME_FUNCTION_H_
 #define	MDR_RUNTIME_FUNCTION_H_
 
+#include <string>
+
 #include <coin/utils/Array.h>
 
 #include <mdr/def/Operation.h>
@@ -15,11 +17,12 @@ public:
 
     /*
      * Information for later compilation, since the compiler needs the return type and
-     *   parameter count for any function.
+     *   parameters for any function.
+     * It also helps interfacing with mordor functions.
      */
     struct CompilationInformation {
         mdrType return_type_;
-        mdr_u8 parameter_count_;
+        coin::Array<mdrType> parameters_;
     };
 
     typedef coin::Array<mdr_u64> ConstantTable;
@@ -33,10 +36,10 @@ private:
      */
     ConstantTable constant_table_;
 
-    CompilationInformation cpinfo_;
+    CompilationInformation* cpinfo_;
 
 public:
-    Function (CompilationInformation& cpinfo);
+    Function (CompilationInformation* cpinfo);
     ~Function ();
 
     void Allocate (size_t operations_size, size_t constant_table_size);
@@ -48,7 +51,7 @@ public:
     inline mdr_u8* constant_table () { return (mdr_u8*) constant_table_.array (); }
     inline ConstantTable& constant_table_object () { return constant_table_; }
 
-    inline CompilationInformation& cpinfo () { return cpinfo_; }
+    inline CompilationInformation* cpinfo () { return cpinfo_; }
 };
 
 }

@@ -92,7 +92,7 @@ Function* Environment::GetFunction (const std::string& name) {
     return GetValueFromVector (functions_, function_id_map_, name, Function::kInvalidId);
 }
 
-bool Environment::AddFunction (const std::string& name, Function::CompilationInformation& cpinfo) {
+bool Environment::AddFunction (const std::string& name, Function::CompilationInformation* cpinfo) {
     Function* existing_function = GetFunction (name);
     if (existing_function != NULL) {
         printf ("Error: Function '%s' already declared!\n", name.c_str ());

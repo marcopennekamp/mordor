@@ -93,10 +93,10 @@ size_t addNumberToken (vector<Token*>& tokens, char* data, size_t length, size_t
 
     switch (type) {
         case MDR_TYPE_I32:
-            token->constant.value._s32 = (mdr_s32) atoi (str);
+            token->constant.value._i32 = (mdr_i32) atoi (str);
             break;
         case MDR_TYPE_I64:
-            token->constant.value._s64 = (mdr_s64) _strtoi64 (str, NULL, 10);
+            token->constant.value._i64 = (mdr_i64) _strtoi64 (str, NULL, 10);
             break;
         case MDR_TYPE_U32:
             token->constant.value._u32 = (mdr_u32) atoi (str);

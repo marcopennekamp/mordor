@@ -17,10 +17,10 @@ public:
     struct Constant {
         mdrType type;
         union {
-            mdr_s8  _s8;
-            mdr_s16 _s16;
-            mdr_s32 _s32;
-            mdr_s64 _s64;
+            mdr_i8  _i8;
+            mdr_i16 _i16;
+            mdr_i32 _i32;
+            mdr_i64 _i64;
             mdr_u8  _u8;
             mdr_u16 _u16;
             mdr_u32 _u32;

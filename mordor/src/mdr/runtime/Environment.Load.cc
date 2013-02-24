@@ -89,9 +89,9 @@ void Environment::LoadProgramElements (unzFile archive, vector<BytecodeFunction*
             printf ("Loading function '%s'.\n", name.c_str ());
 
             /* Load and add BytecodeFunction and Function. */
-            Function::CompilationInformation cpinfo;
+            Function::CompilationInformation* cpinfo = new Function::CompilationInformation ();
             BufferStream stream (file_data, file_size, coin::StreamMode::read);
-            BytecodeFunction* bytecode_function = LoadBytecodeFunction (&stream, name, cpinfo);
+            BytecodeFunction* bytecode_function = LoadBytecodeFunction (&stream, name, *cpinfo);
 
             if (!AddFunction (name, cpinfo)) {
                 printf ("Error: Function '%s' is already declared!\n", name.c_str ());
@@ -110,7 +110,6 @@ BytecodeFunction* Environment::LoadBytecodeFunction (coin::Stream* stream, const
     stream->ReadU8 (flags);
 
     cpinfo.return_type_ = flags & 0x0F;
-    stream->ReadU8 (cpinfo.parameter_count_);
 
     BytecodeFunction* function = new BytecodeFunction (name);
 
@@ -123,6 +122,22 @@ BytecodeFunction* Environment::LoadBytecodeFunction (coin::Stream* stream, const
     mdr_u16 operation_count;
     stream->ReadU16 (operation_count);
     function->operation_count (operation_count);
+
+    /* Read parameter types. */
+    mdr_u8 parameter_count;
+    stream->ReadU8 (parameter_count);
+    if (parameter_count > 0) {
+        cpinfo.parameters_.Create (parameter_count);
+        for (size_t i = 0; i < parameter_count; ++i) {
+            mdr_u8 type_bits;
+            stream->ReadU8 (type_bits);
+            cpinfo.parameters_[i] = type_bits >> 4;
+            i++;
+            if (i < parameter_count) {
+                cpinfo.parameters_[i] = type_bits & 0x0F;
+            }
+        }
+    }
     
     /* Read name table. */
     if (flags & BytecodeFunction::kNameTableExists) {

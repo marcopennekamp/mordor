@@ -146,7 +146,7 @@ struct FunctionCompileData {
         labels_next_index = 0;
     }
 
-    void stack_size (mdr_s16 diff) {
+    void stack_size (mdr_i16 diff) {
         current_stack_size += diff;
         if (current_stack_size > max_stack_size) {
             max_stack_size = current_stack_size;
@@ -214,7 +214,7 @@ Token* nextToken (size_t index, vector<Token*>& tokens) {
 
 /* Note: Since the size of the number is 10bit, it is not saved in two's complement but a negated version of the positive number if negative. */
 void writeOperationSignedP (Operation& operation, Stream& out) {
-    mdr_s16 param0s = operation.param0;
+    mdr_i16 param0s = operation.param0;
 
     bool is_negative = false;
     if (param0s < 0) {
@@ -537,7 +537,7 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
                 return -1;
             }
             
-            compile_data.stack_size (-((mdr_s16) callee->parameter_list.size ()));
+            compile_data.stack_size (-((mdr_i16) callee->parameter_list.size ()));
             if (callee->return_type != MDR_TYPE_VOID) {
                 compile_data.stack_size (1);
             }
@@ -560,7 +560,7 @@ size_t parseOperation (OperationType op, size_t index, vector<Token*>& tokens, F
             operation.type = BCOP_NCALL;
             FunctionCompileData* callee = SearchFunction (function_name, native_functions);
             
-            compile_data.stack_size (-((mdr_s16) callee->parameter_list.size ()));
+            compile_data.stack_size (-((mdr_i16) callee->parameter_list.size ()));
             if (callee->return_type != MDR_TYPE_VOID) {
                 compile_data.stack_size (1);
             }
@@ -710,7 +710,7 @@ void parseFunction (const string& root, FunctionCompileData& compile_data, vecto
             }
 
             if (label != NULL) {
-                mdr_u16 jump_distance = (mdr_u16) (((mdr_s32) label->position) - i);
+                mdr_u16 jump_distance = (mdr_u16) (((mdr_i32) label->position) - i);
                 if (jump_distance == 0) {
                     printf ("Error: Can not jump to the label '%s', because it is at the location of this operation.\n", name.c_str ());
                     return;
@@ -763,12 +763,23 @@ void parseFunction (const string& root, FunctionCompileData& compile_data, vecto
         }
     }
 
-    stream.WriteU8  (flags /* Exist flags. */ | compile_data.return_type);
-    stream.WriteU8  ((mdr_u8) compile_data.parameter_list.size ());
+    stream.WriteU8 (flags /* Exist flags. */ | compile_data.return_type);
     stream.WriteU32 (((compile_data.variable_table_next_index << 21) & 0xFFE00000)
         | ((compile_data.pointer_table_next_index << 10) & 0x1FFC00)
         | (compile_data.max_stack_size & 0x3FF));
     stream.WriteU16 ((mdr_u16) compile_data.operations.size ());
+
+    /* Write parameters. */
+    const size_t parameter_list_size = compile_data.parameter_list.size ();
+    stream.WriteU8 ((mdr_u8) parameter_list_size);
+    for (size_t i = 0; i < parameter_list_size; ++i) {
+        mdr_u8 type_bits;
+        type_bits = (compile_data.parameter_list[i]->type << 4) & 0xF0;
+        ++i;
+        if (i < parameter_list_size) type_bits |= compile_data.parameter_list[i]->type & 0x0F;
+        stream.WriteU8 (type_bits);
+        printf ("%X\n", type_bits);
+    }
 
     /* Write name table. */
     if (name_table_size > 0) {

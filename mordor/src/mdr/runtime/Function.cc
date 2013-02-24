@@ -1,11 +1,12 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <mdr/runtime/Function.h>
 
 
 namespace mdr {
 
-Function::Function (CompilationInformation& cpinfo) {
+Function::Function (CompilationInformation* cpinfo) {
     cpinfo_ = cpinfo;
 
     /* Set to null if not needed or allocated so it can be determined whether to delete it later. */
@@ -23,6 +24,8 @@ Function::~Function () {
     if (operations_ != NULL) {
         delete[] operations_;
     }
+
+    delete cpinfo_;
 }
 
 }

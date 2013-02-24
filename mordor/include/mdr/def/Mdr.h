@@ -24,27 +24,27 @@ extern "C" {
  * This is the calling convention used for functions that are called by mordor.
  * Note: Uses the standard x64 calling convention, but specifies __stdcall to have a convention.
  */
-#define MDRI_CALL __stdcall
+#define MDR_FFI_CALL __stdcall
 
 /* 
  * Used to export or import functions that are called by mordor.
  */
 #ifdef MDRI_EXPORT
-#define MDRI_DECL __declspec (dllexport)
+#define MDR_FFI_DECL __declspec (dllexport)
 #else
-#define MDRI_DECL __declspec (dllimport)
+#define MDR_FFI_DECL __declspec (dllimport)
 #endif
 
 /*
  * General typedefs.
  */
-typedef char                        mdr_s8;
+typedef char                        mdr_i8;
 typedef unsigned char               mdr_u8;
-typedef short int                   mdr_s16;
+typedef short int                   mdr_i16;
 typedef unsigned short int          mdr_u16;
-typedef int                         mdr_s32;
+typedef int                         mdr_i32;
 typedef unsigned int                mdr_u32;
-typedef long long int               mdr_s64;
+typedef long long int               mdr_i64;
 typedef unsigned long long int      mdr_u64;
 
 typedef float                       mdr_f32;

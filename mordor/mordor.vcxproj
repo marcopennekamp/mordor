@@ -38,6 +38,7 @@
   <ItemGroup>
     <ClCompile Include="src\mdr\api\Context.cc" />
     <ClCompile Include="src\mdr\api\Environment.cc" />
+    <ClCompile Include="src\mdr\api\Function.cc" />
     <ClCompile Include="src\mdr\runtime\BytecodeFunction.cc" />
     <ClCompile Include="src\mdr\runtime\Environment.Compile.cc" />
     <ClCompile Include="src\mdr\api\Type.cc" />

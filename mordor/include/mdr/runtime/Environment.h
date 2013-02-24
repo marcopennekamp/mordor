@@ -75,7 +75,7 @@ public:
     /*
      * Whether adding was successful.
      */
-    bool AddFunction (const std::string& name, Function::CompilationInformation& cpinfo);
+    bool AddFunction (const std::string& name, Function::CompilationInformation* cpinfo);
 
 };
 

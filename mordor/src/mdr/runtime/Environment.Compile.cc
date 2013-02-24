@@ -21,7 +21,7 @@ using namespace std;
 
 /* extracts 10 bit parameter, increments op by one. */
 #define _U10(P0)        mdr_u16 P0; get_u10 (bc_op, P0);
-#define _S10(P0)        mdr_s16 P0; get_s10 (bc_op, P0);
+#define _I10(P0)        mdr_i16 P0; get_i10 (bc_op, P0);
 
 
 namespace mdr {
@@ -69,7 +69,7 @@ inline void get_u10 (const mdrBytecodeOperation* ptr, mdr_u16& param0) {
     param0 = v0 << 8 | v1;
 }
 
-inline void get_s10 (const mdrBytecodeOperation* ptr, mdr_s16& param0) {
+inline void get_i10 (const mdrBytecodeOperation* ptr, mdr_i16& param0) {
     mdr_u16 low = *(ptr + 1) & 0xFF;
     mdr_u16 sign = *ptr & 0x02;
 
@@ -189,7 +189,7 @@ inline void build_call_parameters (const mdr_u32 parameter_count, const mdrOpera
         mdr_u32 size = get_type_size (it->type_);
         mdrOperationType opcode = (size == 8) ? kOpcodel : kOpcode;
         if (kOpcode == OP_NPUSH) size = 8; /* Native stack is 8 byte aligned. */
-
+        // TODO(Marco): Fix 32bit push (always 64bit when native, which is wrong of course).
         if (it->is_constant_) {
             if (size == 4) {
                 add_operation (build_operation_PW (OP_kMOV, stack_top, it->constant_.value._u32), operation_buffer);
@@ -269,7 +269,7 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
 
     /* Reserves variable and pointer stack locations for parameters. */
     // TODO(Marco): Do for pointers. / Parameter info needed.
-    for (size_t i = 0; i < function->cpinfo ().parameter_count_ * 2 /* x * 2 for 64 bit. */; ++i) {
+    for (size_t i = 0; i < function->cpinfo ()->parameters_.size () * 2 /* x * 2 for 64 bit. */; ++i) {
         variable_to_stack[i] = stack_top;
         stack_top += 4;
     }
@@ -294,8 +294,8 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
             }
 
             _START (JMP) {
-                _S10 (offset)
-                mdr_s64 to = ((mdr_s64) bc_op_count) + offset;
+                _I10 (offset)
+                mdr_i64 to = ((mdr_i64) bc_op_count) + offset;
                 // printf ("Found JMP on %u by %i to %lli.\n",  bc_op_count, offset, to);
                 jump_id_map[to] = 0xFFFFFFFE;
             } _END
@@ -328,9 +328,9 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
             }
 
             _START (JMP) {
-                _S10 (offset)
+                _I10 (offset)
                 mdrOperation op = build_operation_I (OP_kJMP);
-                op = op | ((((mdrOperation) (((mdr_s64) bc_op_count) + offset)) << 16) & 0xFFFFFFFF); /* Will be >= 0, so shift left is okay. */
+                op = op | ((((mdrOperation) (((mdr_i64) bc_op_count) + offset)) << 16) & 0xFFFFFFFF); /* Will be >= 0, so shift left is okay. */
                 add_operation (op, operation_buffer);
             } _END
 
@@ -414,20 +414,21 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
                 Function* callee = GetFunction (id);
 
                 /* Push variables in lowest to highest stack order. */
-                build_call_parameters (callee->cpinfo ().parameter_count_, OP_PUSH, OP_PUSHl, bc_stack_top, stack_top, operation_buffer, constants_u64);
+                build_call_parameters ((mdr_u32) callee->cpinfo ()->parameters_.size (), OP_PUSH, OP_PUSHl, bc_stack_top, stack_top, operation_buffer, constants_u64);
 
                 /* Add CALL instruction. */
                 add_operation (build_operation_W (OP_CALL, id), operation_buffer);
 
                 /* If function returns something, put that on the stack and create a bc stack entry! */
-                if (callee->cpinfo ().return_type_ != MDR_TYPE_VOID) {
-                    fetch_return_value (callee->cpinfo ().return_type_, bc_stack_top, stack_top, operation_buffer);
+                if (callee->cpinfo ()->return_type_ != MDR_TYPE_VOID) {
+                    fetch_return_value (callee->cpinfo ()->return_type_, bc_stack_top, stack_top, operation_buffer);
                 }
             } _END
 
             _START (NCALL) {
                 _U10 (function_name_id)
-                mdr_u32 function_id = GetNativeFunctionId (func->name_table ()[function_name_id]);
+                const std::string& name = func->name_table ()[function_name_id];
+                mdr_u32 function_id = GetNativeFunctionId (name);
                 NativeFunction* function = GetNativeFunction (function_id);
                 
                 mdrOperationType op = OP_END;
@@ -443,14 +444,20 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
                         op = OP_CALL_NATIVE_U64;
                         break;
 
+                    case MDR_TYPE_F32:
+                        op = OP_CALL_NATIVE_F32;
+                        break;
+
+                    case MDR_TYPE_F64:
+                        op = OP_CALL_NATIVE_F64;
+                        break;
+
                     default:
-                        printf ("Error: Unexpected type when calling native function!\n");
+                        printf ("Error: Unexpected type when calling native function '%s'!\n", name.c_str ());
                         break;
                 }
 
                 if (op != OP_END) {
-                    // TODO(Marco): Check for NULL?
-
                     /* Similar to CALL. */
                     build_call_parameters (function->parameter_count (), OP_NPUSH, OP_NPUSHl, bc_stack_top, stack_top, operation_buffer, constants_u64);
                     add_operation (build_operation_W (op, function_id), operation_buffer);
@@ -577,8 +584,7 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
                 printf ("Error: Possible jump location not set!\n");
                 return false;
             }else {
-                // printf ("New Jump location found! %i jumps to %u! by %i\n", i, position, (mordor_s32) ((((mordor_s64) position) - i) * sizeof(Operation)));
-                operation_buffer[i] = build_operation_W (OP_kJMP, (mdr_s32) ((((mdr_s64) position) - (mdr_s64) i) * sizeof(mdrOperation)));
+                operation_buffer[i] = build_operation_W (OP_kJMP, (mdr_i32) ((((mdr_i64) position) - (mdr_i64) i) * sizeof(mdrOperation)));
             }
             break;
         }

@@ -9,7 +9,7 @@ std::string GetFileName (unzFile archive) {
     unzGetCurrentFileInfo (archive, &info, NULL, NULL, NULL, NULL, NULL, NULL);
 
     mdr_u32 file_name_size = info.size_filename;
-    mdr_s8* file_name = new mdr_s8[file_name_size];
+    mdr_i8* file_name = new mdr_i8[file_name_size];
     unzGetCurrentFileInfo (archive, NULL, file_name, file_name_size, NULL, NULL, NULL, NULL);
 
     std::string str (file_name, file_name_size);

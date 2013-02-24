@@ -149,7 +149,7 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         }
 
         _OP_START (kJMP) { _OPC_W (offset)
-            op_pointer = (mdrOperation*) ((mdr_u8*) op_pointer + (mdr_s32) offset);
+            op_pointer = (mdrOperation*) ((mdr_u8*) op_pointer + (mdr_i32) offset);
         _OP_RESTART }
 
         _OP_START (RET) { _OPC_P (src)
@@ -337,11 +337,11 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         _OP_END }
 
         _OP_START (sMUL) { _OPC_PP (dest, src)
-            fetch<mdr_s32> (stack, dest) *= fetch<mdr_s32> (stack, src);
+            fetch<mdr_i32> (stack, dest) *= fetch<mdr_i32> (stack, src);
         _OP_END }
 
         _OP_START (sMULl) { _OPC_PP (dest, src)
-            fetch<mdr_s64> (stack, dest) *= fetch<mdr_s64> (stack, src);
+            fetch<mdr_i64> (stack, dest) *= fetch<mdr_i64> (stack, src);
         _OP_END }
 
         _OP_START (uMUL) { _OPC_PP (dest, src)
@@ -361,11 +361,11 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         _OP_END }
 
         _OP_START (skMUL) { _OPC_PW (dest, value)
-            fetch<mdr_s32> (stack, dest) *= value;
+            fetch<mdr_i32> (stack, dest) *= value;
         _OP_END }
 
         _OP_START (skMULl) { _OPC_PW (dest, constant_id)
-            fetch<mdr_s64> (stack, dest) *= fetch<mdr_s64> (function->constant_table (), constant_id);
+            fetch<mdr_i64> (stack, dest) *= fetch<mdr_i64> (function->constant_table (), constant_id);
         _OP_END }
 
         _OP_START (ukMUL) { _OPC_PW (dest, value)
@@ -385,11 +385,11 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         _OP_END }
 
         _OP_START (sDIV) { _OPC_PP (dest, src)
-            fetch<mdr_s32> (stack, dest) /= fetch<mdr_s32> (stack, src);
+            fetch<mdr_i32> (stack, dest) /= fetch<mdr_i32> (stack, src);
         _OP_END }
 
         _OP_START (sDIVl) { _OPC_PP (dest, src)
-            fetch<mdr_s64> (stack, dest) /= fetch<mdr_s64> (stack, src);
+            fetch<mdr_i64> (stack, dest) /= fetch<mdr_i64> (stack, src);
         _OP_END }
 
         _OP_START (uDIV) { _OPC_PP (dest, src)
@@ -409,11 +409,11 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         _OP_END }
 
         _OP_START (skDIV) { _OPC_PW (dest, value)
-            fetch<mdr_s32> (stack, dest) /= value;
+            fetch<mdr_i32> (stack, dest) /= value;
         _OP_END }
 
         _OP_START (skDIVl) { _OPC_PW (dest, constant_id)
-            fetch<mdr_s64> (stack, dest) /= fetch<mdr_s64> (function->constant_table (), constant_id);
+            fetch<mdr_i64> (stack, dest) /= fetch<mdr_i64> (function->constant_table (), constant_id);
         _OP_END }
 
         _OP_START (ukDIV) { _OPC_PW (dest, value)
@@ -433,11 +433,11 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         _OP_END }
 
         _OP_START (sREM) { _OPC_PP (dest, src)
-            fetch<mdr_s32> (stack, dest) %= fetch<mdr_s32> (stack, src);
+            fetch<mdr_i32> (stack, dest) %= fetch<mdr_i32> (stack, src);
         _OP_END }
 
         _OP_START (sREMl) { _OPC_PP (dest, src)
-            fetch<mdr_s64> (stack, dest) %= fetch<mdr_s64> (stack, src);
+            fetch<mdr_i64> (stack, dest) %= fetch<mdr_i64> (stack, src);
         _OP_END }
 
         _OP_START (uREM) { _OPC_PP (dest, src)
@@ -449,11 +449,11 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         _OP_END }
 
         _OP_START (skREM) { _OPC_PW (dest, value)
-            fetch<mdr_s32> (stack, dest) %= value;
+            fetch<mdr_i32> (stack, dest) %= value;
         _OP_END }
 
         _OP_START (skREMl) { _OPC_PW (dest, constant_id)
-            fetch<mdr_s64> (stack, dest) %= fetch<mdr_s64> (function->constant_table (), constant_id);
+            fetch<mdr_i64> (stack, dest) %= fetch<mdr_i64> (function->constant_table (), constant_id);
         _OP_END }
 
         _OP_START (ukREM) { _OPC_PW (dest, value)
@@ -465,12 +465,12 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         _OP_END }
 
         _OP_START (NEG) { _OPC_P (dest)
-            mdr_s32& ptr = fetch<mdr_s32> (stack, dest);
+            mdr_i32& ptr = fetch<mdr_i32> (stack, dest);
             ptr = -ptr;
         _OP_END }
 
         _OP_START (NEGl) { _OPC_P (dest)
-            mdr_s64& ptr = fetch<mdr_s64> (stack, dest);
+            mdr_i64& ptr = fetch<mdr_i64> (stack, dest);
             ptr = -ptr;
         _OP_END }
 

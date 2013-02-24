@@ -10,7 +10,7 @@ namespace mdr {
 class NativeFunction {
 public:
     static const mdr_u32 kInvalidId = 0xFFFFFFFF;
-    typedef void (MDRI_CALL *function_t) ();
+    typedef void (MDR_FFI_CALL *function_t) ();
 
 private:
     function_t function_;
