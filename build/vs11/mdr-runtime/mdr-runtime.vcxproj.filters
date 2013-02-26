@@ -1,0 +1,142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\runtime">
+      <UniqueIdentifier>{0e7d0629-ab32-49ea-a990-aadd13bb981d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\api">
+      <UniqueIdentifier>{430c08f2-3f05-46b2-8447-979f4c131829}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\runtime\windows">
+      <UniqueIdentifier>{d93445fb-bb52-4c52-a566-44db15f041c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\api">
+      <UniqueIdentifier>{d7370a03-3f05-4964-b725-88c4f9dbdc1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\def">
+      <UniqueIdentifier>{8b2991c1-5c44-480f-8a35-f69fef976ec3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\runtime">
+      <UniqueIdentifier>{f8889f86-1aee-424e-92e9-83688b463987}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{a545c31b-a38e-4721-95bc-ac07daeb43a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\utils">
+      <UniqueIdentifier>{f534f6d3-1f8a-418d-924e-839c6df4c289}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\api\Context.cc">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\Environment.cc">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\Function.cc">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\Type.cc">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\runtime\BytecodeFunction.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\runtime\Context.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\runtime\Context.Execute.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\runtime\Environment.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\runtime\Environment.Compile.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\runtime\Environment.Load.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\runtime\Function.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\runtime\NativeFunction.cc">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\windows\runtime\Environment.cc">
+      <Filter>Source Files\runtime\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\utils\zip.cc">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\src\windows\runtime\core_native.asm">
+      <Filter>Source Files\runtime\windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\mdr\runtime\BytecodeFunction.h">
+      <Filter>Header Files\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\runtime\Context.h">
+      <Filter>Header Files\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\runtime\Environment.h">
+      <Filter>Header Files\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\runtime\Function.h">
+      <Filter>Header Files\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\runtime\NativeFunction.h">
+      <Filter>Header Files\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\def\BytecodeOperation.h">
+      <Filter>Header Files\def</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\def\Library.h">
+      <Filter>Header Files\def</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\def\Mdr.h">
+      <Filter>Header Files\def</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\def\Operation.h">
+      <Filter>Header Files\def</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\def\Type.h">
+      <Filter>Header Files\def</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\api\Context.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\api\Environment.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\api\Function.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\api\Type.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\mdr\utils\zip.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="..\..\..\src\windows\runtime\core_native.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
+  </ItemGroup>
+</Project>

@@ -1,24 +1,26 @@
 .code
 
+public CallNativeFunctionVoid
 public CallNativeFunctionU32
 public CallNativeFunctionU64
 public CallNativeFunctionF32    ; Used to tell the C++ compiler that the value is returned in the xmm0 register.
 public CallNativeFunctionF64
 
-
 CallNativeFunctionF32 proc
     jmp     CallNativeFunctionU64
 CallNativeFunctionF32 endp
  
-
 CallNativeFunctionF64 proc
     jmp     CallNativeFunctionU64
 CallNativeFunctionF64 endp
 
-
 CallNativeFunctionU32 proc
     jmp     CallNativeFunctionU64
 CallNativeFunctionU32 endp
+
+CallNativeFunctionVoid proc
+    jmp    QWORD PTR rcx       ; Call function directly.
+CallNativeFunctionVoid endp
 
 
 ; mdr_u64 (Library::func, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack)

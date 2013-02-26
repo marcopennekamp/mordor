@@ -1,6 +1,7 @@
 #include <algorithm>
 
 #include <coin/utils/Stream.h>
+#include <coin/utils/time.h>
 
 #include <mdr/api/Type.h>
 #include <mdr/utils/zip.h>
@@ -71,8 +72,11 @@ void Environment::LoadProgramElements (unzFile archive, vector<BytecodeFunction*
     bool found = (unzGoToFirstFile (archive) == UNZ_OK);
     for (; found; found = (unzGoToNextFile (archive) == UNZ_OK)) {
         mdr_u32 file_size;
+
+        mdr_u64 time = coin::TimeNanoseconds ();
         mdr_u8* file_data = zip::GetFileData (archive, &file_size);
         string file_name = zip::GetFileName (archive);
+        printf ("Loading the file took %lluns.\n", coin::TimeNanoseconds () - time);
 
         if (file_data == NULL) {
             continue;
@@ -86,7 +90,7 @@ void Environment::LoadProgramElements (unzFile archive, vector<BytecodeFunction*
             string name = file_name.substr (0, index);
             replace (name.begin (), name.end (), '/', '.');
 
-            printf ("Loading function '%s'.\n", name.c_str ());
+            // printf ("Loading function '%s'.\n", name.c_str ());
 
             /* Load and add BytecodeFunction and Function. */
             Function::CompilationInformation* cpinfo = new Function::CompilationInformation ();

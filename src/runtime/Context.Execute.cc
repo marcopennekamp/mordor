@@ -16,6 +16,7 @@ using namespace mdr;
 /* ASM externs. */
 
 extern "C" {
+    extern void CallNativeFunctionVoid (NativeFunction::function_t);
     extern mdr_u32 CallNativeFunctionU32 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
     extern mdr_u64 CallNativeFunctionU64 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
     extern mdr_f32 CallNativeFunctionF32 (NativeFunction::function_t, mdr_u64* register_stack, mdr_u32 stack_size, mdr_u64* stack);
@@ -139,8 +140,9 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
     /* Executes the next instruction. */
   LExec:
     op = *op_pointer;
+    mdr_u8 opcode = op & 0xFF;
 
-    switch (op & 0xFFFF) {
+    switch (opcode) {
 
     /* BASIC. */
 
@@ -644,6 +646,10 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
             Execute (environment_->GetFunction (function_id), stack_top);
         _OP_END }
 
+        _OP_START (CALL_NATIVE_VOID) { _OPC_W (function_id)
+            CallNativeFunctionVoid (environment_->GetNativeFunction (function_id)->function ());
+        }
+
         _OP_START (CALL_NATIVE_U32) { _OPC_W (function_id)
             _CALL_NATIVE (u32, U32)
         _OP_END }
@@ -663,6 +669,7 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
         _OP_START (PUSH) { _OPC_PP (src, offset)
             fetch<mdr_u32> (stack_.array (), stack_top + offset) = fetch<mdr_u32> (stack, src);
         _OP_END }
+
 
         _OP_START (PUSHl) { _OPC_PP (src, offset)
             fetch<mdr_u64> (stack_.array (), stack_top + offset) = fetch<mdr_u64> (stack, src);
@@ -689,10 +696,14 @@ void Context::Execute (Function* function, mdr_u32 caller_stack_top) {
                 *((mdr_u64*) (native_call_stack_.data.array () + offset)) = fetch<mdr_u64> (stack, src);
             }
         _OP_END }
+        
+        _OP_START (FREE_00FF) { 
 
-        default:
+        _OP_END }
+
+        /* default:
             printf ("Error: An unexpected operation terminated the code: '%llX'!\n", op);
-            _OP_RETURN
+            _OP_RETURN */
     }
 
 

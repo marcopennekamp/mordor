@@ -11,6 +11,9 @@
 # Log files
 log.txt
 
+# Local property files
+local.props
+
 
 #################
 ## Eclipse
@@ -148,17 +151,17 @@ Desktop.ini
 *.py[co]
 
 # Packages
-*.egg
-*.egg-info
-dist
-build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
-.installed.cfg
+#*.egg
+#*.egg-info
+#dist
+#build
+#eggs
+#parts
+#bin
+#var
+#sdist
+#develop-eggs
+#.installed.cfg
 
 # Installer logs
 pip-log.txt

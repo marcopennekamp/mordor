@@ -1,5 +1,8 @@
 native say
 native power (u64 a) u64
+native add (u64 a, u64 b) u64
+native empty
+native empty_u32 u32
 
 function test.call_native
     ncall say
@@ -16,4 +19,25 @@ function test.test u64
     load    2l
     load    38l
     call    test.test2
+    return
+
+function add (u64 a, u64 b) u64
+    load    a
+    load    b
+    add
+    return
+
+function empty
+    return void
+
+function test.test_native 
+    ncall empty
+    return void
+
+function test.test_mordor 
+    call empty
+    return void
+
+function test.test_native_u32 u32
+    ncall empty_u32
     return

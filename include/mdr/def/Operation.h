@@ -160,14 +160,18 @@ enum mdrOperationType {
 
     /* CALL.*/
     OP_CALL             = 0xA0,
-    OP_CALL_NATIVE_U32  = 0xA1,
-    OP_CALL_NATIVE_U64  = 0xA2,
-    OP_CALL_NATIVE_F32  = 0xA3,
-    OP_CALL_NATIVE_F64  = 0xA4,
+    OP_CALL_NATIVE_VOID = 0xA1,
+    OP_CALL_NATIVE_U32  = 0xA2,
+    OP_CALL_NATIVE_U64  = 0xA3,
+    OP_CALL_NATIVE_F32  = 0xA4,
+    OP_CALL_NATIVE_F64  = 0xA5,
+
     OP_PUSH             = 0xB0,
     OP_PUSHl            = 0xB1,
     OP_NPUSH            = 0xB2,
-    OP_NPUSHl           = 0xB3
+    OP_NPUSHl           = 0xB3,
+
+    OP_FREE_00FF        = 0xFF
 };
 
 

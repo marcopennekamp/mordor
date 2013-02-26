@@ -75,8 +75,12 @@ int main (int argc, char** argv) {
     }
 
     mdr_u64 time = coin::TimeNanoseconds ();
-    mdrCtxExecute (ctx, main_function);
-    printf ("Execution took %lluns\n", coin::TimeNanoseconds () - time);
+
+    for (size_t i = 0; i < 100000; ++i) {
+        mdrCtxExecute (ctx, main_function);
+    }
+    
+    printf ("Execution took %lluns\n", (coin::TimeNanoseconds () - time) / 100000);
     printf ("The function returned '%llu'\n", *((mdr_u64*) mdrCtxGetReturnValueAddress (ctx)));
 
     mdrCtxDestroy (ctx);

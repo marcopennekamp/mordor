@@ -15,22 +15,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cc">
+    <ClCompile Include="..\..\..\src\vm\vm.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\tokenize.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\compile.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\Token.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\main.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

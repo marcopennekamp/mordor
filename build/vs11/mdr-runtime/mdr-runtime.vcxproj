@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{61F875F4-A7E2-40A5-B849-22ED6481A932}</ProjectGuid>
-    <RootNamespace>mordorasm</RootNamespace>
+    <ProjectGuid>{599F700E-83FD-40AD-898C-388D14344A4C}</ProjectGuid>
+    <RootNamespace>mdrruntime</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -43,7 +43,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -51,27 +51,30 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\local.props" />
+    <Import Project="..\mordor.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\local.props" />
+    <Import Project="..\mordor.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\local.props" />
+    <Import Project="..\mordor.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\local.props" />
+    <Import Project="..\mordor.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Users\marco_000\Work\Projects\include;C:\Users\marco_000\Work\Projects\mordor\mordor\include;C:\Users\marco_000\Work\Projects\coin\include;C:\Users\marco_000\Work\Projects\coin\utils\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\marco_000\Work\Projects\mordor\Release;C:\Users\marco_000\Work\Projects\coin\Release;C:\Users\marco_000\Work\Projects\lib;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
-    <GenerateManifest>true</GenerateManifest>
-    <IntDir>$(Configuration)\</IntDir>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -106,37 +109,61 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Full</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <StringPooling>true</StringPooling>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
-      <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <FloatingPointExceptions>false</FloatingPointExceptions>
-      <CreateHotpatchableImage>false</CreateHotpatchableImage>
-      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>coin-utils.lib;mordor.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Imagehlp.lib;zlibwapi.lib;coin-utils.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <MASM />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\compile.cc" />
-    <ClCompile Include="src\main.cc" />
-    <ClCompile Include="src\tokenize.cc" />
+    <ClCompile Include="..\..\..\src\api\Context.cc" />
+    <ClCompile Include="..\..\..\src\api\Environment.cc" />
+    <ClCompile Include="..\..\..\src\api\Function.cc" />
+    <ClCompile Include="..\..\..\src\api\Type.cc" />
+    <ClCompile Include="..\..\..\src\runtime\BytecodeFunction.cc" />
+    <ClCompile Include="..\..\..\src\runtime\Context.cc" />
+    <ClCompile Include="..\..\..\src\runtime\Context.Execute.cc" />
+    <ClCompile Include="..\..\..\src\runtime\Environment.cc" />
+    <ClCompile Include="..\..\..\src\runtime\Environment.Compile.cc" />
+    <ClCompile Include="..\..\..\src\runtime\Environment.Load.cc" />
+    <ClCompile Include="..\..\..\src\runtime\Function.cc" />
+    <ClCompile Include="..\..\..\src\runtime\NativeFunction.cc" />
+    <ClCompile Include="..\..\..\src\utils\zip.cc" />
+    <ClCompile Include="..\..\..\src\windows\runtime\Environment.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\main.h" />
-    <ClInclude Include="src\Token.h" />
+    <None Include="..\..\..\src\windows\runtime\core_native.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\mdr\api\Context.h" />
+    <ClInclude Include="..\..\..\include\mdr\api\Environment.h" />
+    <ClInclude Include="..\..\..\include\mdr\api\Function.h" />
+    <ClInclude Include="..\..\..\include\mdr\api\Type.h" />
+    <ClInclude Include="..\..\..\include\mdr\def\BytecodeOperation.h" />
+    <ClInclude Include="..\..\..\include\mdr\def\Library.h" />
+    <ClInclude Include="..\..\..\include\mdr\def\Mdr.h" />
+    <ClInclude Include="..\..\..\include\mdr\def\Operation.h" />
+    <ClInclude Include="..\..\..\include\mdr\def\Type.h" />
+    <ClInclude Include="..\..\..\include\mdr\runtime\BytecodeFunction.h" />
+    <ClInclude Include="..\..\..\include\mdr\runtime\Context.h" />
+    <ClInclude Include="..\..\..\include\mdr\runtime\Environment.h" />
+    <ClInclude Include="..\..\..\include\mdr\runtime\Function.h" />
+    <ClInclude Include="..\..\..\include\mdr\runtime\NativeFunction.h" />
+    <ClInclude Include="..\..\..\include\mdr\utils\zip.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="..\..\..\src\windows\runtime\core_native.asm">
+      <FileType>Document</FileType>
+    </MASM>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>

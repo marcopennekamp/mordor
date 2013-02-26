@@ -414,7 +414,9 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
                 Function* callee = GetFunction (id);
 
                 /* Push variables in lowest to highest stack order. */
-                build_call_parameters ((mdr_u32) callee->cpinfo ()->parameters_.size (), OP_PUSH, OP_PUSHl, bc_stack_top, stack_top, operation_buffer, constants_u64);
+                if (callee->cpinfo ()->return_type_ != MDR_TYPE_VOID) {
+                    build_call_parameters ((mdr_u32) callee->cpinfo ()->parameters_.size (), OP_PUSH, OP_PUSHl, bc_stack_top, stack_top, operation_buffer, constants_u64);
+                }
 
                 /* Add CALL instruction. */
                 add_operation (build_operation_W (OP_CALL, id), operation_buffer);
@@ -434,6 +436,9 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
                 mdrOperationType op = OP_END;
                 switch (function->return_type ()) {
                     case MDR_TYPE_VOID:
+                        op = OP_CALL_NATIVE_VOID;
+                        break;
+
                     case MDR_TYPE_U32:
                     case MDR_TYPE_I32:
                         op = OP_CALL_NATIVE_U32;
@@ -459,8 +464,12 @@ bool Environment::CompileBytecodeFunction (BytecodeFunction* func) {
 
                 if (op != OP_END) {
                     /* Similar to CALL. */
-                    build_call_parameters (function->parameter_count (), OP_NPUSH, OP_NPUSHl, bc_stack_top, stack_top, operation_buffer, constants_u64);
+                    if (function->return_type () != MDR_TYPE_VOID) {
+                        build_call_parameters (function->parameter_count (), OP_NPUSH, OP_NPUSHl, bc_stack_top, stack_top, operation_buffer, constants_u64);
+                    }
+
                     add_operation (build_operation_W (op, function_id), operation_buffer);
+                    
                     if (function->return_type () != MDR_TYPE_VOID) {
                         fetch_return_value (function->return_type (), bc_stack_top, stack_top, operation_buffer);
                     }
