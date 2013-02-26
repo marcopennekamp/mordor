@@ -14,10 +14,14 @@ extern "C" {
 /*
  * DLL Exports.
  */
-#ifdef MDR_EXPORT
-#define MDR_DECL __declspec (dllexport)
-#else
-#define MDR_DECL __declspec (dllimport)
+#ifdef MDR_STATIC
+  #define MDR_DECL 
+#else  
+  #ifdef MDR_EXPORT
+    #define MDR_DECL __declspec (dllexport)
+  #else
+    #define MDR_DECL __declspec (dllimport)
+  #endif
 #endif
 
 /* 

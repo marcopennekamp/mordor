@@ -11,7 +11,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <ObjectFileName>$(IntDir)\%(Directory)</ObjectFileName>
-      <PreprocessorDefinitions>MDR_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MDR_STATIC;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>coin-utils.lib;%(AdditionalDependencies)</AdditionalDependencies>
